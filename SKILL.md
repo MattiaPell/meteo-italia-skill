@@ -1,5 +1,5 @@
 ---
-name: weather-forecast-analysis
+name: meteo-italia
 description: >
   Analisi comparativa delle previsioni meteo multi-modello specializzata per l'Italia.
   Usa questa skill ogni volta che l'utente chiede del tempo in Italia: previsioni,
