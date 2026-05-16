@@ -1,0 +1,237 @@
+# Macroaree Italia — Modelli e Pesi
+
+## Nord-Ovest (Piemonte, Valle d'Aosta, Liguria, Lombardia occidentale)
+
+**Modelli:**
+```
+arpae_icon_2i, icon_d2, icon_seamless, meteoswiss_icon_seamless,
+ecmwf_ifs025, meteofrance_arome_france, gfs_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `icon_d2` | 1.4 |
+| `meteoswiss_icon_seamless` | 1.3 |
+| `arpae_icon_2i` | 1.2 |
+| `ecmwf_ifs025` | 1.2 |
+| `icon_seamless` | 1.0 |
+| `meteofrance_arome_france` | 0.9 |
+| `gfs_seamless` | 0.7 |
+
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno).
+
+**Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `meteofrance_arome_france` per la fascia costiera.
+
+---
+
+## Nord-Est (Veneto, Friuli-Venezia Giulia, Trentino-Alto Adige, Lombardia orientale)
+
+**Modelli:**
+```
+arpae_icon_2i, icon_d2, icon_seamless, meteoswiss_icon_seamless,
+geosphere_seamless, ecmwf_ifs025, gfs_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `arpae_icon_2i` | 1.5 |
+| `icon_d2` | 1.4 |
+| `meteoswiss_icon_seamless` | 1.2 |
+| `geosphere_seamless` | 1.1 |
+| `ecmwf_ifs025` | 1.1 |
+| `icon_seamless` | 1.0 |
+| `gfs_seamless` | 0.7 |
+
+**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, alluvioni Mestre/Venezia.
+
+**Note:** La Bora è il fenomeno più caratteristico e pericoloso. Segnalarla sempre quando: vento da ENE >40 km/h a Trieste + pressione in calo. ARPAE ICON 2I è il modello nazionale e ha risoluzione 2.2km — priorità assoluta per eventi intensi in questa zona.
+
+---
+
+## Centro-Nord (Emilia-Romagna, Toscana, Marche settentrionali)
+
+**Modelli:**
+```
+arpae_icon_2i, icon_seamless, icon_eu, ecmwf_ifs025,
+meteofrance_seamless, gfs_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `arpae_icon_2i` | 1.5 |
+| `ecmwf_ifs025` | 1.2 |
+| `icon_eu` | 1.1 |
+| `icon_seamless` | 1.0 |
+| `meteofrance_seamless` | 0.9 |
+| `gfs_seamless` | 0.7 |
+
+**Fenomeni locali prioritari:** Temporali convettivi su Appennino Tosco-Emiliano (estate), nebbia padana (pianura emiliana ottobre-febbraio), tramontana su Toscana tirrenica, alluvioni vallate appenniniche (autunno), neve oltre 400m (inverno).
+
+---
+
+## Centro (Lazio, Umbria, Marche meridionali, Abruzzo)
+
+**Modelli:**
+```
+ecmwf_ifs025, icon_seamless, meteofrance_seamless,
+meteofrance_arpege_europe, gfs_seamless, icon_eu
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `ecmwf_ifs025` | 1.4 |
+| `meteofrance_seamless` | 1.2 |
+| `icon_seamless` | 1.1 |
+| `meteofrance_arpege_europe` | 1.0 |
+| `icon_eu` | 1.0 |
+| `gfs_seamless` | 0.8 |
+
+**Fenomeni locali prioritari:** Tramontana su Lazio tirrenico, grecale su Marche/Abruzzo, scirocco (Sud Lazio, Campania N), neve su Appennino centrale (frequente, impatto viabilità A24/A25), temporali estivi sui Castelli Romani.
+
+---
+
+## Sud (Campania, Puglia, Basilicata, Calabria, Molise)
+
+**Modelli:**
+```
+ecmwf_ifs025, ecmwf_aifs025, meteofrance_arpege_europe,
+icon_seamless, gfs_seamless, meteofrance_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `ecmwf_ifs025` | 1.4 |
+| `ecmwf_aifs025` | 1.2 |
+| `meteofrance_arpege_europe` | 1.2 |
+| `gfs_seamless` | 1.0 |
+| `icon_seamless` | 0.9 |
+| `meteofrance_seamless` | 0.9 |
+
+**Fenomeni locali prioritari:** Scirocco (intenso, polvere sahariana), grecale su Adriatico meridionale, temporali convettivi estivi (violenti, grandine su Puglia), tramontana su Calabria tirrenica, neve su Sila/Aspromonte/Pollino (impatto viabilità).
+
+---
+
+## Sicilia
+
+**Modelli:**
+```
+ecmwf_ifs025, ecmwf_aifs025, meteofrance_arpege_europe,
+gfs_seamless, meteofrance_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `ecmwf_ifs025` | 1.5 |
+| `ecmwf_aifs025` | 1.3 |
+| `meteofrance_arpege_europe` | 1.2 |
+| `gfs_seamless` | 1.0 |
+| `meteofrance_seamless` | 0.8 |
+
+**Fenomeni locali prioritari:** Scirocco intenso (sabbia dal Sahara, visibilità ridotta, T >40°C in estate), grecale su versante orientale (Catania, Messina), temporali di Tramontana sui Nebrodi/Madonie, neve sull'Etna (tutto l'anno oltre 2000m), alluvioni improvvise (ottobre-novembre).
+
+**Nota:** ARPAE ICON 2I ha copertura ridotta sulla Sicilia — usa ECMWF come riferimento principale.
+
+---
+
+## Sardegna
+
+**Modelli:**
+```
+ecmwf_ifs025, ecmwf_aifs025, meteofrance_seamless,
+meteofrance_arpege_europe, gfs_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `ecmwf_ifs025` | 1.4 |
+| `ecmwf_aifs025` | 1.3 |
+| `meteofrance_seamless` | 1.2 |
+| `meteofrance_arpege_europe` | 1.0 |
+| `gfs_seamless` | 0.9 |
+
+**Fenomeni locali prioritari:** Maestrale (forte e frequente, raffiche 80-100 km/h), scirocco, temporali su Gennargentu (estate), alluvioni Campidano (autunno — evento estremo ottobre 2018 e 2024), siccità estiva severa.
+
+---
+
+## Costa Adriatica (da Trieste a Bari)
+
+**Modelli:**
+```
+arpae_icon_2i, icon_d2, icon_seamless, knmi_seamless,
+ecmwf_ifs025, gfs_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `arpae_icon_2i` | 1.4 |
+| `icon_d2` | 1.3 |
+| `knmi_seamless` | 1.1 |
+| `ecmwf_ifs025` | 1.1 |
+| `icon_seamless` | 1.0 |
+| `gfs_seamless` | 0.8 |
+
+**Fenomeni locali prioritari:** Bora (versante nord), grecale (versante sud), temporali adriatici da convergenza (autunno), Acqua Alta a Venezia (Bora + Scirocco + luna piena).
+
+---
+
+## Alpi (tutte le catene alpine italiane)
+
+**Modelli:**
+```
+icon_d2, meteoswiss_icon_seamless, geosphere_seamless,
+arpae_icon_2i, ecmwf_ifs025, icon_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `icon_d2` | 1.5 |
+| `meteoswiss_icon_seamless` | 1.4 |
+| `geosphere_seamless` | 1.2 |
+| `arpae_icon_2i` | 1.1 |
+| `ecmwf_ifs025` | 1.0 |
+| `icon_seamless` | 0.9 |
+
+**Fenomeni locali prioritari:** Foehn (Val d'Aosta, Alto Adige), stau alpino (piogge intense versante S in flusso da S/SW), temporali convettivi estivi (pericolosi in quota), valanghe (segnala se neve fresca >30cm + vento), quota neve variabile.
+
+**Nota:** Per quote >2000m usa sempre `elevation={quota}` nella chiamata API per avere dati corretti. La temperatura scende di ~6.5°C ogni 1000m.
+
+---
+
+## Appennino (catena appenninica, tutte le regioni)
+
+**Modelli:**
+```
+ecmwf_ifs025, icon_eu, icon_seamless, arpae_icon_2i,
+meteofrance_seamless, gfs_seamless
+```
+
+**Pesi consensus:**
+| Modello | Peso |
+|---------|------|
+| `ecmwf_ifs025` | 1.3 |
+| `icon_eu` | 1.2 |
+| `arpae_icon_2i` | 1.2 (Nord App.) / 0.9 (Sud App.) |
+| `icon_seamless` | 1.0 |
+| `meteofrance_seamless` | 0.9 |
+| `gfs_seamless` | 0.8 |
+
+**Fenomeni locali prioritari:** Neve oltre 600m (frequente ottobre-aprile), stau appenninico (piogge intense su versante sopravvento), isolamento di paesi in quota, temporali convettivi estivi con grandine.
+
+---
+
+## Riferimenti Incrociati
+
+- Fenomeni locali dettagliati → `local_phenomena.md`
+- Bias dei modelli per zona → `model_bias.md`
+- Affidabilità per tipo evento → `event_reliability.md`
+- Rete ARPA regionale → `arpa_network.md`
+- Valori climatologici di riferimento → `climatology.md`

@@ -1,0 +1,301 @@
+# Fenomeni Meteorologici Locali Italiani — Riconoscimento e Flag
+
+Guida per identificare automaticamente i fenomeni tipici italiani dai dati dei modelli.
+
+---
+
+## FOEHN
+
+### Cos'è
+Vento caldo e secco che scende dalle Alpi verso la pianura padana settentrionale.
+Si forma quando una perturbazione atlantica porta aria umida sul versante nord alpino:
+l'aria precipita sul versante sud perdendo umidità e riscaldandosi adiabatica.
+
+### Dove colpisce
+Valle d'Aosta, Piemonte nord (Torino, Cuneo), Lombardia nord (Lecco, Como, Varese),
+Alto Adige (valle dell'Adige), Veneto alpino (Belluno)
+
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- Vento da N/NNE >30 km/h sulle stazioni alpine
+- T in aumento rapido (+5-10°C in poche ore) sul versante meridionale
+- UR <25% (spesso <15%)
+- Pressione in calo a nord delle Alpi, in aumento a sud
+- `weather_code` = 0 (cielo sereno) sul versante padano mentre piove sulle Alpi
+- Quota isoipsa 850hPa alta (>1500m geopotenziale)
+
+### Come riportarlo
+```
+🌬️ FOEHN ATTIVO — Versante alpino meridionale
+T anomala: +{X}°C rispetto alla norma | UR: {Y}%
+Impatti: secchezza (rischio incendi), visibilità eccellente, T percepita mite
+Durata tipica: 12-48h | Cessa con il passaggio del fronte
+```
+
+---
+
+## BORA
+
+### Cos'è
+Vento freddo, secco e fortissimo da NE/ENE che colpisce il Golfo di Trieste e
+l'alto Adriatico. Si forma quando masse d'aria fredda continentale scavalcano
+il Carso e accelerano verso il mare (effetto canalizzazione + caduta adiabatica).
+
+### Dove colpisce
+Trieste (epicentro), Gorizia, Udine costiero, venezia Giulia, Alto Adriatico,
+talvolta Venezia e costa istriana.
+
+### Classificazione
+- **Bora chiara**: cielo sereno, aria fredda secca → più prevedibile
+- **Bora scura**: cielo coperto, precipitazioni associate → meno prevedibile, più pericolosa
+
+### Segnali nei dati (flag se ≥2 di questi)
+- Vento da ENE (60-90°) a Trieste >40 km/h sostenuto
+- Raffiche previste >70 km/h
+- T in calo brusco (>5°C in 3h)
+- UR <40% (Bora chiara) oppure UR alta con precipitazioni (Bora scura)
+- Gradiente di pressione N-S tra Slovenia e Adriatico
+
+### Soglie di intensità
+| Categoria | Velocità sostenuta | Raffica | Impatti |
+|---|---|---|---|
+| Debole | 20-40 km/h | 50-70 km/h | Fastidio pedonale |
+| Moderata | 40-60 km/h | 70-100 km/h | Stop navi, disagi traffico |
+| Forte | 60-80 km/h | 100-130 km/h | Danni, chiusura porto |
+| Eccezionale | >80 km/h | >130 km/h | Emergenza (Nevera 2023: >200 km/h) |
+
+### Come riportarlo
+```
+💨 BORA {INTENSITÀ} — Alto Adriatico / Trieste
+Vento: {X} km/h sostenuto | Raffiche attese: {Y} km/h
+Tipo: Chiara / Scura
+Impatti: {navigazione, traffico, strutture, temperature}
+```
+
+---
+
+## TRAMONTANA
+
+### Cos'è
+Vento freddo da N/NNW che scende dall'entroterra verso le coste tirreniche e la Sardegna.
+Porta aria continentale fredda, cielo limpido, mare agitato.
+
+### Dove colpisce
+Liguria di ponente, Toscana (costa), Lazio (costa), Sardegna (tutta), Corsica,
+Mar Tirreno
+
+### Segnali nei dati
+- Vento da N/NNW >25 km/h
+- T in calo moderato (2-5°C)
+- UR <45%
+- `cloud_cover` <20% (cielo sereno)
+- `weather_code` 0-2
+
+### Come riportarlo
+```
+🌬️ TRAMONTANA — Costa tirrenica / Sardegna
+Vento: {X} km/h | Mare: {stato stimato}
+Impatti: tempo bello e fresco, mare agitato, visibilità eccellente
+```
+
+---
+
+## LIBECCIO
+
+### Cos'è
+Vento caldo e umido da WSW/SW che porta perturbazioni atlantiche sul Tirreno.
+È il principale responsabile delle piogge abbondanti su Liguria, Toscana e Sardegna.
+
+### Dove colpisce
+Mar Tirreno, Liguria, Toscana, Lazio tirrenico, Sardegna occidentale
+
+### Segnali nei dati
+- Vento da WSW/SW (210-250°) >20 km/h
+- UR >70-80%
+- Precipitazioni significative sulla costa tirrenica
+- T in aumento relativo (aria atlantica mite)
+- `weather_code` 51-65 (piogge)
+
+### Come riportarlo
+```
+🌧️ LIBECCIO — Mar Tirreno
+Piogge: {X}mm attesi | Vento: {Y} km/h da WSW
+Impatti: precipitazioni abbondanti su Liguria/Toscana/Sardegna ovest, mare mosso
+```
+
+---
+
+## SCIROCCO
+
+### Cos'è
+Vento caldo, umido e sabbioso da S/SE che origina dal Sahara e attraversa il
+Mediterraneo raccogliendo umidità. Porta caldo intenso, cielo lattiginoso (polvere
+sahariana), precipitazioni fangose ("pioggia di sabbia"), mare agitato da S.
+
+### Dove colpisce
+Sud Italia (Sicilia, Calabria, Campania), Sardegna, Malta, talvolta Centro Italia
+
+### Classificazione stagionale
+- **Estate**: Scirocco secco, T >40°C, rischio incendi
+- **Autunno/Primavera**: Scirocco umido, precipitazioni + sabbia, T elevata ma non estrema
+
+### Segnali nei dati
+- Vento da S/SSE/SE (150-200°) >20 km/h
+- T anomala: +5-15°C rispetto alla norma stagionale
+- UR >60-70% (scirocco umido) oppure UR <30% (scirocco secco estivo)
+- `weather_code` spesso 3 (coperto/lattiginoso) anche senza pioggia
+- Particolato PM10 elevato (polvere sahariana — non in Open-Meteo, menziona Copernicus)
+
+### Soglie
+- T >35°C + vento da S → **Scirocco intenso** (impatto sanitario)
+- T >40°C → **Emergenza calore** (tipico Sicilia/Calabria in luglio-agosto)
+
+### Come riportarlo
+```
+🌡️ SCIROCCO {SECCO/UMIDO} — Sud Italia / Sicilia
+T anomala: {X}°C sopra la norma | Vento: {Y} km/h da {DIR}
+Polvere sahariana: probabile (cielo lattiginoso/color rame)
+Impatti: {caldo intenso, rischio incendi, piogge fangose, mare agitato da S}
+```
+
+---
+
+## GRECALE
+
+### Cos'è
+Vento freddo-fresco da NE/ENE che scorre sull'Adriatico. Più moderato della Bora,
+porta instabilità sul versante adriatico e coste orientali della Sicilia.
+
+### Dove colpisce
+Mar Adriatico, coste pugliesi, Sicilia orientale (Catania, Messina), Malta
+
+### Segnali nei dati
+- Vento da NE/ENE (30-70°) >20 km/h
+- Precipitazioni sul versante adriatico orientale e est Sicilia
+- T in calo moderato
+- Mare mosso/agitato sull'Adriatico
+
+### Come riportarlo
+```
+💨 GRECALE — Adriatico / Sicilia orientale
+Vento: {X} km/h da NE | Precipitazioni: {Y}mm costa adriatica
+```
+
+---
+
+## NEBBIA PADANA
+
+### Cos'è
+Nebbia da irraggiamento o da avvezione che si forma sulla Pianura Padana nelle notti
+con cielo sereno, vento assente e aria umida. Fenomeno tipico ottobre-febbraio.
+
+### Zone critiche (ordinate per frequenza)
+Lodi, Cremona, Mantova, Ferrara, Rovigo, Pavia, Alessandria, Vercelli,
+Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
+
+### Segnali nei dati (flag se ≥3)
+- UR >92% alle ore 21-06
+- Vento <5 km/h
+- T prossima al punto di rugiada (T - Tdew <2°C)
+- `cloud_cover` <10% (cielo sereno → irraggiamento notturno)
+- Stagione: ottobre-febbraio
+- Pianura alluvionale (quota <50m)
+
+### Probabilità nebbia
+| Condizioni | Probabilità |
+|---|---|
+| UR>95% + vento<3 km/h + T-Tdew<1°C | Alta (>70%) |
+| UR>90% + vento<5 km/h + T-Tdew<2°C | Media (40-70%) |
+| UR>85% + vento<8 km/h | Bassa (<40%) |
+
+### Come riportarlo
+```
+🌫️ RISCHIO NEBBIA — Pianura Padana / {ZONA}
+Probabilità: {Alta/Media/Bassa}
+Orario formazione: {HH}-{HH} | Dissoluzione: {ore 09-11 se irraggiamento}
+Visibilità stimata: {<100m / 100-500m / 500m-1km}
+Impatti: autostrade {A1, A4, A13...}, aeroporti {MXP, VRN, BGY, BLQ...}
+```
+
+---
+
+## MCS PADANO (Mesoscale Convective System)
+
+### Cos'è
+Sistema temporalesco organizzato su scala mesoscalare che si sviluppa sulla Pianura
+Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raffica
+>100 km/h (downburst), precipitazioni intense (>50mm/h).
+
+### Stagione: maggio-settembre, picco giugno-agosto
+
+### Segnali nei dati (flag se ≥2)
+- CAPE >800 J/kg (significativo), >1500 J/kg (alto), >2500 J/kg (molto alto)
+- `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
+- Wind shear in quota (differenza vento 850hPa vs 500hPa >15 m/s → MCS organizzato)
+- `weather_code` 95-99 previsto
+- Zona: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
+
+### Scenario grandine
+- CAPE >1500 J/kg + LI <-4 + wind shear → probabilità grandine **significativa**
+- CAPE >2500 J/kg + LI <-6 → probabilità grandine grossa (>2cm)
+
+### Come riportarlo
+```
+⛈️ RISCHIO MCS / TEMPORALE ORGANIZZATO — Pianura Padana
+CAPE: {X} J/kg | LI: {Y} | Shear: {stimato}
+Rischio grandine: {Basso/Medio/Alto/Molto alto}
+Finestra temporale: {HH}-{HH} (picco convettivo pomeridiano 14-18)
+Impatti potenziali: grandine, vento da downburst, allagamenti lampo
+```
+
+---
+
+## STAU ALPINO E APPENNINICO
+
+### Cos'è
+Piogge orografiche intense sul versante "sopravvento" dei rilievi quando un flusso
+umido si scontra contro la catena montuosa.
+
+### Stau Alpino (flusso da S/SW)
+- Versante alpino meridionale: Alpi Lepontine, Ortler, Adamello, Alpi Carniche
+- Quantitativi: 50-200mm in 24h (record: oltre 500mm)
+- Rischio: alluvioni nei fondovalle, frane, piene dei fiumi alpini (Adige, Piave, Tagliamento)
+
+### Stau Appenninico (flusso da W/SW)
+- Versante tirrenico: Liguria, Toscana, Calabria tirrenica
+- Versante adriatico: in flusso da E/NE (Bora/Grecale)
+- Quantitativi: 30-100mm in 12h
+
+### Segnali nei dati
+- Vento sostenuto perpendicolare alla catena >20 km/h
+- UR >80% in quota
+- Precipitazioni concentrate sul versante sopravvento
+- Cielo sereno sul versante sottovento (ombra pluviometrica)
+
+---
+
+## MEDICANE (Tropical-Like Cyclone Mediterraneo)
+
+### Cos'è
+Sistema simil-tropicale che si forma sul Mediterraneo (raro, ma in aumento).
+Porta piogge catastrofiche, vento ciclonica intenso, moto rotatorio ben definito.
+
+### Stagione: ottobre-novembre principalmente, ma possibile settembre-dicembre
+
+### Zone più colpite storicamente
+Ionio (Calabria, Sicilia orientale), Mar Libico (Libia, Tunisia, Sicilia meridionale)
+
+### Segnali nei dati
+- Nucleo caldo in quota riconoscibile sull'analisi sinottica
+- Pressione centrale <990 hPa
+- Gradiente di pressione molto forte intorno al centro
+- Vento circolare ben organizzato
+- Precipitazioni estreme (>100mm/6h) nella zona di convergenza
+
+### Come riportarlo
+```
+🌀 POSSIBILE MEDICANE / TLC — {ZONA}
+Questo fenomeno è RARO e ad alta incertezza previsionale.
+Impatti potenziali: ESTREMI — precipitazioni fino a 300+mm, vento >100 km/h
+Affidabilità previsione: Media (36-48h), Bassa (>48h)
+Fonti da monitorare: ECMWF ensemble, Protezione Civile, MeteoAM
+```
