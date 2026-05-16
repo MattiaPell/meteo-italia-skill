@@ -237,7 +237,7 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 - Usa pesi ponderati da `references/italy_zones.md`
 
 #### 4b. Affidabilità contestuale per evento
-Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte:
+Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `references/event_reliability.md`:
 
 | Tipo evento | 0-24h | 1-3gg | 4-7gg | >7gg |
 |---|---|---|---|---|
