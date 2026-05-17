@@ -7,14 +7,8 @@ Progettata per agenti AI (OpenCode): l'agente carica `SKILL.md` come istruzioni 
 ## Installazione
 
 ```bash
-# Installa da GitHub
-npx skills install matti/meteo-italia-skill
-
-# Oppure da percorso locale
-npx skills install ./meteo-italia-skill
+npx skills install MattiaPell/meteo-italia-skill
 ```
-
-> **Requisito**: [OpenCode](https://github.com/oh-my-open-code/opencode) con supporto skills.
 
 ## Come funziona
 
