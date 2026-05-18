@@ -404,3 +404,53 @@ Segnali: Convergenza {Vento1} vs {Vento2} | CAPE: {X} J/kg | Stazionarietà prev
 Impatti: Precipitazioni potenzialmente >200mm in 6h.
 Affidabilità: Bassa localizzazione (difficile prevedere l'esatto comune), Alta potenziale evento.
 ```
+
+---
+
+## CUSCINO FREDDO (PO VALLEY COLD POOL)
+
+### Cos'è
+Strato di aria fredda e densa che ristagna nei bassi strati della Pianura Padana (o conche appenniniche) durante l'inverno. Grazie alla protezione orografica delle Alpi e degli Appennini, questa massa d'aria resiste all'erosione da parte di venti caldi (Scirocco/Libeccio) che scorrono al di sopra di essa.
+
+### Dove colpisce
+Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale), conche di Toscana (Valdarno, piana di Lucca), Umbria (conca Ternana).
+
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- **Inversione termica**: T(2m) < T(850hPa) o T(2m) < T(elevation+1000m)
+- **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
+- **Umidità elevata**: UR(2m) >85% con nebbia o nubi basse (Galaverna)
+- **Pressione elevata**: regime anticiclonico invernale persistente
+- **Contesto**: flusso di aria mite in quota (T850hPa >0°C) mentre al suolo persiste il gelo
+
+### Come riportarlo
+```
+❄️ CUSCINO FREDDO ATTIVO — Pianura Padana / {ZONA}
+T suolo: {X}°C | T 850hPa: {Y}°C → Forte inversione termica
+Impatti: Ristagno inquinanti (AQI critico), nebbia persistente, rischio gelicidio se piove.
+```
+
+---
+
+## GELICIDIO (FREEZING RAIN)
+
+### Cos'è
+Fenomeno pericolosissimo in cui la pioggia, cadendo in uno strato d'aria al suolo con temperatura sottozero (cuscino freddo), congela istantaneamente a contatto con le superfici, creando uno strato di ghiaccio trasparente (vetrone/black ice).
+
+### Meccanismo fisico
+Sovrascorrimento di aria calda e umida (fronte caldo) sopra un cuscino freddo preesistente. La neve fonde attraversando lo strato caldo in quota e diventa pioggia superraffreddata prima di toccare il suolo gelido.
+
+### Segnali nei dati (flag se presenti TUTTI i seguenti)
+- **Weather code**: 66 (Slight freezing rain) o 67 (Heavy freezing rain)
+- **T suolo**: temperature_2m < 0°C
+- **T quota**: temperature_850hPa > 0°C (strato di fusione)
+- **Precipitazioni**: pioggia prevista dai modelli numerici
+- **Zone**: Appennino settentrionale (versante padano), valli interne di Liguria/Toscana, Basso Piemonte.
+
+### Come riportarlo
+```
+⚠️ ALLERTA GELICIDIO (PIOGGIA CONGELANTESI) — {ZONA}
+Fenomeno ad ALTO RISCHIO per viabilità e infrastrutture.
+T suolo: {X}°C | T quota: {Y}°C | Pioggia prevista: {Z}mm
+Impatti: Formazione di ghiaccio su strade (black ice), rottura rami, danni a linee elettriche.
+Raccomandazione: Massima cautela alla guida, rischio cadute pedonali estremo.
+```
