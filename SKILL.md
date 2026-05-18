@@ -52,17 +52,18 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 Esegui simultaneamente i passi A–J:
 
 #### A — Previsioni numeriche (Open-Meteo)
-Vedi sezione **Modelli** per il set corretto per macroarea.
+Vedi `references/models.md` per il set corretto per macroarea.
 ```
 GET https://api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
   &models={MODEL1,MODEL2,...}
-  &hourly=temperature_2m,precipitation,precipitation_probability,
-          wind_speed_10m,wind_direction_10m,wind_gusts_10m,
-          cloud_cover,weather_code,relative_humidity_2m,
-          cape,lifted_index,freezing_level_height,
+  &hourly=temperature_2m,apparent_temperature,precipitation,
+          precipitation_probability,wind_speed_10m,wind_direction_10m,
+          wind_gusts_10m,cloud_cover,visibility,weather_code,
+          relative_humidity_2m,cape,lifted_index,freezing_level_height,
           uv_index,uv_index_clear_sky,temperature_850hPa
-  &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,
+  &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
+         apparent_temperature_min,precipitation_sum,
          precipitation_probability_max,wind_speed_10m_max,
          wind_gusts_10m_max,weather_code,uv_index_max
   &timezone=Europe/Rome
@@ -114,7 +115,8 @@ GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
   &hourly=wave_height,wave_direction,wave_period,
           wind_wave_height,swell_wave_height,swell_wave_direction,
-          swell_wave_period
+          swell_wave_period,
+          sea_surface_temperature
   &daily=wave_height_max,wind_wave_height_max,swell_wave_height_max
   &timezone=Europe/Rome
   &forecast_days={N}
@@ -238,7 +240,7 @@ Vedi soglie spread, gerarchia ensemble–deterministico e template in `reference
 - Per ogni variabile e slot orario: media, min, max, σ tra i modelli
 - **Outlier**: modelli che scostano >1.5σ → segnala e applica bias noto (vedi `references/model_bias.md`)
 - **Scenari probabilistici**: "X/Y modelli prevedono precipitazioni >5mm"
-- Usa pesi ponderati da `references/italy_zones.md`
+- Usa pesi ponderati da `references/italy_zones.md` e dettagli modelli da `references/models.md`
 
 #### 4b. Affidabilità contestuale per evento
 Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `references/event_reliability.md`:
@@ -401,9 +403,11 @@ T: {X}°C | Pioggia ultime 6h: {X}mm | Vento: {X} km/h da {DIR}
 
 ### Scenario del giorno
 {2-3 righe narrative su come si sviluppa la giornata}
+**Visibilità**: {X} km ({Classe})
 
 ### Temperatura
-Range: {min}–{max}°C | Consensus: {media}°C ±{σ}°C | Anomalia: {+/-X}°C vs norma
+Range: {min}–{max}°C | **Percepita (Apparent)**: {min_app}–{max_app}°C
+Consensus: {media}°C ±{σ}°C | Anomalia: {+/-X}°C vs norma
 
 ### Precipitazioni
 {N}/{TOT} modelli prevedono pioggia | Quantitativi: {range mm} | P: {%}%
@@ -419,6 +423,7 @@ Protezione: {raccomandazione SPF}
 
 ### 🌊 Condizioni Marine (se costiero o use case mare)
 Onde: {X}m | Beaufort: {N} — {descrizione}
+**SST (Temperatura Mare)**: {X}°C ({Comfort})
 Balneazione: {Ok/Cautela/Sconsigliata} | Nautica: {Ok/Cautela/Sconsigliata}
 
 ### 📊 Ensemble Spread (se attivato)
