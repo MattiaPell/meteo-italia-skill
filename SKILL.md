@@ -222,7 +222,7 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 ```http
 GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_eu_eps_mean,gfs025_ensemble_mean
+  &models=ecmwf_ifs025_ensemble_mean,icon_eu,gfs025
   &hourly=temperature_2m,temperature_2m_spread,
           precipitation_mean,precipitation_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,

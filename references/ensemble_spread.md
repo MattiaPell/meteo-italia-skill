@@ -31,7 +31,7 @@ Endpoint più efficiente: restituisce mean e spread precalcolati, archivio lungo
 GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}
   &longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_seamless_eps_mean,gfs025_ensemble_mean
+  &models=ecmwf_ifs025_ensemble_mean,icon_seamless,gfs025
   &hourly=temperature_2m,temperature_2m_spread,
           precipitation_mean,precipitation_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,
@@ -50,15 +50,15 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble
 |---|---|---|---|---|
 | `ecmwf_ifs025_ensemble_mean` | 51 | 15 | 25 km | ★★★★★ |
 | `ecmwf_aifs025_ensemble_mean` | 50 | 15 | 25 km | ★★★★ |
-| `icon_seamless_eps_mean` | 40 | 7.5 | 13 km | ★★★★★ |
-| `icon_eu_eps_mean` | 40 | 5 | 7 km | ★★★★★ |
-| `gfs025_ensemble_mean` | 31 | 16 | 25 km | ★★★ |
-| `gem_global_ensemble_mean` | 21 | 16 | 25 km | ★★★ |
+| `icon_seamless` | 40 | 7.5 | 13 km | ★★★★★ |
+| `icon_eu` | 40 | 5 | 7 km | ★★★★★ |
+| `gfs025` | 31 | 16 | 25 km | ★★★ |
+| `gem_global` | 21 | 16 | 25 km | ★★★ |
 | `bom_access_global_ensemble_mean` | 18 | 10 | 25 km | ★★ |
 
 **Set raccomandato per Italia** (bilanciamento qualità/velocità):
 ```
-ecmwf_ifs025_ensemble_mean, icon_eu_eps_mean, gfs025_ensemble_mean
+ecmwf_ifs025_ensemble_mean, icon_eu, gfs025
 ```
 
 ---

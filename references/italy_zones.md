@@ -4,8 +4,8 @@
 
 **Modelli:**
 ```
-arpae_icon_2i, icon_d2, icon_seamless, meteoswiss_icon_seamless,
-ecmwf_ifs025, meteofrance_arome_france, gfs_seamless
+italia_meteo_arpae_icon_2i, icon_d2, icon_seamless, meteoswiss_icon_seamless,
+ecmwf_ifs025, arome_france, gfs_seamless
 ```
 
 **Pesi consensus:**
@@ -13,15 +13,15 @@ ecmwf_ifs025, meteofrance_arome_france, gfs_seamless
 |---------|------|
 | `icon_d2` | 1.4 |
 | `meteoswiss_icon_seamless` | 1.3 |
-| `arpae_icon_2i` | 1.2 |
+| `italia_meteo_arpae_icon_2i` | 1.2 |
 | `ecmwf_ifs025` | 1.2 |
 | `icon_seamless` | 1.0 |
-| `meteofrance_arome_france` | 0.9 |
+| `arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
 **Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera).
 
-**Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `meteofrance_arome_france` per la fascia costiera.
+**Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `arome_france` per la fascia costiera.
 
 ---
 
@@ -29,14 +29,14 @@ ecmwf_ifs025, meteofrance_arome_france, gfs_seamless
 
 **Modelli:**
 ```
-arpae_icon_2i, icon_d2, icon_seamless, meteoswiss_icon_seamless,
+italia_meteo_arpae_icon_2i, icon_d2, icon_seamless, meteoswiss_icon_seamless,
 geosphere_seamless, ecmwf_ifs025, gfs_seamless
 ```
 
 **Pesi consensus:**
 | Modello | Peso |
 |---------|------|
-| `arpae_icon_2i` | 1.5 |
+| `italia_meteo_arpae_icon_2i` | 1.5 |
 | `icon_d2` | 1.4 |
 | `meteoswiss_icon_seamless` | 1.2 |
 | `geosphere_seamless` | 1.1 |
@@ -54,14 +54,14 @@ geosphere_seamless, ecmwf_ifs025, gfs_seamless
 
 **Modelli:**
 ```
-arpae_icon_2i, icon_seamless, icon_eu, ecmwf_ifs025,
+italia_meteo_arpae_icon_2i, icon_seamless, icon_eu, ecmwf_ifs025,
 meteofrance_seamless, gfs_seamless
 ```
 
 **Pesi consensus:**
 | Modello | Peso |
 |---------|------|
-| `arpae_icon_2i` | 1.5 |
+| `italia_meteo_arpae_icon_2i` | 1.5 |
 | `ecmwf_ifs025` | 1.2 |
 | `icon_eu` | 1.1 |
 | `icon_seamless` | 1.0 |
@@ -77,7 +77,7 @@ meteofrance_seamless, gfs_seamless
 **Modelli:**
 ```
 ecmwf_ifs025, icon_seamless, meteofrance_seamless,
-meteofrance_arpege_europe, gfs_seamless, icon_eu
+arpege_europe, gfs_seamless, icon_eu
 ```
 
 **Pesi consensus:**
@@ -86,7 +86,7 @@ meteofrance_arpege_europe, gfs_seamless, icon_eu
 | `ecmwf_ifs025` | 1.4 |
 | `meteofrance_seamless` | 1.2 |
 | `icon_seamless` | 1.1 |
-| `meteofrance_arpege_europe` | 1.0 |
+| `arpege_europe` | 1.0 |
 | `icon_eu` | 1.0 |
 | `gfs_seamless` | 0.8 |
 
@@ -98,7 +98,7 @@ meteofrance_arpege_europe, gfs_seamless, icon_eu
 
 **Modelli:**
 ```
-ecmwf_ifs025, ecmwf_aifs025, meteofrance_arpege_europe,
+ecmwf_ifs025, ecmwf_aifs025, arpege_europe,
 icon_seamless, gfs_seamless, meteofrance_seamless
 ```
 
@@ -107,7 +107,7 @@ icon_seamless, gfs_seamless, meteofrance_seamless
 |---------|------|
 | `ecmwf_ifs025` | 1.4 |
 | `ecmwf_aifs025` | 1.2 |
-| `meteofrance_arpege_europe` | 1.2 |
+| `arpege_europe` | 1.2 |
 | `gfs_seamless` | 1.0 |
 | `icon_seamless` | 0.9 |
 | `meteofrance_seamless` | 0.9 |
@@ -120,7 +120,7 @@ icon_seamless, gfs_seamless, meteofrance_seamless
 
 **Modelli:**
 ```
-ecmwf_ifs025, ecmwf_aifs025, meteofrance_arpege_europe,
+ecmwf_ifs025, ecmwf_aifs025, arpege_europe,
 gfs_seamless, meteofrance_seamless
 ```
 
@@ -129,7 +129,7 @@ gfs_seamless, meteofrance_seamless
 |---------|------|
 | `ecmwf_ifs025` | 1.5 |
 | `ecmwf_aifs025` | 1.3 |
-| `meteofrance_arpege_europe` | 1.2 |
+| `arpege_europe` | 1.2 |
 | `gfs_seamless` | 1.0 |
 | `meteofrance_seamless` | 0.8 |
 
@@ -144,7 +144,7 @@ gfs_seamless, meteofrance_seamless
 **Modelli:**
 ```
 ecmwf_ifs025, ecmwf_aifs025, meteofrance_seamless,
-meteofrance_arpege_europe, gfs_seamless
+arpege_europe, gfs_seamless
 ```
 
 **Pesi consensus:**
@@ -153,7 +153,7 @@ meteofrance_arpege_europe, gfs_seamless
 | `ecmwf_ifs025` | 1.4 |
 | `ecmwf_aifs025` | 1.3 |
 | `meteofrance_seamless` | 1.2 |
-| `meteofrance_arpege_europe` | 1.0 |
+| `arpege_europe` | 1.0 |
 | `gfs_seamless` | 0.9 |
 
 **Fenomeni locali prioritari:** Maestrale (forte e frequente, raffiche 80-100 km/h), scirocco, temporali su Gennargentu (estate), alluvioni Campidano (autunno — evento estremo ottobre 2018 e 2024), siccità estiva severa.
@@ -164,14 +164,14 @@ meteofrance_arpege_europe, gfs_seamless
 
 **Modelli:**
 ```
-arpae_icon_2i, icon_d2, icon_seamless, knmi_seamless,
+italia_meteo_arpae_icon_2i, icon_d2, icon_seamless, knmi_seamless,
 ecmwf_ifs025, gfs_seamless
 ```
 
 **Pesi consensus:**
 | Modello | Peso |
 |---------|------|
-| `arpae_icon_2i` | 1.4 |
+| `italia_meteo_arpae_icon_2i` | 1.4 |
 | `icon_d2` | 1.3 |
 | `knmi_seamless` | 1.1 |
 | `ecmwf_ifs025` | 1.1 |
@@ -187,7 +187,7 @@ ecmwf_ifs025, gfs_seamless
 **Modelli:**
 ```
 icon_d2, meteoswiss_icon_seamless, geosphere_seamless,
-arpae_icon_2i, ecmwf_ifs025, icon_seamless
+italia_meteo_arpae_icon_2i, ecmwf_ifs025, icon_seamless
 ```
 
 **Pesi consensus:**
@@ -196,7 +196,7 @@ arpae_icon_2i, ecmwf_ifs025, icon_seamless
 | `icon_d2` | 1.5 |
 | `meteoswiss_icon_seamless` | 1.4 |
 | `geosphere_seamless` | 1.2 |
-| `arpae_icon_2i` | 1.1 |
+| `italia_meteo_arpae_icon_2i` | 1.1 |
 | `ecmwf_ifs025` | 1.0 |
 | `icon_seamless` | 0.9 |
 
@@ -210,7 +210,7 @@ arpae_icon_2i, ecmwf_ifs025, icon_seamless
 
 **Modelli:**
 ```
-ecmwf_ifs025, icon_eu, icon_seamless, arpae_icon_2i,
+ecmwf_ifs025, icon_eu, icon_seamless, italia_meteo_arpae_icon_2i,
 meteofrance_seamless, gfs_seamless
 ```
 
@@ -219,7 +219,7 @@ meteofrance_seamless, gfs_seamless
 |---------|------|
 | `ecmwf_ifs025` | 1.3 |
 | `icon_eu` | 1.2 |
-| `arpae_icon_2i` | 1.2 (Nord App.) / 0.9 (Sud App.) |
+| `italia_meteo_arpae_icon_2i` | 1.2 (Nord App.) / 0.9 (Sud App.) |
 | `icon_seamless` | 1.0 |
 | `meteofrance_seamless` | 0.9 |
 | `gfs_seamless` | 0.8 |
