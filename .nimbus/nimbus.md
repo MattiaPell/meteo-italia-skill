@@ -15,3 +15,7 @@ Action: Always verify the exact parameter names in the Open-Meteo documentation 
 ## 2025-05-18 — [Accuracy] Detection of Maritime Advection Fog (Caligo/Lupa)
 Learning: Discovered that "Nebbia Marittima" (advection fog) is a critical spring phenomenon in Italy (Liguria, Strait of Messina) that was missing from the skill. Its detection requires specific sea-surface temperature (SST) comparison against T2m, which is available in the Marine API fetch.
 Action: Include SST in maritime/coastal analysis and apply the T(2m) > SST + 2°C threshold during March–May to identify Caligo and Lupa di mare events.
+
+## 2025-05-19 — [Operational] DPC Radar API and ASE Phenomenon
+Learning: Confirmed that the DPC Radar API endpoint 'type=SITES' is invalid (returns 404), while 'type=VMI' is the correct functional endpoint for checking the latest product availability. Also, identified the Adriatic Sea Effect (ASE) as a missing key phenomenon for the East Coast, requiring 850hPa humidity data for accurate detection.
+Action: Updated SKILL.md to remove the failing 'type=SITES' call and added 850hPa/500hPa humidity to the primary fetch to support ASE and convective analysis.

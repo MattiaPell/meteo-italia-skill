@@ -6,7 +6,7 @@ description: >
   confronto modelli, affidabilità forecast, analisi di fenomeni locali italiani
   (foehn, bora, scirocco, tramontana, libeccio, maestrale, garbino, ponentino,
   cuscino freddo, gelicidio, grandine padana, neve appenninica, temporali adriatici,
-  allerte Protezione Civile).
+  adriatic sea effect, allerte Protezione Civile).
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
   "maestrale", "garbino", "ponentino", "cuscino freddo", "inversione termica",
   "gelicidio", "pioggia congelantesi",
@@ -63,10 +63,10 @@ GET https://api.open-meteo.com/v1/forecast
           relative_humidity_2m,cape,lifted_index,freezing_level_height,
           snowfall,snow_depth,
           temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,
-          geopotential_height_850hPa,
+          relative_humidity_850hPa,geopotential_height_850hPa,
           temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
-          geopotential_height_500hPa,pressure_msl,
-          uv_index,uv_index_clear_sky
+          relative_humidity_500hPa,geopotential_height_500hPa,
+          pressure_msl,uv_index,uv_index_clear_sky
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
@@ -165,19 +165,13 @@ pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili
 - `weather_code` corrente 80–99 (rovesci/temporali in atto)
 - Utente chiede situazione nelle prossime 1-3h ("sta arrivando?", "tra quanto finisce?")
 
-**Step 1 — Verifica rete:**
-```http
-GET https://radar-api.protezionecivile.it/findLastProductByType?type=SITES
-```
-Se radar vicino offline → nota "dato radar parziale" nel report.
-
-**Step 2 — Ultimo timestamp disponibile:**
+**Step 1 — Verifica disponibilità e timestamp:**
 ```http
 GET https://radar-api.protezionecivile.it/findLastProductByType?type=VMI
 ```
-Salva `time` (epoch ms UTC) come `T`.
+Salva `time` (epoch ms UTC) come `T`. Se la chiamata fallisce o restituisce 404, la rete radar potrebbe essere in manutenzione.
 
-**Step 3 — Scarica prodotti chiave:**
+**Step 2 — Scarica prodotti chiave:**
 ```http
 POST https://radar-api.protezionecivile.it/downloadProduct
 {"productType": "VMI", "productDate": T}
@@ -198,7 +192,7 @@ POST https://radar-api.protezionecivile.it/downloadProduct
 {"productType": "SRT1", "productDate": T}  ← cumulata ultima ora
 ```
 
-**Step 4 — Sequenza per analisi movimento (ultimi 30 min):**
+**Step 3 — Sequenza per analisi movimento (ultimi 30 min):**
 ```http
 POST /downloadProduct {"productType":"VMI","productDate": T-300000}    ← T-5min
 POST /downloadProduct {"productType":"VMI","productDate": T-600000}    ← T-10min
