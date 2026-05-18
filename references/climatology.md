@@ -98,6 +98,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 11.2°C | 5.2°C | 75mm | Nebbia in aumento |
 | Dic | 6.8°C | 1.1°C | 50mm | Nebbia frequente |
 
+### Firenze (43.80°N, 11.20°E, 40m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 11.2°C | 2.1°C | 64mm | |
+| Feb | 12.7°C | 2.5°C | 64mm | |
+| Mar | 16.3°C | 5.3°C | 62mm | |
+| Apr | 19.9°C | 8.0°C | 67mm | |
+| Mag | 24.5°C | 12.1°C | 66mm | |
+| Giu | 29.1°C | 16.0°C | 48mm | |
+| Lug | 32.2°C | 18.3°C | 26mm | |
+| Ago | 32.5°C | 18.5°C | 40mm | |
+| Set | 27.1°C | 14.7°C | 74mm | |
+| Ott | 21.6°C | 11.0°C | 104mm | |
+| Nov | 15.7°C | 6.7°C | 118mm | |
+| Dic | 11.4°C | 2.8°C | 88mm | |
+
 ### Trieste (45.65°N, 13.76°E, 2m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|

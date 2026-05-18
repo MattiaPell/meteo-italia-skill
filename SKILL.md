@@ -4,9 +4,10 @@ description: >
   Analisi comparativa delle previsioni meteo multi-modello specializzata per l'Italia.
   Usa questa skill ogni volta che l'utente chiede del tempo in Italia: previsioni,
   confronto modelli, affidabilità forecast, analisi di fenomeni locali italiani
-  (foehn, bora, scirocco, tramontana, libeccio, grandine padana, neve appenninica,
-  temporali adriatici, allerte Protezione Civile).
+  (foehn, bora, scirocco, tramontana, libeccio, maestrale, garbino, ponentino,
+  grandine padana, neve appenninica, temporali adriatici, allerte Protezione Civile).
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
+  "maestrale", "garbino", "ponentino",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
   "analisi meteo [città italiana]", "weekend meteo", "settimana meteo".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
@@ -251,6 +252,7 @@ Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `
 Segnala sempre il tipo di evento riconosciuto e la sua affidabilità contestuale.
 
 #### 4c. Confronto con climatologia
+Vedi `references/climatology.md` per valori di riferimento e classificazione anomalie.
 - "T max prevista: 28°C | media storica 15 maggio: 22°C → **+6°C anomalia positiva**"
 - "Precipitazioni attese: 25mm | media maggio: 65mm/mese → **evento sopra norma**"
 - Usa σ climatologica per classificare: dentro norma (±1σ), anomalo (1-2σ), estremo (>2σ)
@@ -260,7 +262,7 @@ Segnala sempre il tipo di evento riconosciuto e la sua affidabilità contestuale
 - Se scarto sistematico > 2°C → applica correzione locale al forecast pomeridiano
 
 #### 4e. Fenomeni locali italiani
-Verifica automaticamente i pattern in `references/italy_zones.md` → flag se attivi.
+Verifica automaticamente i pattern in `references/local_phenomena.md` e `references/italy_zones.md` → flag se attivi.
 
 #### 4f. Analisi Ensemble Spread
 Quando il fetch J è attivo:
@@ -404,7 +406,7 @@ Range: {min}–{max}°C | Consensus: {media}°C ±{σ}°C | Anomalia: {+/-X}°C 
 
 ### Vento
 Sostenuto: {X} km/h da {DIR} | Raffiche: {max} km/h
-{flag: FOEHN / BORA / TRAMONTANA / SCIROCCO / LIBECCIO / GRECALE}
+{flag: FOEHN / BORA / TRAMONTANA / SCIROCCO / LIBECCIO / MAESTRALE / GARBINO / PONENTINO / GRECALE}
 
 ### ☀️ UV Index (se rilevante)
 Picco: {X} ({Basso/Moderato/Alto/Molto alto/Estremo}) alle {HH}:00
