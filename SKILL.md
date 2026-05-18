@@ -47,7 +47,7 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
 ### 3. Fetch in parallelo (esegui tutto insieme)
 
-Esegui simultaneamente i passi A–G:
+Esegui simultaneamente i passi A–J:
 
 #### A — Previsioni numeriche (Open-Meteo)
 Vedi sezione **Modelli** per il set corretto per macroarea.
@@ -145,32 +145,6 @@ Interpreta con `references/air_quality.md`: scala AQI EEA (0-20 buono → >100 p
 scenari accumulo/dispersione da dati meteo, flag dust sahariano vs PM antropico,
 pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili.
 
-#### J — Ensemble Spread (condizionale)
-
-**Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
-
-```http
-GET https://ensemble-api.open-meteo.com/v1/ensemble-mean
-  ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_eu_eps_mean,gfs025_ensemble_mean
-  &hourly=temperature_2m_mean,temperature_2m_spread,
-          precipitation_mean,precipitation_spread,
-          wind_gusts_10m_mean,wind_gusts_10m_spread,
-          cape_mean,cape_spread,
-          snowfall_mean,snowfall_spread,
-          precipitation_probability_mean
-  &daily=temperature_2m_max_mean,temperature_2m_max_spread,
-         temperature_2m_min_mean,temperature_2m_min_spread,
-         precipitation_sum_mean,precipitation_sum_spread,
-         wind_speed_10m_max_mean,wind_speed_10m_max_spread
-  &timezone=Europe/Rome
-  &forecast_days=16
-```
-
-`spread` = σ tra i membri. p90-p10 ≈ spread × 2.56 (gaussiana, valido per T; non per precipitazioni).
-Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
-Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
-
 #### I — Nowcasting Radar DPC (solo se condizioni attivanti)
 
 **Attiva se almeno una di queste condizioni è vera:**
@@ -228,6 +202,32 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 - Incertezza per orizzonte temporale
 
 **Licenza obbligatoria**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
+
+#### J — Ensemble Spread (condizionale)
+
+**Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
+
+```http
+GET https://ensemble-api.open-meteo.com/v1/ensemble-mean
+  ?latitude={LAT}&longitude={LON}
+  &models=ecmwf_ifs025_ensemble_mean,icon_eu_eps_mean,gfs025_ensemble_mean
+  &hourly=temperature_2m_mean,temperature_2m_spread,
+          precipitation_mean,precipitation_spread,
+          wind_gusts_10m_mean,wind_gusts_10m_spread,
+          cape_mean,cape_spread,
+          snowfall_mean,snowfall_spread,
+          precipitation_probability_mean
+  &daily=temperature_2m_max_mean,temperature_2m_max_spread,
+         temperature_2m_min_mean,temperature_2m_min_spread,
+         precipitation_sum_mean,precipitation_sum_spread,
+         wind_speed_10m_max_mean,wind_speed_10m_max_spread
+  &timezone=Europe/Rome
+  &forecast_days=16
+```
+
+`spread` = σ tra i membri. p90-p10 ≈ spread × 2.56 (gaussiana, valido per T; non per precipitazioni).
+Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
+Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
 
 ### 4. Analisi Comparativa
 
@@ -456,6 +456,6 @@ Climatologia: ERA5 (media {N} anni)
 - `timezone=Europe/Rome` sempre per l'Italia (mai `auto`)
 - Isole: usa sempre ECMWF come backbone — altri modelli hanno copertura ridotta
 - Montagna >1500m: aggiungi `elevation={quota}` per dati corretti
-- Se Open-Meteo non raggiungibile: aggrega da portali italiani (vedi `references/arpa_network.md`)
+- Se Open-Meteo non raggiungibile: aggrega da portali italiani (vedi `references/italian_portals.md`)
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
 - Bias noti dei modelli → consulta sempre `references/model_bias.md` prima di interpretare outlier

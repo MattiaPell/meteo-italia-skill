@@ -82,6 +82,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 10.4°C | 3.2°C | 150mm | |
 | Dic | 6.6°C | -1.3°C | 67mm | |
 
+### Genova (44.40°N, 8.94°E, 20m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 9.6°C | 3.8°C | 98mm | |
+| Feb | 10.7°C | 4.0°C | 78mm | |
+| Mar | 14.0°C | 6.5°C | 94mm | |
+| Apr | 16.9°C | 9.5°C | 109mm | |
+| Mag | 20.5°C | 13.4°C | 101mm | |
+| Giu | 24.3°C | 17.3°C | 85mm | |
+| Lug | 27.1°C | 19.7°C | 54mm | |
+| Ago | 27.4°C | 20.2°C | 65mm | |
+| Set | 23.4°C | 16.4°C | 125mm | |
+| Ott | 18.7°C | 12.8°C | 182mm | |
+| Nov | 13.7°C | 8.4°C | 198mm | |
+| Dic | 10.3°C | 4.8°C | 126mm | |
+
 ### Venezia / Rovigo (area polesana, ~45.07°N, 11.79°E, 5m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -97,6 +113,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 18.5°C | 10.8°C | 78mm | |
 | Nov | 11.2°C | 5.2°C | 75mm | Nebbia in aumento |
 | Dic | 6.8°C | 1.1°C | 50mm | Nebbia frequente |
+
+### Bologna (44.49°N, 11.34°E, 54m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 8.1°C | 0.5°C | 46mm | |
+| Feb | 10.0°C | 0.7°C | 67mm | |
+| Mar | 14.4°C | 4.2°C | 63mm | |
+| Apr | 18.1°C | 7.9°C | 77mm | |
+| Mag | 22.9°C | 12.3°C | 78mm | |
+| Giu | 27.7°C | 16.7°C | 60mm | |
+| Lug | 30.8°C | 19.3°C | 45mm | |
+| Ago | 30.4°C | 19.5°C | 52mm | |
+| Set | 24.9°C | 15.1°C | 67mm | |
+| Ott | 19.2°C | 10.9°C | 76mm | |
+| Nov | 13.2°C | 6.1°C | 93mm | |
+| Dic | 8.5°C | 1.4°C | 71mm | |
 
 ### Firenze (43.80°N, 11.20°E, 40m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -193,6 +225,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 24.5°C | 17.2°C | 65mm | |
 | Nov | 19.8°C | 12.8°C | 85mm | |
 | Dic | 16.2°C | 9.8°C | 78mm | |
+
+### Catania (37.49°N, 15.07°E, 7m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 14.2°C | 7.5°C | 75mm | |
+| Feb | 14.7°C | 7.4°C | 60mm | |
+| Mar | 16.8°C | 9.0°C | 58mm | |
+| Apr | 19.3°C | 11.4°C | 45mm | |
+| Mag | 23.8°C | 15.3°C | 28mm | |
+| Giu | 28.6°C | 19.6°C | 19mm | |
+| Lug | 31.7°C | 22.4°C | 8mm | |
+| Ago | 32.0°C | 23.2°C | 14mm | |
+| Set | 27.6°C | 20.0°C | 52mm | |
+| Ott | 23.4°C | 16.7°C | 71mm | |
+| Nov | 19.0°C | 12.7°C | 68mm | |
+| Dic | 15.4°C | 9.2°C | 66mm | |
 
 ### Cagliari (39.24°N, 9.06°E, 1m)
 | Mese | T max media | T min media | Precip. media | Note |
