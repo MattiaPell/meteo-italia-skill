@@ -9,7 +9,7 @@ Guida per identificare automaticamente i fenomeni tipici italiani dai dati dei m
 ### Cos'è
 Vento caldo e secco che scende dalle Alpi verso la pianura padana settentrionale.
 Si forma quando una perturbazione atlantica porta aria umida sul versante nord alpino:
-l'aria precipita sul versante sud perdendo umidità e riscaldandosi adiabatica.
+l'aria precipita sul versante sud perdendo umidità e riscaldandosi adiabaticamente.
 
 ### Dove colpisce
 Valle d'Aosta, Piemonte nord (Torino, Cuneo), Lombardia nord (Lecco, Como, Varese),
@@ -38,10 +38,10 @@ Durata tipica: 12-48h | Cessa con il passaggio del fronte
 ### Cos'è
 Vento freddo, secco e fortissimo da NE/ENE che colpisce il Golfo di Trieste e
 l'alto Adriatico. Si forma quando masse d'aria fredda continentale scavalcano
-il Carso e accelerano verso il mare (effetto canalizzazione + caduta adiabatica).
+il Carso e accelerano verso il mare (effetto canalizzazione + compressione adiabatica).
 
 ### Dove colpisce
-Trieste (epicentro), Gorizia, Udine costiero, venezia Giulia, Alto Adriatico,
+Trieste (epicentro), Gorizia, Udine costiero, Venezia Giulia, Alto Adriatico,
 talvolta Venezia e costa istriana.
 
 ### Classificazione
@@ -354,7 +354,7 @@ umido si scontra contro la catena montuosa.
 
 ### Cos'è
 Sistema simil-tropicale che si forma sul Mediterraneo (raro, ma in aumento).
-Porta piogge catastrofiche, vento ciclonica intenso, moto rotatorio ben definito.
+Porta piogge catastrofiche, vento ciclonico intenso, moto rotatorio ben definito.
 
 ### Stagione: ottobre-novembre principalmente, ma possibile settembre-dicembre
 

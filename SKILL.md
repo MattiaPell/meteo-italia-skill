@@ -220,19 +220,17 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 **Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
 
 ```http
-GET https://ensemble-api.open-meteo.com/v1/ensemble-mean
+GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_eu_eps_mean,gfs025_ensemble_mean
-  &hourly=temperature_2m_mean,temperature_2m_spread,
+  &models=ecmwf_ifs025_ensemble_mean,icon_eu,gfs025
+  &hourly=temperature_2m,temperature_2m_spread,
           precipitation_mean,precipitation_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,
           cape_mean,cape_spread,
           snowfall_mean,snowfall_spread,
           precipitation_probability_mean
-  &daily=temperature_2m_max_mean,temperature_2m_max_spread,
-         temperature_2m_min_mean,temperature_2m_min_spread,
-         precipitation_sum_mean,precipitation_sum_spread,
-         wind_speed_10m_max_mean,wind_speed_10m_max_spread
+  &daily=temperature_2m_max,temperature_2m_min,
+         precipitation_sum,wind_speed_10m_max
   &timezone=Europe/Rome
   &forecast_days=16
 ```

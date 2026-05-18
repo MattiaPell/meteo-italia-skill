@@ -10,10 +10,10 @@
 | `icon_global` | DWD ICON Global | 13 km | Globale | 6h | 16 | ★★★★ |
 | `icon_eu` | DWD ICON EU | 7 km | Europa | 3h | 5 | ★★★★★ |
 | `icon_d2` | DWD ICON D2 | 2 km | Europa Centrale | 1h | 2 | ★★★★★ |
-| `arpae_icon_2i` | ItaliaMeteo ARPAE ICON 2I | 2.2 km | Italia | 1h | 5 | ★★★★★ |
+| `italia_meteo_arpae_icon_2i` | ItaliaMeteo ARPAE ICON 2I | 2.2 km | Italia | 1h | 5 | ★★★★★ |
 | `meteofrance_seamless` | Météo-France Seamless | 1.3–40 km | Globale+EU | 1-6h | 4–15 | ★★★★ |
-| `meteofrance_arpege_europe` | Météo-France ARPEGE Europe | 11 km | Europa | 3h | 4 | ★★★★ |
-| `meteofrance_arome_france` | Météo-France AROME France | 2.5 km | Francia+vicini | 1h | 2 | ★★★ |
+| `arpege_europe` | Météo-France ARPEGE Europe | 11 km | Europa | 3h | 4 | ★★★★ |
+| `arome_france` | Météo-France AROME France | 2.5 km | Francia+vicini | 1h | 2 | ★★★ |
 
 ## Modelli Globali
 
@@ -48,15 +48,15 @@
 ### Italia (qualsiasi zona)
 **Core set (sempre):**
 ```
-arpae_icon_2i, icon_d2, icon_eu, icon_seamless, ecmwf_ifs025, meteofrance_seamless, gfs_seamless
+italia_meteo_arpae_icon_2i, icon_d2, icon_eu, icon_seamless, ecmwf_ifs025, meteofrance_seamless, gfs_seamless
 ```
 **Extra per alta incertezza o outlook >5 giorni:**
 ```
-ecmwf_aifs025, gem_seamless, meteofrance_arpege_europe
+ecmwf_aifs025, gem_seamless, arpege_europe
 ```
 
 ### Italia Nord-Ovest (Liguria, Piemonte, Valle d'Aosta)
-Aggiungi: `meteofrance_arome_france`, `meteoswiss_icon_seamless`
+Aggiungi: `arome_france`, `meteoswiss_icon_seamless`
 
 ### Italia Nord-Est (Veneto, Trentino, FVG)
 Aggiungi: `meteoswiss_icon_seamless`, `geosphere_seamless`
@@ -94,7 +94,7 @@ Applica questi pesi quando calcoli il consensus:
 
 | Modello | Peso |
 |---------|------|
-| `arpae_icon_2i` | 1.5 (modello nazionale) |
+| `italia_meteo_arpae_icon_2i` | 1.5 (modello nazionale) |
 | `icon_d2` | 1.3 (alta risoluzione locale) |
 | `ecmwf_ifs025` / HRES | 1.3 (riferimento globale) |
 | `icon_eu` | 1.0 |
