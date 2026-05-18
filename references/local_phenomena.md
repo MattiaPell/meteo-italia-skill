@@ -376,3 +376,31 @@ Impatti potenziali: ESTREMI — precipitazioni fino a 300+mm, vento >100 km/h
 Affidabilità previsione: Media (36-48h), Bassa (>48h)
 Fonti da monitorare: ECMWF ensemble, Protezione Civile, MeteoAM
 ```
+
+---
+
+## TEMPORALE AUTORIGENERANTE (V-SHAPED)
+
+### Cos'è
+Sistema temporalesco mesoscalare (MCS) altamente organizzato e stazionario che assume una forma a "V" nelle immagini satellitari e radar. È caratterizzato da una "cella madre" continuamente alimentata da aria calda e umida in ascesa, mentre le nuove celle si formano ripetutamente nello stesso punto (autorigenerazione). In Italia è il principale responsabile delle alluvioni lampo (flash floods) più distruttive.
+
+### Dove colpisce
+Liguria (soprattutto centro-levante: Genova, Chiavari, Spezia), Toscana (costa e rilievi retrostanti: Massa, Carrara, Livorno), Sardegna, Sicilia (versante ionico), Calabria.
+
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- **Convergenza al suolo** marcata (es. Tramontana fredda vs Scirocco caldo/umido nel Golfo di Genova)
+- **Moisture Flux** (flusso di umidità) elevato e persistente nei bassi strati verso la linea di convergenza
+- **CAPE** >1000-1500 J/kg persistente nell'area di alimentazione
+- **Vento a 500hPa** forte (>40-50 nodi) che "stira" l'incudine del temporale creando la forma a V
+- **Stazionarietà**: linea di convergenza che non si sposta per 3+ ore
+- **Precipitazioni concentrate**: modelli ad alta risoluzione (ICON D2, AROME) che prevedono >100mm in 3-6h su una fascia stretta
+
+### Come riportarlo
+```
+⛈️ RISCHIO TEMPORALE V-SHAPED (AUTORIGENERANTE) — {ZONA}
+Fenomeno ESTREMO e localizzato ad alto impatto.
+Pericolo: Alluvioni lampo, esondazioni repentine, colate di fango.
+Segnali: Convergenza {Vento1} vs {Vento2} | CAPE: {X} J/kg | Stazionarietà prevista.
+Impatti: Precipitazioni potenzialmente >200mm in 6h.
+Affidabilità: Bassa localizzazione (difficile prevedere l'esatto comune), Alta potenziale evento.
+```
