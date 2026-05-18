@@ -216,6 +216,8 @@ https://mappe.protezionecivile.gov.it/
 | Rovigo | ARPAV | Rovigo città |
 | Verona | ARPAV | Verona Villafranca |
 | Bologna | ARPAE | Bologna Borgo Panigale |
+| Ancona | ARPA Marche | Falconara / Ancona |
+| Perugia | ARPA Umbria | Perugia Sant'Egidio |
 | Firenze | LAMMA | Firenze Peretola |
 | Roma | MeteoAM | Roma Ciampino / Fiumicino |
 | Napoli | ARPA Campania | Napoli Capodichino |

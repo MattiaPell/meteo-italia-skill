@@ -57,15 +57,20 @@ Vedi `references/models.md` per il set corretto per macroarea.
 GET https://api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
   &models={MODEL1,MODEL2,...}
-  &hourly=temperature_2m,apparent_temperature,precipitation,
+  &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
           precipitation_probability,wind_speed_10m,wind_direction_10m,
           wind_gusts_10m,cloud_cover,visibility,weather_code,
           relative_humidity_2m,cape,lifted_index,freezing_level_height,
+          snowfall,snow_depth,
+          temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,
+          geopotential_height_850hPa,
+          temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
+          geopotential_height_500hPa,pressure_msl,
           uv_index,uv_index_clear_sky,temperature_850hPa
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
-         apparent_temperature_min,precipitation_sum,
+         apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
-         wind_gusts_10m_max,weather_code,uv_index_max
+         wind_gusts_10m_max,weather_code,pressure_msl_max,uv_index_max
   &timezone=Europe/Rome
   &forecast_days={N}
 ```
@@ -76,7 +81,8 @@ Per confrontare il forecast con la norma storica del periodo.
 GET https://archive-api.open-meteo.com/v1/archive
   ?latitude={LAT}&longitude={LON}
   &start_date={STESSO_GIORNO_-10_ANNI}&end_date={STESSO_GIORNO_-1_ANNO}
-  &daily=temperature_2m_max,temperature_2m_min,precipitation_sum
+  &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,
+         wind_speed_10m_max,et0_fao_evapotranspiration
   &timezone=Europe/Rome
 ```
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
@@ -88,7 +94,7 @@ GET https://historical-forecast-api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
   &start_date={OGGI-7}&end_date={OGGI-1}
   &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,
-         wind_speed_10m_max,weather_code
+         snowfall_sum,wind_speed_10m_max,weather_code
   &timezone=Europe/Rome
 ```
 Calcola: precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media.
@@ -136,10 +142,11 @@ Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 ```http
 GET https://air-quality-api.open-meteo.com/v1/air-quality
   ?latitude={LAT}&longitude={LON}
-  &hourly=pm10,pm2_5,nitrogen_dioxide,ozone,sulphur_dioxide,
+  &hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,sulphur_dioxide,
           dust,ammonia,european_aqi,european_aqi_pm2_5,
           european_aqi_pm10,european_aqi_no2,european_aqi_o3,
-          grass_pollen,olive_pollen,birch_pollen,ragweed_pollen
+          alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,
+          olive_pollen,ragweed_pollen
   &current=european_aqi,pm10,pm2_5,nitrogen_dioxide,ozone,dust
   &domains=cams_europe
   &timezone=Europe/Rome
