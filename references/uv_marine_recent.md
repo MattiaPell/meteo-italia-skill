@@ -45,6 +45,31 @@ Utilizzata per correlare la velocità del vento allo stato del mare e alla sicur
 - **Piccola Nautica (<6m)**: Sicura fino a Beaufort 3; cautela con 4; sconsigliato ≥5.
 - **Traghetti/Grandi Navi**: Operativi solitamente fino a Beaufort 7-8.
 
+### 🌡️ Temperatura Superficiale del Mare (SST)
+Indica il comfort termico per la balneazione nelle coste italiane.
+
+| SST (°C) | Comfort | Note |
+|---|---|---|
+| <18°C | Molto fredda | Necessaria muta per permanenza prolungata |
+| 18–21°C | Fredda | Rinfrescante, ma richiede adattamento |
+| 22–24°C | Ideale | Perfetta per la maggior parte dei bagnanti |
+| 25–27°C | Calda | Tipica del pieno agosto nel Mediterraneo |
+| >28°C | Molto calda | Possibile proliferazione algale / stress ecosistema |
+
+---
+
+## 🌫️ Visibilità (Visibility)
+Classificazione della visibilità orizzontale per trasporti e navigazione.
+
+| Visibilità | Classe | Impatti |
+|---|---|---|
+| <200 m | Nebbia fitta | Forti disagi autostradali (A1, A4), voli a rischio |
+| 200–500 m | Nebbia | Guida pericolosa, velocità ridotta obbligatoria |
+| 500 m – 1 km | Foschia densa | Disagi locali, cautela in mare |
+| 1–4 km | Foschia | Visibilità ridotta, orizzonte non nitido |
+| 4–10 km | Discreta | Condizioni medie |
+| >10 km | Ottima | Tipica post-fronte, Foehn o Tramontana |
+
 ---
 
 ## 📅 Storico Recente (Ultimi 7 Giorni)
