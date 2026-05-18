@@ -491,3 +491,30 @@ Visibilità: <200m sulla costa | Entroterra: Sereno
 Impatti: Disagi a navigazione, porti e aeroporti costieri (GOA, PMO, REG).
 Note: Fenomeno improvviso che può causare cali termici di 5-10°C in pochi minuti.
 ```
+
+---
+
+## ADRIATIC SEA EFFECT (ASE) / NEVE ADRIATICA
+
+### Cos'è
+Fenomeno simile al "Lake-Effect Snow" nordamericano. Si verifica quando aria gelida e secca di origine artica o continentale (Bora/Grecale) scorre sopra le acque relativamente calde del Mar Adriatico. L'aria si carica di calore e umidità dal mare, instabilizzandosi e formando bande nuvolose strette e intense che scaricano neve abbondante sulle coste esposte e sull'Appennino retrostante.
+
+### Dove colpisce
+Marche (soprattutto centro-sud: Ancona, Macerata, Fermo, Ascoli), Abruzzo (Teramo, Pescara, Chieti), Molise, Puglia (Gargano, Barese). Talvolta raggiunge la Romagna.
+
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- **Delta T (SST - T850hPa) > 13-15°C**: Differenza marcata tra temperatura del mare (Step 3F) e aria a 850hPa.
+- **Vento da NE/ENE**: Direzione tra 30° e 80° (`wind_direction_850hPa`) con fetch lungo sul mare.
+- **Umidità in aumento**: `relative_humidity_850hPa` > 70% in prossimità della costa adriatica.
+- **T suolo**: `temperature_2m` prossima o inferiore a 0°C (per neve al piano).
+- **Stagione**: Dicembre–Marzo.
+
+### Come riportarlo
+```
+❄️ ADRIATIC SEA EFFECT (ASE) IN ATTO/PREVISTO — Versante Adriatico
+Meccanismo: Aria gelida su mare caldo → Bande nevose intense.
+Delta T Mare-Quota: {X}°C | Vento: {DIR} da NE.
+Impatti: Nevicate improvvise e intermittenti (anche forti), accumuli significativi su coste e colline.
+Nota: Fenomeno spesso sottostimato dai modelli globali; affidarsi a modelli ad alta risoluzione (ICON D2, ARPAE).
+```
+*Fonte: ARPA Marche / MeteoNetwork (Sea Effect Snow Adriatico)*
