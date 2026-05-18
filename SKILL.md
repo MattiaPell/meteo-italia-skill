@@ -5,9 +5,11 @@ description: >
   Usa questa skill ogni volta che l'utente chiede del tempo in Italia: previsioni,
   confronto modelli, affidabilità forecast, analisi di fenomeni locali italiani
   (foehn, bora, scirocco, tramontana, libeccio, maestrale, garbino, ponentino,
-  grandine padana, neve appenninica, temporali adriatici, allerte Protezione Civile).
+  cuscino freddo, gelicidio, grandine padana, neve appenninica, temporali adriatici,
+  allerte Protezione Civile).
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
-  "maestrale", "garbino", "ponentino",
+  "maestrale", "garbino", "ponentino", "cuscino freddo", "inversione termica",
+  "gelicidio", "pioggia congelantesi",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
   "analisi meteo [città italiana]", "weekend meteo", "settimana meteo".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
@@ -64,7 +66,7 @@ GET https://api.open-meteo.com/v1/forecast
           geopotential_height_850hPa,
           temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
           geopotential_height_500hPa,pressure_msl,
-          uv_index,uv_index_clear_sky
+          uv_index,uv_index_clear_sky,temperature_850hPa
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
@@ -119,6 +121,7 @@ GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
   &hourly=wave_height,wave_direction,wave_period,
           wind_wave_height,swell_wave_height,swell_wave_direction,
+          swell_wave_period,
           sea_surface_temperature
   &daily=wave_height_max,wind_wave_height_max,swell_wave_height_max
   &timezone=Europe/Rome
@@ -325,8 +328,9 @@ Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra
 
 ### 🌾 Agricoltura / Campagna
 Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura"
-Focus: gelate (T <0°C, specie notturna), grandine (CAPE + LI), siccità (precipitazioni ultimi 30gg vs norma),
-vento per irrorazione (>20 km/h = stop), umidità fogliare (UR >90% = rischio funghi).
+Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), grandine (CAPE + LI),
+siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
+umidità fogliare (UR >90% = rischio funghi).
 **Storico recente obbligatorio**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case.
 
 ### 🏗️ Cantiere / Lavori all'aperto
@@ -336,7 +340,8 @@ Focus: vento >50 km/h (stop gru), pioggia cumulata (calcestruzzo), gelate nottur
 
 ### 🚗 Viabilità / Trasporti
 Trigger: "viaggio", "autostrada", "strada", "guida", "treno", "volo"
-Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
+Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), gelicidio (black ice),
+acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
 
 ### 🏖️ Mare / Spiaggia / Nautica
 Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"

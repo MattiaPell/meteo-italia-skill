@@ -19,7 +19,7 @@ ecmwf_ifs025, meteofrance_arome_france, gfs_seamless
 | `meteofrance_arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno).
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese).
 
 **Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `meteofrance_arome_france` per la fascia costiera.
 
@@ -44,7 +44,7 @@ geosphere_seamless, ecmwf_ifs025, gfs_seamless
 | `icon_seamless` | 1.0 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, alluvioni Mestre/Venezia.
+**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, cuscino freddo, alluvioni Mestre/Venezia.
 
 **Note:** La Bora è il fenomeno più caratteristico e pericoloso. Segnalarla sempre quando: vento da ENE >40 km/h a Trieste + pressione in calo. ARPAE ICON 2I è il modello nazionale e ha risoluzione 2.2km — priorità assoluta per eventi intensi in questa zona.
 
@@ -68,7 +68,7 @@ meteofrance_seamless, gfs_seamless
 | `meteofrance_seamless` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Temporali convettivi su Appennino Tosco-Emiliano (estate), nebbia padana (pianura emiliana ottobre-febbraio), tramontana su Toscana tirrenica, alluvioni vallate appenniniche (autunno), neve oltre 400m (inverno).
+**Fenomeni locali prioritari:** Temporali convettivi su Appennino Tosco-Emiliano (estate), nebbia padana (pianura emiliana ottobre-febbraio), tramontana su Toscana tirrenica, alluvioni vallate appenniniche (autunno), cuscino freddo, gelicidio (versante emiliano), neve oltre 400m (inverno).
 
 ---
 

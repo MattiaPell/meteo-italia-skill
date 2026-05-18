@@ -410,24 +410,26 @@ Affidabilità: Bassa localizzazione (difficile prevedere l'esatto comune), Alta 
 ## CUSCINO FREDDO (Po Valley Cold Pool)
 
 ### Cos'è
-Strato di aria fredda e densa che rimane intrappolato nei bassi strati della Pianura Padana, protetto dalla catena alpina e appenninica. Si forma tipicamente in inverno durante periodi di alta pressione e calma di vento. Può causare forti inversioni termiche e persistenza di nebbie e inquinanti.
+Strato di aria fredda e densa che ristagna nei bassi strati della Pianura Padana (o conche appenniniche), protetto dalla catena alpina e appenninica. Si forma tipicamente in inverno durante periodi di alta pressione e calma di vento. Grazie alla protezione orografica delle Alpi e degli Appennini, questa massa d'aria resiste all'erosione da parte di venti caldi (Scirocco/Libeccio) che scorrono al di sopra di essa. Può causare forti inversioni termiche e persistenza di nebbie e inquinanti.
 
 ### Dove colpisce
-Pianura Padana (Piemonte, Lombardia, Emilia-Romagna, Veneto).
+Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), conche di Toscana (Valdarno, piana di Lucca), Umbria (conca Ternana).
 
-### Segnali nei dati (flag se presenti tutti questi)
-- **Inversione termica**: T(2m) < T(850hPa)
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- **Inversione termica**: T(2m) < T(850hPa) o T(2m) < T(elevation+1000m)
 - **Stagione**: Inverno (novembre–febbraio)
-- **Calma di vento**: Vento < 5 km/h nei bassi strati
+- **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
+- **Umidità elevata**: UR(2m) >85% con nebbia o nubi basse (Galaverna)
+- **Pressione elevata**: regime anticiclonico invernale persistente (`pressure_msl` > 1020 hPa)
 - **Zona**: Macroaree Nord-Ovest, Nord-Est, Centro-Nord (pianura)
-- **Pressione**: Alta pressione (`pressure_msl`) > 1020 hPa
+- **Contesto**: flusso di aria mite in quota (T850hPa >0°C) mentre al suolo persiste il gelo
 
 ### Come riportarlo
 ```
-❄️ CUSCINO FREDDO ATTIVO — Pianura Padana
+❄️ CUSCINO FREDDO ATTIVO — Pianura Padana / {ZONA}
 Stabilità estrema: aria fredda intrappolata nei bassi strati.
-Inversione: T(2m) {X}°C vs T(850hPa) {Y}°C.
-Impatti: persistenza di nebbie, accumulo di inquinanti (AQI critico), T rigide anche con sole in quota.
+T suolo: {X}°C | T 850hPa: {Y}°C → Forte inversione termica
+Impatti: Ristagno inquinanti (AQI critico), nebbia persistente, rischio gelicidio se piove, T rigide anche con sole in quota.
 ```
 *Fonte: ARPA Lombardia / ARPAE (Cuscino freddo e inversioni termiche)*
 
@@ -436,23 +438,27 @@ Impatti: persistenza di nebbie, accumulo di inquinanti (AQI critico), T rigide a
 ## GELICIDIO (Freezing Rain)
 
 ### Cos'è
-Pioggia che cade con temperatura al suolo negativa (T < 0°C), congelando istantaneamente a contatto con le superfici e creando uno strato di ghiaccio trasparente e pericolosissimo (vetrone). Si verifica tipicamente quando aria calda e umida da Sud (Scirocco/Libeccio) scorre sopra un "Cuscino Freddo" preesistente.
+Fenomeno pericolosissimo in cui la pioggia, cadendo in uno strato d'aria al suolo con temperatura sottozero (cuscino freddo), congela istantaneamente a contatto con le superfici, creando uno strato di ghiaccio trasparente (vetrone/black ice). Si verifica tipicamente quando aria calda e umida da Sud (Scirocco/Libeccio) scorre sopra un "Cuscino Freddo" preesistente.
+
+### Meccanismo fisico
+Sovrascorrimento di aria calda e umida (fronte caldo) sopra un cuscino freddo preesistente. La neve fonde attraversando lo strato caldo in quota e diventa pioggia superraffreddata prima di toccare il suolo gelido.
 
 ### Dove colpisce
-Valli appenniniche, Pianura Padana (soprattutto Emilia e basso Piemonte), conche interne del Centro.
+Appennino settentrionale (versante padano), valli appenniniche, Pianura Padana (soprattutto Emilia e basso Piemonte), valli interne di Liguria/Toscana, conche interne del Centro.
 
-### Segnali nei dati (flag se presenti tutti questi)
-- **Precipitazione**: `weather_code` 66 (debole) o 67 (forte)
-- **Temperatura al suolo**: T(2m) < 0°C
-- **Sovrascorrimento caldo**: Vento da S/SW (`wind_direction_850hPa` 150-250°) in quota con T(850hPa) > 0°C
+### Segnali nei dati (flag se presenti TUTTI i seguenti)
+- **Weather code / Precipitazione**: `weather_code` 66 (Slight freezing rain / debole) o 67 (Heavy freezing rain / forte)
+- **T suolo**: `temperature_2m` < 0°C
+- **T quota / Sovrascorrimento caldo**: `temperature_850hPa` > 0°C (strato di fusione); vento da S/SW (`wind_direction_850hPa` 150–250°) in quota
+- **Precipitazioni**: pioggia prevista dai modelli numerici
 - **Macroarea**: Nord-Ovest, Nord-Est, Centro-Nord
 
 ### Come riportarlo
 ```
-⚠️ ALLERTA GELICIDIO (PIOGGIA CHE CONGELA) — {ZONA}
-PERICOLO ESTREMO per viabilità e linee elettriche.
-Segnali: Pioggia con T al suolo {X}°C | Aria calda in quota.
-Impatti: formazione di ghiaccio vivo su strade (vetrone), rischio caduta rami e cavi.
-Raccomandazione: evitare spostamenti, massima cautela.
+⚠️ ALLERTA GELICIDIO (PIOGGIA CONGELANTESI) — {ZONA}
+Fenomeno ad ALTO RISCHIO / PERICOLO ESTREMO per viabilità e infrastrutture.
+T suolo: {X}°C | T quota: {Y}°C | Pioggia prevista: {Z}mm
+Impatti: Formazione di ghiaccio su strade (black ice / vetrone), rottura rami, danni a linee elettriche, rischio caduta cavi.
+Raccomandazione: Evitare spostamenti, massima cautela alla guida, rischio cadute pedonali estremo.
 ```
 *Fonte: WMO Codes 66/67 | Protezione Civile (Gelicidio / Pioggia congelante)*
