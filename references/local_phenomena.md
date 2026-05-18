@@ -404,3 +404,55 @@ Segnali: Convergenza {Vento1} vs {Vento2} | CAPE: {X} J/kg | Stazionarietà prev
 Impatti: Precipitazioni potenzialmente >200mm in 6h.
 Affidabilità: Bassa localizzazione (difficile prevedere l'esatto comune), Alta potenziale evento.
 ```
+
+---
+
+## CUSCINO FREDDO (Po Valley Cold Pool)
+
+### Cos'è
+Strato di aria fredda e densa che rimane intrappolato nei bassi strati della Pianura Padana, protetto dalla catena alpina e appenninica. Si forma tipicamente in inverno durante periodi di alta pressione e calma di vento. Può causare forti inversioni termiche e persistenza di nebbie e inquinanti.
+
+### Dove colpisce
+Pianura Padana (Piemonte, Lombardia, Emilia-Romagna, Veneto).
+
+### Segnali nei dati (flag se presenti tutti questi)
+- **Inversione termica**: T(2m) < T(850hPa)
+- **Stagione**: Inverno (novembre–febbraio)
+- **Calma di vento**: Vento < 5 km/h nei bassi strati
+- **Zona**: Macroaree Nord-Ovest, Nord-Est, Centro-Nord (pianura)
+- **Pressione**: Alta pressione (`pressure_msl`) > 1020 hPa
+
+### Come riportarlo
+```
+❄️ CUSCINO FREDDO ATTIVO — Pianura Padana
+Stabilità estrema: aria fredda intrappolata nei bassi strati.
+Inversione: T(2m) {X}°C vs T(850hPa) {Y}°C.
+Impatti: persistenza di nebbie, accumulo di inquinanti (AQI critico), T rigide anche con sole in quota.
+```
+*Fonte: ARPA Lombardia / ARPAE (Cuscino freddo e inversioni termiche)*
+
+---
+
+## GELICIDIO (Freezing Rain)
+
+### Cos'è
+Pioggia che cade con temperatura al suolo negativa (T < 0°C), congelando istantaneamente a contatto con le superfici e creando uno strato di ghiaccio trasparente e pericolosissimo (vetrone). Si verifica tipicamente quando aria calda e umida da Sud (Scirocco/Libeccio) scorre sopra un "Cuscino Freddo" preesistente.
+
+### Dove colpisce
+Valli appenniniche, Pianura Padana (soprattutto Emilia e basso Piemonte), conche interne del Centro.
+
+### Segnali nei dati (flag se presenti tutti questi)
+- **Precipitazione**: `weather_code` 66 (debole) o 67 (forte)
+- **Temperatura al suolo**: T(2m) < 0°C
+- **Sovrascorrimento caldo**: Vento da S/SW (`wind_direction_850hPa` 150-250°) in quota con T(850hPa) > 0°C
+- **Macroarea**: Nord-Ovest, Nord-Est, Centro-Nord
+
+### Come riportarlo
+```
+⚠️ ALLERTA GELICIDIO (PIOGGIA CHE CONGELA) — {ZONA}
+PERICOLO ESTREMO per viabilità e linee elettriche.
+Segnali: Pioggia con T al suolo {X}°C | Aria calda in quota.
+Impatti: formazione di ghiaccio vivo su strade (vetrone), rischio caduta rami e cavi.
+Raccomandazione: evitare spostamenti, massima cautela.
+```
+*Fonte: WMO Codes 66/67 | Protezione Civile (Gelicidio / Pioggia congelante)*
