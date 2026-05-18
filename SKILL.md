@@ -66,11 +66,13 @@ GET https://api.open-meteo.com/v1/forecast
           relative_humidity_850hPa,geopotential_height_850hPa,
           temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
           relative_humidity_500hPa,geopotential_height_500hPa,
-          pressure_msl,uv_index,uv_index_clear_sky
+          pressure_msl,uv_index,uv_index_clear_sky,
+          soil_moisture_0_to_1cm
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
-         wind_gusts_10m_max,weather_code,pressure_msl_max,uv_index_max
+         wind_gusts_10m_max,weather_code,pressure_msl_max,uv_index_max,
+         et0_fao_evapotranspiration
   &timezone=Europe/Rome
   &forecast_days={N}
 ```
@@ -94,7 +96,8 @@ GET https://historical-forecast-api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
   &start_date={OGGI-7}&end_date={OGGI-1}
   &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,
-         snowfall_sum,wind_speed_10m_max,weather_code
+         snowfall_sum,wind_speed_10m_max,weather_code,
+         et0_fao_evapotranspiration
   &timezone=Europe/Rome
 ```
 Calcola: precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media.
@@ -115,7 +118,7 @@ Oppure consulta il bollettino testuale su `mappe.protezionecivile.gov.it`.
 Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
 
 #### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
-Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica".
+Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE).
 ```
 GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
@@ -321,6 +324,7 @@ Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra
 ### 🌾 Agricoltura / Campagna
 Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura"
 Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), grandine (CAPE + LI),
+bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture),
 siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
 umidità fogliare (UR >90% = rischio funghi).
 **Storico recente obbligatorio**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case.

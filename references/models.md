@@ -4,8 +4,8 @@
 
 | ID API | Nome | Risoluzione | Copertura | Aggiorn. | Giorni prev. | Peso Italia |
 |--------|------|-------------|-----------|----------|--------------|-------------|
-| `ecmwf_ifs025` | ECMWF IFS 0.25° | 25 km | Globale | 6h | 10 | ★★★★★ |
-| `ecmwf_ifs_analysis_long_window` | ECMWF IFS HRES 9km | 9 km | Globale | 6h | 10 | ★★★★★ |
+| `ecmwf_ifs` | ECMWF IFS HRES 9km | 9 km | Globale | 6h | 10 | ★★★★★ |
+| `ecmwf_ifs025` | ECMWF IFS 0.25° | 25 km | Globale | 6h | 10 | ★★★★ |
 | `icon_seamless` | DWD ICON Seamless | 2–13 km | Globale+EU | 1-3h | 7–16 | ★★★★★ |
 | `icon_global` | DWD ICON Global | 13 km | Globale | 6h | 16 | ★★★★ |
 | `icon_eu` | DWD ICON EU | 7 km | Europa | 3h | 5 | ★★★★★ |
@@ -48,7 +48,7 @@
 ### Italia (qualsiasi zona)
 **Core set (sempre):**
 ```
-italia_meteo_arpae_icon_2i, icon_d2, icon_eu, icon_seamless, ecmwf_ifs025, meteofrance_seamless, gfs_seamless
+italia_meteo_arpae_icon_2i, icon_d2, icon_eu, icon_seamless, ecmwf_ifs, meteofrance_seamless, gfs_seamless
 ```
 **Extra per alta incertezza o outlook >5 giorni:**
 ```
@@ -96,7 +96,8 @@ Applica questi pesi quando calcoli il consensus:
 |---------|------|
 | `italia_meteo_arpae_icon_2i` | 1.5 (modello nazionale) |
 | `icon_d2` | 1.3 (alta risoluzione locale) |
-| `ecmwf_ifs025` / HRES | 1.3 (riferimento globale) |
+| `ecmwf_ifs` (HRES 9km) | 1.4 (riferimento globale) |
+| `ecmwf_ifs025` | 1.2 |
 | `icon_eu` | 1.0 |
 | `icon_seamless` | 1.0 |
 | `meteofrance_seamless` | 0.9 |

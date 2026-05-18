@@ -19,3 +19,7 @@ Action: Include SST in maritime/coastal analysis and apply the T(2m) > SST + 2°
 ## 2025-05-19 — [Operational] DPC Radar API and ASE Phenomenon
 Learning: Confirmed that the DPC Radar API endpoint 'type=SITES' is invalid (returns 404), while 'type=VMI' is the correct functional endpoint for checking the latest product availability. Also, identified the Adriatic Sea Effect (ASE) as a missing key phenomenon for the East Coast, requiring 850hPa humidity data for accurate detection.
 Action: Updated SKILL.md to remove the failing 'type=SITES' call and added 850hPa/500hPa humidity to the primary fetch to support ASE and convective analysis.
+
+## 2025-05-20 — [Accuracy] Agrometeorology and High-Res Global Models
+Learning: Discovered that Open-Meteo provides 'ecmwf_ifs' as the primary 9km HRES global model (free), which is superior to the 25km 'ecmwf_ifs025' for Italy's complex terrain. Also identified 'Maccaja' and 'Burian' as critical missing patterns and integrated 'et0_fao_evapotranspiration' for agriculture.
+Action: Promoted 'ecmwf_ifs' to primary global reference in weights and fetch logic. Added agrometeorological variables and detection logic for Ligurian maritime clouds (Maccaja) and Siberian cold (Burian).
