@@ -59,11 +59,12 @@ GET https://api.open-meteo.com/v1/forecast
           precipitation_probability,wind_speed_10m,wind_direction_10m,
           wind_gusts_10m,cloud_cover,visibility,weather_code,
           relative_humidity_2m,cape,lifted_index,freezing_level_height,
+          temperature_850hPa,wind_direction_850hPa,pressure_msl,
           uv_index,uv_index_clear_sky
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,
          precipitation_probability_max,wind_speed_10m_max,
-         wind_gusts_10m_max,weather_code,uv_index_max
+         wind_gusts_10m_max,weather_code,pressure_msl_max,uv_index_max
   &timezone=Europe/Rome
   &forecast_days={N}
 ```
