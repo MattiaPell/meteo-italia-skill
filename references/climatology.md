@@ -146,22 +146,6 @@ end_date:   {ANNO-1}-05-20
 | Nov | 15.7°C | 6.7°C | 118mm | |
 | Dic | 11.4°C | 2.8°C | 88mm | |
 
-### Perugia (43.11°N, 12.39°E, 493m)
-| Mese | T max media | T min media | Precip. media | Note |
-|------|-------------|-------------|---------------|------|
-| Gen | 10.1°C | 1.0°C | 53mm | |
-| Feb | 11.8°C | 1.1°C | 57mm | |
-| Mar | 15.2°C | 3.6°C | 54mm | |
-| Apr | 18.5°C | 6.2°C | 72mm | |
-| Mag | 22.8°C | 10.5°C | 76mm | |
-| Giu | 27.6°C | 14.4°C | 70mm | |
-| Lug | 30.6°C | 16.6°C | 37mm | |
-| Ago | 30.9°C | 17.0°C | 50mm | |
-| Set | 25.4°C | 13.5°C | 88mm | |
-| Ott | 20.5°C | 10.1°C | 86mm | |
-| Nov | 14.6°C | 5.9°C | 95mm | |
-| Dic | 10.3°C | 2.1°C | 68mm | |
-
 ### Trieste (45.65°N, 13.76°E, 2m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -177,22 +161,6 @@ end_date:   {ANNO-1}-05-20
 | Ott | 17.6°C | 11.1°C | 184mm | |
 | Nov | 12.5°C | 6.8°C | 192mm | |
 | Dic | 8.3°C | 2.4°C | 128mm | |
-
-### Ancona (43.61°N, 13.51°E, 16m)
-| Mese | T max media | T min media | Precip. media | Note |
-|------|-------------|-------------|---------------|------|
-| Gen | 10.1°C | 4.9°C | 50mm | |
-| Feb | 10.6°C | 4.6°C | 53mm | |
-| Mar | 13.2°C | 6.7°C | 63mm | |
-| Apr | 16.3°C | 9.7°C | 62mm | |
-| Mag | 20.9°C | 14.2°C | 58mm | |
-| Giu | 25.5°C | 18.5°C | 40mm | |
-| Lug | 28.3°C | 21.1°C | 29mm | |
-| Ago | 28.3°C | 21.3°C | 41mm | |
-| Set | 23.8°C | 17.6°C | 62mm | |
-| Ott | 19.5°C | 13.8°C | 59mm | |
-| Nov | 14.8°C | 9.9°C | 72mm | |
-| Dic | 11.2°C | 6.2°C | 67mm | |
 
 ### Perugia (43.11°N, 12.39°E, 493m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -226,7 +194,7 @@ end_date:   {ANNO-1}-05-20
 | Nov | 15.8°C | 7.8°C | 105mm | |
 | Dic | 12.2°C | 4.2°C | 88mm | |
 
-### Ancona (43.62°N, 13.52°E, 16m)
+### Ancona (43.61°N, 13.51°E, 16m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
 | Gen | 10.1°C | 4.4°C | 47mm | |

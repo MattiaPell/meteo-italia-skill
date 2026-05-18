@@ -66,7 +66,7 @@ GET https://api.open-meteo.com/v1/forecast
           geopotential_height_850hPa,
           temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
           geopotential_height_500hPa,pressure_msl,
-          uv_index,uv_index_clear_sky,temperature_850hPa
+          uv_index,uv_index_clear_sky
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,

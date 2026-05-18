@@ -462,3 +462,32 @@ Impatti: Formazione di ghiaccio su strade (black ice / vetrone), rottura rami, d
 Raccomandazione: Evitare spostamenti, massima cautela alla guida, rischio cadute pedonali estremo.
 ```
 *Fonte: WMO Codes 66/67 | Protezione Civile (Gelicidio / Pioggia congelante)*
+
+---
+
+## NEBBIA MARITTIMA (CALIGO / LUPA DI MARE)
+
+### Cos'è
+Nebbia da avvezione che si forma sul mare e invade la costa. Si origina in primavera quando masse d'aria calda e umida scorrono sopra la superficie marina ancora fredda (inverno appena terminato): il raffreddamento dal basso porta alla condensazione del vapore acqueo in nebbia fitta.
+
+### Varianti Locali
+- **Caligo**: tipica della Liguria (Genova, Savona) e occasionalmente dell'Alto Adriatico.
+- **Lupa di Mare**: tipica dello Stretto di Messina (Sicily/Calabria) e delle coste del basso Adriatico/Ionio.
+
+### Stagione: Marzo–Maggio (picco Aprile)
+
+### Segnali nei dati (flag se ≥3)
+- **SST < T(2m)**: Temperatura mare (Step 3F) inferiore alla temperatura aria di almeno 2-4°C
+- **UR(2m) >90%** sulla costa
+- **Vento debole**: brezza di mare leggera (<10-15 km/h) che "spinge" la nebbia verso terra
+- **Stagione**: Primavera (Marzo-Maggio)
+- **Cloud cover**: bassa o nulla (cielo sereno sopra la nebbia)
+
+### Come riportarlo
+```
+🌫️ NEBBIA MARITTIMA ({NOME_LOCALE}) — Costa {ZONA}
+Fenomeno: Nebbia da avvezione (aria calda su mare freddo)
+Visibilità: <200m sulla costa | Entroterra: Sereno
+Impatti: Disagi a navigazione, porti e aeroporti costieri (GOA, PMO, REG).
+Note: Fenomeno improvviso che può causare cali termici di 5-10°C in pochi minuti.
+```
