@@ -229,10 +229,8 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble
           cape_mean,cape_spread,
           snowfall_mean,snowfall_spread,
           precipitation_probability_mean
-  &daily=temperature_2m_max_mean,temperature_2m_max_spread,
-         temperature_2m_min_mean,temperature_2m_min_spread,
-         precipitation_sum_mean,precipitation_sum_spread,
-         wind_speed_10m_max_mean,wind_speed_10m_max_spread
+  &daily=temperature_2m_max,temperature_2m_min,
+         precipitation_sum,wind_speed_10m_max
   &timezone=Europe/Rome
   &forecast_days=16
 ```
