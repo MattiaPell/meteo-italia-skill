@@ -2,7 +2,7 @@
 
 Due endpoint Open-Meteo distinti, entrambi gratuiti, no API key:
 - **Ensemble API**: tutti i membri individuali (fino a 51) → percentili custom
-- **Ensemble Mean API**: mean + spread precalcolati → più leggero, ideale per la skill
+- **Ensemble API (Mean/Spread models)**: mean + spread precalcolati → più leggero, ideale per la skill
 
 ---
 
@@ -23,19 +23,19 @@ Attiva **se richiesto**:
 
 ---
 
-## Ensemble Mean API — Raccomandato per la Skill
+## Ensemble API (Mean/Spread) — Raccomandato per la Skill
 
 Endpoint più efficiente: restituisce mean e spread precalcolati, archivio lungo.
 
 ```http
-GET https://ensemble-api.open-meteo.com/v1/ensemble-mean
+GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}
   &longitude={LON}
   &models=ecmwf_ifs025_ensemble_mean,icon_seamless_eps_mean,gfs025_ensemble_mean
-  &hourly=temperature_2m_mean,temperature_2m_spread,
+  &hourly=temperature_2m,temperature_2m_spread,
           precipitation_mean,precipitation_spread,
-          wind_speed_10m_mean,wind_speed_10m_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,
+          wind_speed_10m_mean,wind_speed_10m_spread,
           precipitation_probability_mean,
           cape_mean,cape_spread,
           snowfall_mean,snowfall_spread
@@ -47,7 +47,7 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble-mean
   &forecast_days=16
 ```
 
-### Modelli disponibili (Ensemble Mean API)
+### Modelli disponibili (Ensemble API - Mean)
 | ID modello | Membri | Giorni | Risoluzione | Priorità Italia |
 |---|---|---|---|---|
 | `ecmwf_ifs025_ensemble_mean` | 51 | 15 | 25 km | ★★★★★ |
@@ -177,7 +177,7 @@ prob_vento_forte = sum(1 for m in members if m > 50) / len(members) * 100
 prob_vento_pericoloso = sum(1 for m in members if m > 75) / len(members) * 100
 ```
 
-### Approssimazione con solo mean+spread (Ensemble Mean API)
+### Approssimazione con solo mean+spread (Ensemble API)
 Se non scarichi i membri raw, puoi approssimare le probabilità assumendo
 distribuzione gaussiana (valida per temperatura, non per precipitazioni):
 ```
@@ -207,13 +207,13 @@ i percentili p25/p50/p75/p90 come proxy delle probabilità.
 ```
 Se spread basso E consensus deterministico concorda con ensemble mean:
   → alta fiducia nel forecast
-  
+
 Se spread alto E consensus deterministico ≈ ensemble mean:
   → situazione genuinamente incerta (natura caotica del sistema)
-  
+
 Se spread basso MA consensus deterministico diverge da ensemble mean:
   → possibile errore nel modello deterministico — fidati dell'ensemble
-  
+
 Se spread alto E consensus deterministico diverge da ensemble mean:
   → situazione molto incerta — solo tendenze generali affidabili
 ```
@@ -301,8 +301,8 @@ Fonte: ECMWF ENS (51 membri) + ICON EPS EU (40 membri) + GFS ENS (31 membri)
 
 ## Note Operative
 
-- L'Ensemble Mean API ha archivio **più lungo** del raw ensemble → utile per confronti storici
-- `spread` nell'Ensemble Mean API = deviazione standard tra i membri (non p90-p10)
+- L'Ensemble API con modelli `_mean` ha archivio **più lungo** del raw ensemble → utile per confronti storici
+- `spread` nell'Ensemble API (usando `_mean` models) = deviazione standard tra i membri (non p90-p10)
   → p90-p10 ≈ spread × 2.56 (per distribuzione gaussiana)
 - Per precipitazioni la distribuzione è asimmetrica → non usare la gaussiana
 - ECMWF ENS si aggiorna 2 volte al giorno (00 e 12 UTC) — usa il run più recente

@@ -220,10 +220,10 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 **Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
 
 ```http
-GET https://ensemble-api.open-meteo.com/v1/ensemble-mean
+GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}&longitude={LON}
   &models=ecmwf_ifs025_ensemble_mean,icon_eu_eps_mean,gfs025_ensemble_mean
-  &hourly=temperature_2m_mean,temperature_2m_spread,
+  &hourly=temperature_2m,temperature_2m_spread,
           precipitation_mean,precipitation_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,
           cape_mean,cape_spread,
