@@ -99,6 +99,32 @@ Impatti: tempo bello e fresco, mare agitato, visibilità eccellente
 
 ---
 
+## MAESTRALE (MISTRAL)
+
+### Cos'è
+Vento forte, fresco e secco da NW che entra dal Rodano e soffia sul Mediterraneo
+centrale. In Italia colpisce duramente la Sardegna e il Mar Tirreno.
+
+### Dove colpisce
+Sardegna (soprattutto coste Ovest e Nord), Corsica, Mar Tirreno, Sicilia,
+occasionalmente coste tirreniche peninsulari.
+
+### Segnali nei dati (flag se ≥2 di questi)
+- Vento da NW (290-330°) >30 km/h (Sardegna)
+- Raffiche >70 km/h in mare aperto
+- UR in deciso calo
+- `weather_code` 0-3 (cielo limpido, ottima visibilità)
+- Mare agitato (Beaufort ≥6) sulle coste occidentali sarde
+
+### Come riportarlo
+```
+🌬️ MAESTRALE — Sardegna / Mar Tirreno
+Vento: {X} km/h | Mare: {stato stimato} su coste Ovest
+Impatti: calo T (refrigerio estivo), mareggiata su Sardegna occidentale, visibilità eccellente
+```
+
+---
+
 ## LIBECCIO
 
 ### Cos'è
@@ -182,6 +208,57 @@ Vento: {X} km/h da NE | Precipitazioni: {Y}mm costa adriatica
 
 ---
 
+## GARBINO (FOEHN APPENNINICO)
+
+### Cos'è
+Vento di caduta caldo e molto secco che scende dall'Appennino verso il versante
+adriatico. È l'equivalente del Foehn alpino ma alimentato da correnti da SW.
+
+### Dove colpisce
+Romagna (Rimini, Riccione), Marche (Ancona, Pesaro), Abruzzo (Pescara, Teramo),
+Molise.
+
+### Segnali nei dati (flag se ≥3 di questi)
+- Vento da SW (220-260°) >25 km/h sul versante adriatico
+- T in aumento esplosivo (+5-15°C rispetto alla massa d'aria preesistente)
+- UR <30% (spesso <20%)
+- "Stau" (nuvole e pioggia) sul versante tirrenico (Toscana/Lazio/Umbria)
+- Cielo sereno o con nubi lenticolari sul versante adriatico
+
+### Come riportarlo
+```
+🔥 GARBINO ATTIVO — Versante Adriatico
+T: {X}°C | UR: {Y}% | Raffica: {Z} km/h
+Impatti: caldo improvviso e intenso, rischio incendi elevato, stress per colture
+```
+
+---
+
+## PONENTINO (BREZZA ROMANA)
+
+### Cos'è
+Brezza di mare estiva tipica di Roma e del litorale laziale. Si leva nel primo
+pomeriggio portando refrigerio dopo il riscaldamento mattutino.
+
+### Dove colpisce
+Roma (area urbana), litorale romano (Ostia, Fregene), pianura pontina.
+
+### Segnali nei dati
+- Vento da W/WSW (250-280°) tra le 14:00 e le 20:00
+- Velocità 15-30 km/h (decisa ma non burrascosa)
+- T in lieve calo o stazionaria mentre l'entroterra scalda
+- UR in aumento (aria umida dal mare)
+- Stagione: aprile–settembre
+
+### Come riportarlo
+```
+🌊 PONENTINO ATTIVO — Roma / Litorale Laziale
+Vento: {X} km/h da W | Orario previsto: {HH}-{HH}
+Impatti: refrigerio serale, aumento UR, moto ondoso leggero
+```
+
+---
+
 ## NEBBIA PADANA
 
 ### Cos'è
@@ -232,7 +309,7 @@ Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raff
 - `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
 - Wind shear in quota (differenza vento 850hPa vs 500hPa >15 m/s → MCS organizzato)
 - `weather_code` 95-99 previsto
-- Zona: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
+- Zone: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
 
 ### Scenario grandine
 - CAPE >1500 J/kg + LI <-4 + wind shear → probabilità grandine **significativa**
