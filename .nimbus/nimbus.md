@@ -11,3 +11,7 @@ Action: Perform a "Data Coverage Audit" when adding new phenomena: cross-check e
 ## 2025-05-17 — [Accuracy] Parameter Naming and Data Alignment
 Learning: Open-Meteo API is strict with parameter names (e.g., 'dewpoint_2m' vs 'dew_point_2m'). Additionally, complex Italian phenomena detection (V-Shaped storms, Foehn, Gelicidio) requires specific upper-air data (500hPa, 850hPa geopotential) and surface moisture/snow variables that were missing in the primary fetch workflow.
 Action: Always verify the exact parameter names in the Open-Meteo documentation before implementation. Ensure that the Step 3 fetch list in SKILL.md provides all variables required by the detection logic in references/ (Data Coverage Audit).
+
+## 2025-05-18 — [Accuracy] Detection of Maritime Advection Fog (Caligo/Lupa)
+Learning: Discovered that "Nebbia Marittima" (advection fog) is a critical spring phenomenon in Italy (Liguria, Strait of Messina) that was missing from the skill. Its detection requires specific sea-surface temperature (SST) comparison against T2m, which is available in the Marine API fetch.
+Action: Include SST in maritime/coastal analysis and apply the T(2m) > SST + 2°C threshold during March–May to identify Caligo and Lupa di mare events.

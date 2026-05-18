@@ -19,7 +19,7 @@ ecmwf_ifs025, meteofrance_arome_france, gfs_seamless
 | `meteofrance_arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese).
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera).
 
 **Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `meteofrance_arome_france` per la fascia costiera.
 
@@ -112,7 +112,7 @@ icon_seamless, gfs_seamless, meteofrance_seamless
 | `icon_seamless` | 0.9 |
 | `meteofrance_seamless` | 0.9 |
 
-**Fenomeni locali prioritari:** Scirocco (intenso, polvere sahariana), grecale su Adriatico meridionale, temporali convettivi estivi (violenti, grandine su Puglia), tramontana su Calabria tirrenica, neve su Sila/Aspromonte/Pollino (impatto viabilità).
+**Fenomeni locali prioritari:** Scirocco (intenso, polvere sahariana), grecale su Adriatico meridionale, temporali convettivi estivi (violenti, grandine su Puglia), tramontana su Calabria tirrenica, neve su Sila/Aspromonte/Pollino (impatto viabilità), Lupa di mare (Stretto, primavera).
 
 ---
 
@@ -133,7 +133,7 @@ gfs_seamless, meteofrance_seamless
 | `gfs_seamless` | 1.0 |
 | `meteofrance_seamless` | 0.8 |
 
-**Fenomeni locali prioritari:** Scirocco intenso (sabbia dal Sahara, visibilità ridotta, T >40°C in estate), grecale su versante orientale (Catania, Messina), temporali di Tramontana sui Nebrodi/Madonie, neve sull'Etna (tutto l'anno oltre 2000m), alluvioni improvvise (ottobre-novembre).
+**Fenomeni locali prioritari:** Scirocco intenso (sabbia dal Sahara, visibilità ridotta, T >40°C in estate), grecale su versante orientale (Catania, Messina), temporali di Tramontana sui Nebrodi/Madonie, neve sull'Etna (tutto l'anno oltre 2000m), alluvioni improvvise (ottobre-novembre), Lupa di mare (Stretto, primavera).
 
 **Nota:** ARPAE ICON 2I ha copertura ridotta sulla Sicilia — usa ECMWF come riferimento principale.
 
