@@ -478,3 +478,31 @@ L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica l
 T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)
 T min prevista <0°C → gelata quasi certa in zone aperte e pianura
 T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)
+
+---
+
+## Focus Agrometeorologico — Soglie di Germinazione
+
+Riferimento per l'uso della variabile `soil_temperature_6cm` (Step 3A). Soglie ARPAE/ARPAV per le principali colture italiane.
+
+| Coltura | T suolo Min. | T suolo Ottimale | Note |
+|---|---|---|---|
+| **Mais** | 10°C | 12°C (stabile) | Sotto i 10°C la germinazione si arresta |
+| **Pomodoro** | 12°C | 15–18°C | Sensibile ai ritorni di freddo |
+| **Barbabietola** | 5–6°C | 10–12°C | Semina precoce possibile |
+| **Girasole** | 8°C | 10–12°C | |
+
+**Nota Operativa**: Utilizzare la temperatura del suolo media giornaliera a 6cm per valutare la finestra di semina.
+
+---
+
+## Anomalie di Temperatura Percepita (Apparent T)
+
+Confronta `apparent_temperature` (forecast) con `apparent_temperature` (archive) per valutare lo stress termico reale (Afa/Wind Chill) rispetto al passato.
+
+| Anomalia Percepita | Classificazione | Impatto Sanitario |
+|---|---|---|
+| +1.0 a +3.0σ | Ondata di calore umida (Afa) | Disagio fisico, rischio per soggetti fragili |
+| > +3.0σ | Caldo estremo eccezionale | Pericolo imminente di colpo di calore |
+| -1.0 a -3.0σ | Freddo ventoso intenso | Elevato rischio ipotermia/congelamento |
+| < -3.0σ | Burian / Gelo eccezionale | Emergenza freddo |
