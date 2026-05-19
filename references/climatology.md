@@ -82,6 +82,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 10.4°C | 3.2°C | 150mm | |
 | Dic | 6.6°C | -1.3°C | 67mm | |
 
+### Aosta (45.73°N, 7.31°E, 583m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 4.8°C | -1.9°C | 100mm | |
+| Feb | 6.3°C | -1.5°C | 80mm | |
+| Mar | 9.5°C | 1.8°C | 89mm | |
+| Apr | 12.5°C | 5.5°C | 100mm | |
+| Mag | 17.2°C | 9.5°C | 117mm | |
+| Giu | 23.1°C | 14.2°C | 109mm | |
+| Lug | 26.0°C | 16.8°C | 94mm | |
+| Ago | 26.0°C | 16.9°C | 85mm | |
+| Set | 21.6°C | 12.9°C | 87mm | |
+| Ott | 16.5°C | 8.5°C | 99mm | |
+| Nov | 9.5°C | 2.6°C | 130mm | |
+| Dic | 5.3°C | -1.2°C | 107mm | |
+
 ### Genova (44.40°N, 8.94°E, 20m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -177,6 +193,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 17.5°C | 9.2°C | 126mm |
 | Nov | 11.5°C | 4.3°C | 126mm |
 | Dic | 7.3°C | -1.0°C | 68mm |
+
+### Trento (46.06°N, 11.12°E, 194m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.8°C | -1.3°C | 53mm | |
+| Feb | 8.6°C | 0.4°C | 58mm | |
+| Mar | 12.6°C | 4.2°C | 76mm | |
+| Apr | 16.3°C | 7.9°C | 111mm | |
+| Mag | 20.8°C | 12.6°C | 129mm | |
+| Giu | 24.5°C | 16.2°C | 123mm | |
+| Lug | 26.6°C | 18.1°C | 119mm | |
+| Ago | 26.6°C | 18.3°C | 117mm | |
+| Set | 22.3°C | 14.6°C | 118mm | |
+| Ott | 17.8°C | 10.4°C | 138mm | |
+| Nov | 12.0°C | 5.5°C | 144mm | |
+| Dic | 7.7°C | 0.8°C | 76mm | |
 
 ### Trieste (45.65°N, 13.76°E, 2m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -290,6 +322,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 13.4°C | 5.8°C | 70mm |
 | Dic | 9.0°C | 2.3°C | 74mm |
 
+### Campobasso (41.56°N, 14.65°E, 701m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.5°C | 0.4°C | 73mm | |
+| Feb | 8.4°C | 0.5°C | 66mm | |
+| Mar | 11.6°C | 2.9°C | 80mm | |
+| Apr | 15.1°C | 5.8°C | 80mm | |
+| Mag | 19.6°C | 10.0°C | 70mm | |
+| Giu | 24.5°C | 14.3°C | 51mm | |
+| Lug | 27.5°C | 16.8°C | 38mm | |
+| Ago | 28.0°C | 17.5°C | 35mm | |
+| Set | 22.6°C | 13.5°C | 56mm | |
+| Ott | 18.0°C | 9.8°C | 69mm | |
+| Nov | 12.8°C | 5.6°C | 87mm | |
+| Dic | 8.5°C | 1.7°C | 83mm | |
+
 ### Bari (41.13°N, 16.75°E, 44m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -305,6 +353,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 21.0°C | 15.2°C | 65mm | |
 | Nov | 16.7°C | 11.6°C | 70mm | |
 | Dic | 12.9°C | 8.2°C | 61mm | |
+
+### Catanzaro (38.90°N, 16.59°E, 320m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 12.2°C | 5.6°C | 103mm | |
+| Feb | 12.7°C | 5.4°C | 101mm | |
+| Mar | 15.2°C | 7.1°C | 101mm | |
+| Apr | 17.9°C | 9.5°C | 89mm | |
+| Mag | 22.4°C | 13.4°C | 77mm | |
+| Giu | 27.4°C | 17.7°C | 48mm | |
+| Lug | 29.9°C | 20.4°C | 50mm | |
+| Ago | 30.2°C | 20.9°C | 45mm | |
+| Set | 25.7°C | 17.7°C | 88mm | |
+| Ott | 21.6°C | 14.3°C | 97mm | |
+| Nov | 17.0°C | 10.5°C | 114mm | |
+| Dic | 13.3°C | 6.9°C | 102mm | |
 
 ### Palermo (38.12°N, 13.36°E, 14m)
 | Mese | T max media | T min media | Precip. media | Note |

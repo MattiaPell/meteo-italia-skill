@@ -31,3 +31,7 @@ Action: Promoted 'ecmwf_ifs' to primary global reference in weights and fetch lo
 ## 2025-05-22 — [Accuracy] Multi-Level Inversions and Perceived Anomaly
 Learning: Standard 850hPa level data is often too high (~1500m) to detect the shallow but intense "Cuscino Freddo" (thermal inversion) of the Po Valley, which often sits below 1000m. Additionally, "Afa" (heat stress) analysis requires apparent temperature anomalies, necessitating the fetch of apparent_temperature_max/min from both Archive and Historical APIs.
 Action: Always include the 925hPa level (T, RH, Geo) in the fetch for Northern macroareas to sharpen inversion/fog analysis. Ensure apparent_temperature variables are fetched in all modules (A, B, C, J) to support health-related anomaly reporting.
+
+## 2025-05-22 — [Accuracy] Soil Temperature and Climatology Data Limits
+**Learning:** High-accuracy detection of winter ground-level phenomena (Gelicidio, Galaverna, Brina) requires 'soil_temperature_0cm' and 'soil_temperature_6cm' to distinguish surface freezing from air temperature. Additionally, the Open-Meteo Archive API has a 10,000-line limit per request; fetching 30 years of daily data (~10,950 lines) requires splitting the request into chunks.
+**Action:** Add soil temperature variables to primary fetches. When fetching multi-decade daily climatology, split requests into 15-year chunks to avoid '400 Bad Request' and implement exponential backoff for '429 Too Many Requests'.

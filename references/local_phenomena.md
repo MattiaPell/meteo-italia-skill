@@ -450,7 +450,8 @@ Appennino settentrionale (versante padano), valli appenniniche, Pianura Padana (
 
 ### Segnali nei dati (flag se presenti TUTTI i seguenti)
 - **Weather code / Precipitazione**: `weather_code` 66 (Slight freezing rain / debole) o 67 (Heavy freezing rain / forte)
-- **T suolo**: `temperature_2m` < 0°C
+- **T superficie**: `soil_temperature_0cm` < 0°C (fondamentale per il congelamento istantaneo)
+- **T aria**: `temperature_2m` < 0°C (solitamente tra -1°C e -5°C)
 - **T quota / Sovrascorrimento caldo**: `temperature_850hPa` > 0°C (strato di fusione); vento da S/SW (`wind_direction_850hPa` 150–250°) in quota
 - **Precipitazioni**: pioggia prevista dai modelli numerici
 - **Macroarea**: Nord-Ovest, Nord-Est, Centro-Nord
@@ -459,7 +460,7 @@ Appennino settentrionale (versante padano), valli appenniniche, Pianura Padana (
 ```
 ⚠️ ALLERTA GELICIDIO (PIOGGIA CONGELANTESI) — {ZONA}
 Fenomeno ad ALTO RISCHIO / PERICOLO ESTREMO per viabilità e infrastrutture.
-T suolo: {X}°C | T quota: {Y}°C | Pioggia prevista: {Z}mm
+T superficie: {X}°C | T aria: {Y}°C | T quota: {Z}°C | Pioggia: {W}mm
 Impatti: Formazione di ghiaccio su strade (black ice / vetrone), rottura rami, danni a linee elettriche, rischio caduta cavi.
 Raccomandazione: Evitare spostamenti, massima cautela alla guida, rischio cadute pedonali estremo.
 ```
@@ -619,3 +620,40 @@ Segnali: Instabilità atmosferica marcata | Vento da: {DIR}
 Impatti: Repentino innalzamento/abbassamento del livello nei porti e foci fluviali (Mazara).
 ```
 *Fonte: ARPA Sicilia / ISPRA (Meteotsunami nel Mediterraneo)*
+
+---
+
+## GALAVERNA, CALABROSA e BRINA
+
+### GALAVERNA (Soft Rime)
+**Cos'è**: Deposito di aghi o scaglie di ghiaccio bianco opaco che si forma per la solidificazione di goccioline di nebbia sopraffusa su superfici a temperatura negativa.
+**Segnali nei dati**:
+- **T aria (2m)**: < 0°C (spesso < -2°C)
+- **Nebbia**: `visibility` < 1km e `relative_humidity_2m` > 95%
+- **Vento**: Debole o assente (< 5 km/h)
+- **T superficie**: `soil_temperature_0cm` < 0°C
+
+### CALABROSA (Hard Rime)
+**Cos'è**: Crosta di ghiaccio granuloso, grigio-bianco, molto resistente, che si forma in presenza di nebbia fitta e vento forte.
+**Segnali nei dati**:
+- **T aria (2m)**: Tra -2°C e -10°C
+- **Nebbia**: `visibility` < 500m e `relative_humidity_2m` > 95%
+- **Vento**: Sostenuto (> 15-20 km/h)
+- **Accrescimento**: In direzione opposta al vento
+
+### BRINA (Hoar Frost)
+**Cos'è**: Cristalli di ghiaccio che si formano per brinamento (sublimazione diretta) del vapore acqueo su superfici raffreddate per irraggiamento. Non richiede nebbia.
+**Segnali nei dati**:
+- **T aria (2m)**: < 2°C (ma T superficie deve essere < 0°C)
+- **T superficie**: `soil_temperature_0cm` < 0°C
+- **Cielo**: Sereno (`cloud_cover` < 20%)
+- **Umidità**: `relative_humidity_2m` > 80%
+- **Vento**: Assente o bava di vento (< 3 km/h)
+
+### Come riportarlo
+```
+❄️ {FENOMENO} IN ATTO/PREVISTO — {ZONA}
+Meccanismo: {Descrizione fisica breve}
+T aria: {X}°C | T superficie: {Y}°C | Visibilità: {Z}m
+Impatti: Scenari suggestivi ("paesaggio bianco"), ghiaccio su rami e cavi, strade scivolose (brina).
+```
