@@ -61,7 +61,11 @@ GET https://api.open-meteo.com/v1/forecast
   &models={MODEL1,MODEL2,...}
   &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
           precipitation_probability,wind_speed_10m,wind_direction_10m,
-          wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,
+          wind_gusts_10m,wind_speed_80m,wind_direction_80m,
+          wind_speed_120m,wind_direction_120m,
+          shortwave_radiation,direct_radiation,diffuse_radiation,
+          direct_normal_irradiance,terrestrial_radiation,
+          cloud_cover,cloud_cover_low,cloud_cover_mid,
           cloud_cover_high,visibility,weather_code,
           relative_humidity_2m,cape,lifted_index,convective_inhibition,
           freezing_level_height,boundary_layer_height,wet_bulb_temperature_2m,
@@ -504,8 +508,8 @@ Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calor
 ### ⚡ Energia — Eolico e Solare
 Trigger: "eolico", "solare", "fotovoltaico", "energia", "produzione", "impianto", "turbina", "pannelli", "grid"
 Focus:
-**Eolico**: velocità vento a 10m e 80m (stima: `wind_speed_10m × 1.5` per hub 80m), raffiche (>90 km/h = stop turbine), direzione vento prevalente. Produzione stimata: vento 5-25 m/s = zona operativa, <3 m/s = cut-in (nessuna produzione), >25 m/s = cut-out (stop sicurezza).
-**Solare**: `uv_index`, `uv_index_clear_sky`, `cloud_cover` (copertura nuvolosa), `shortwave_radiation` (se disponibile). Produzione stimata: cielo sereno (cloud_cover <20%) = 80-100% capacità, parzialmente nuvoloso (20-70%) = 30-80%, coperto (>70%) = <30%.
+**Eolico**: velocità e direzione vento a 80m e 120m (altezze hub turbine), raffiche (>90 km/h = stop sicurezza). Produzione stimata: vento 5-25 m/s = zona operativa, <3 m/s = cut-in (nessuna produzione), >25 m/s = cut-out (stop).
+**Solare**: `shortwave_radiation`, `direct_normal_irradiance` (DNI), `direct_radiation`, `diffuse_radiation`, `terrestrial_radiation`, `cloud_cover`. Produzione stimata: DNI > 600 W/m² = produzione ottimale, < 200 W/m² = produzione bassa. Rapporto `direct/diffuse` per valutazione efficienza impianti fissi vs inseguimento.
 **Forecast vs climatologia**: confronta irraggiamento e vento previsti con la norma del periodo per valutare se la produzione sarà sopra/sotto media.
 **Fulmini (Step L)**: se fulmini entro 10km da impianto eolico → stop preventivo turbine.
 **METAR (Step K)**: se aeroporto vicino, usa METAR per validazione vento osservato vs previsto.
