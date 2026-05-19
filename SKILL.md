@@ -4,11 +4,12 @@ description: >
   Analisi comparativa delle previsioni meteo multi-modello specializzata per l'Italia.
   Usa questa skill ogni volta che l'utente chiede del tempo in Italia: previsioni,
   confronto modelli, affidabilità forecast, analisi di fenomeni locali italiani
-  (foehn, bora, scirocco, tramontana, libeccio, maestrale, garbino, ponentino,
-  cuscino freddo, gelicidio, grandine padana, neve appenninica, temporali adriatici,
-  adriatic sea effect, allerte Protezione Civile).
+  (foehn, bora, scirocco, tramontana, libeccio, maestrale, levante, ostro, ponente,
+  garbino, ponentino, cuscino freddo, gelicidio, grandine padana, neve appenninica,
+  temporali adriatici, adriatic sea effect, allerte Protezione Civile).
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
-  "maestrale", "garbino", "ponentino", "cuscino freddo", "inversione termica",
+  "maestrale", "levante", "ostro", "ponente", "garbino", "ponentino",
+  "cuscino freddo", "inversione termica",
   "gelicidio", "pioggia congelantesi",
   "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",

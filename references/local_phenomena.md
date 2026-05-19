@@ -208,6 +208,74 @@ Vento: {X} km/h da NE | Precipitazioni: {Y}mm costa adriatica
 
 ---
 
+## LEVANTE
+
+### Cos'è
+Vento umido e temperato che spira da Est (90°). È spesso causato da una depressione a sud dell'Italia che richiama aria umida dal mare verso il versante tirrenico.
+
+### Dove colpisce
+Porta nubi basse e piogge su Liguria, Toscana, Lazio e Sardegna orientale (effetto stau). Causa mare mosso su coste adriatiche e ioniche.
+
+### Segnali nei dati
+- Vento da E (70–110°) >20 km/h
+- UR in aumento (>75%)
+- Copertura nuvolosa bassa (`cloud_cover_low` > 70%)
+- Precipitazioni sul versante tirrenico o Sardegna orientale
+
+### Come riportarlo
+```
+🌬️ LEVANTE — Mar Tirreno / Adriatico
+Vento: {X} km/h da Est | UR: {Y}%
+Impatti: Piogge costiere, nubi basse, mare mosso su versante orientale.
+```
+
+---
+
+## OSTRO (MEZZOGIORNO)
+
+### Cos'è
+Vento caldo e umido che spira da Sud (180°). Spesso rappresenta la fase di transizione tra Scirocco e Libeccio. Porta aria mite/calda verso la Penisola.
+
+### Dove colpisce
+Coste meridionali, Sicilia e Sardegna. Può risalire fino al Tirreno centrale.
+
+### Segnali nei dati
+- Vento da S (160–200°) >15-20 km/h
+- T in aumento (advezione calda)
+- UR moderata o alta
+
+### Come riportarlo
+```
+🌬️ OSTRO — Sud Italia / Tirreno
+Vento: {X} km/h da Sud | T: {Y}°C
+Impatti: Aumento termico, mare mosso da Sud.
+```
+
+---
+
+## PONENTE
+
+### Cos'è
+Vento fresco e asciutto che spira da Ovest (270°). Porta spesso un miglioramento del tempo dopo il passaggio di un fronte atlantico, con visibilità eccellente.
+
+### Dove colpisce
+Coste tirreniche e Sardegna occidentale. È la brezza pomeridiana dominante in estate su molti litorali tirrenici (vedi anche Ponentino).
+
+### Segnali nei dati
+- Vento da W (250–290°) >20 km/h
+- UR in calo (<60%)
+- `weather_code` 0-2 (sereno/poco nuvoloso)
+- Visibilità eccellente (>10-15 km)
+
+### Come riportarlo
+```
+🌬️ PONENTE — Costa Tirrenica / Sardegna
+Vento: {X} km/h da Ovest | Visibilità: {Y} km
+Impatti: Tempo in miglioramento, aria secca, mare mosso su coste occidentali.
+```
+
+---
+
 ## GARBINO (FOEHN APPENNINICO)
 
 ### Cos'è
