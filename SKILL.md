@@ -51,7 +51,7 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
 ### 3. Fetch in parallelo (esegui tutto insieme)
 
-Esegui simultaneamente i passi A–M:
+Esegui simultaneamente i passi A–N:
 
 #### A — Previsioni numeriche (Open-Meteo)
 Vedi `references/models.md` per il set corretto per macroarea.
@@ -339,6 +339,30 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 
+#### N — Immagini Satellite (Validazione Visiva)
+
+**Attiva sempre per:** allerta PC ≥ gialla (qualsiasi tipo), divergenza >1.5σ tra modelli su precipitazioni (Step 4a), nebbia prevista (visibilità <500m da Step A), use case nautica/aeronautico. **Altrimenti:** disattiva (costo computazionale elevato).
+
+**Fetch EUMETView (immagini pre-renderizzate, no auth):**
+```http
+GET https://eumetview.eumetsat.int/static-images/latest/IR108.jpg
+GET https://eumetview.eumetsat.int/static-images/latest/VIS06.jpg
+GET https://eumetview.eumetsat.int/static-images/latest/WV062.jpg
+```
+
+**Interpretazione qualitativa (l'agente AI descrive l'immagine):**
+1. **Fronti atlantici**: bande nuvolose continue IR10.8 → fronte in arrivo, confronta posizione con NWP
+2. **Celle convettive**: tops molto freddi (IR10.8 scuro) → temporali intensi. Overshooting top → supercella
+3. **Nebbia**: strato uniforme basso in VIS0.6, non visibile in IR10.8 notturno → nebbia da irraggiamento
+4. **Dust sahariano**: area diffusa in IR8.7 → conferma dust CAMS (Step H)
+5. **Copertura nuvolosa generale**: sereno/parzialmente coperto/coperto → validazione weather_code NWP
+
+**Integrazione con nowcasting radar (Step I):** satellite mostra contesto sinottico, radar mostra dettaglio locale. Convergenza = alta fiducia.
+
+**Nota:** L'agente AI può descrivere qualitativamente l'immagine. Per analisi quantitative usare i dati numerici degli Step A-J. Il satellite serve solo come validazione visiva di contesto. Se EUMETView non disponibile, usare il portale web https://eumetview.eumetsat.int/ per navigazione manuale.
+
+Vedi `references/satellite.md` per canali SEVIRI, guida interpretazione pattern, e alternative (EUMETSAT Data Store, NASA GIBS).
+
 ### 4. Analisi Comparativa
 
 #### 4a. Consensus modelli numerici
@@ -421,6 +445,7 @@ Aggiungi: `elevation={quota_target}` nella chiamata API.
 **UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV (Vedi `references/uv_marine_recent.md`).
 **Valanghe**: Consulta sempre il bollettino ufficiale **AINEVA** (valanghe.aineva.it) in presenza di neve fresca >30cm o forte vento.
 **Fulmini**: rischio elevato in cresta/esposto se lightning density >5 in 50km² — verifica trend ore 12-18 per temporali pomeridiani.
+**Satellite per nuvolosità in quota**: immagini IR10.8 per valutazione temporali in formazione sui rilievi e copertura nuvolosa generale.
 
 ### 🐝 Apicoltura / Impollinazione
 Trigger: "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione"
@@ -457,6 +482,7 @@ Trigger: "viaggio", "autostrada", "strada", "guida", "treno", "volo"
 Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), gelicidio (black ice),
 acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
 **METAR per nebbia aeroportuale**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità RVR e ceiling — indicatore precoce di nebbia in pianura.
+**Satellite per nebbia in Val Padana**: immagini VIS0.6 (diurno) e IR3.9 (notturno) per estensione nebbia.
 **Rischio allagamento strade**: se livello fiume > soglia rossa per ponte/guado sul percorso, o pioggia >50mm/24h + dati ISPRA dissesto → rischio interruzione.
 
 ### 🏖️ Mare / Spiaggia / Nautica
@@ -465,6 +491,7 @@ Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), tem
 **Marine API obbligatoria**: attiva fetch F per dati onde completi (wave_height, swell, periodo).
 **UV obbligatorio**: includi sempre per questo use case.
 **Fulmini**: se fulmini entro 10km dalla costa → evacuazione spiaggia, rientro imbarcazioni immediate.
+**Satellite per copertura nuvolosa costiera**: immagini IR10.8 per valutazione sistemi temporaleschi in avvicinamento dal mare.
 Vedi scale Douglas/Beaufort e soglie in `references/uv_marine_recent.md`.
 
 ### 🌡️ Salute / Caldo estremo / Allergie
