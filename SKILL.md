@@ -44,7 +44,7 @@ Identifica subito: **macroarea** (→ set modelli) + **regione amministrativa** 
 
 ### 2. Geocoding
 
-```
+```http
 GET https://geocoding-api.open-meteo.com/v1/search
   ?name={CITTA}&count=3&language=it&format=json
 ```
@@ -53,45 +53,42 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
 ### 3. Fetch in parallelo (esegui tutto insieme)
 
-Esegui simultaneamente i passi A–N:
+Esegui simultaneamente i passi A–M:
 
-#### A — Previsioni numeriche (Open-Meteo)
-Vedi `references/models.md` per il set corretto per macroarea.
-```
+#### A — Previsioni numeriche + Storico recente (Open-Meteo)
+Vedi `references/models.md` per il set corretto per macroarea. Questo fetch include sia il forecast che gli ultimi 7 giorni per contestualizzare l'analisi.
+
+```http
 GET https://api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
   &models={MODEL1,MODEL2,...}
   &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
           precipitation_probability,wind_speed_10m,wind_direction_10m,
-          wind_gusts_10m,wind_speed_80m,wind_direction_80m,
-          wind_speed_120m,wind_direction_120m,
-          shortwave_radiation,direct_radiation,diffuse_radiation,
-          direct_normal_irradiance,terrestrial_radiation,
-          cloud_cover,cloud_cover_low,cloud_cover_mid,
-          cloud_cover_high,visibility,weather_code,
-          relative_humidity_2m,cape,lifted_index,convective_inhibition,
-          freezing_level_height,boundary_layer_height,wet_bulb_temperature_2m,
-          snowfall,snow_depth,
-          temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
-          relative_humidity_925hPa,geopotential_height_925hPa,
-          temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,
-          relative_humidity_850hPa,geopotential_height_850hPa,
-          temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
-          relative_humidity_500hPa,geopotential_height_500hPa,
-          pressure_msl,uv_index,uv_index_clear_sky,
-          soil_temperature_6cm,soil_moisture_0_to_1cm,soil_temperature_0cm
+          wind_gusts_10m,cloud_cover,visibility,weather_code,
+          relative_humidity_2m,freezing_level_height,boundary_layer_height,
+          pressure_msl,uv_index,
+          {GRUPPO_ENERGY}, {GRUPPO_AGRO}, {GRUPPO_PRO}
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
-         wind_gusts_10m_max,weather_code,pressure_msl_max,uv_index_max,
+         wind_gusts_10m_max,weather_code,uv_index_max,
          et0_fao_evapotranspiration
   &timezone=Europe/Rome
+  &past_days=7
   &forecast_days={N}
 ```
 
+**Ottimizzazione parametri orari:**
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index`
+- **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
+- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_moisture_0_to_1cm,soil_temperature_0cm,et0_fao_evapotranspiration`
+- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `cape,lifted_index,convective_inhibition,wet_bulb_temperature_2m,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
+
+**Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media. Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, o ondata calore/freddo in corso.
+
 #### B — Climatologia di riferimento (ERA5)
 Per confrontare il forecast con la norma storica del periodo.
-```
+```http
 GET https://archive-api.open-meteo.com/v1/archive
   ?latitude={LAT}&longitude={LON}
   &start_date={STESSO_GIORNO_-10_ANNI}&end_date={STESSO_GIORNO_-1_ANNO}
@@ -102,37 +99,22 @@ GET https://archive-api.open-meteo.com/v1/archive
 ```
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
 
-#### C — Storico recente (ultimi 7 giorni)
-Contestualizza il forecast con le condizioni degli ultimi 7 giorni.
-```
-GET https://historical-forecast-api.open-meteo.com/v1/forecast
-  ?latitude={LAT}&longitude={LON}
-  &start_date={OGGI-7}&end_date={OGGI-1}
-  &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
-         apparent_temperature_min,precipitation_sum,snowfall_sum,
-         wind_speed_10m_max,weather_code,et0_fao_evapotranspiration
-  &timezone=Europe/Rome
-```
-Calcola: precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media.
-Vedi soglie interpretative in `references/uv_marine_recent.md`.
-Includi questa sezione nel report se: previsione pioggia >20mm, allerta ≥gialla, ondata calore/freddo in corso.
-
-#### D — Osservazioni in tempo reale (ARPA regionale)
+#### C — Osservazioni in tempo reale (ARPA regionale)
 Consulta `references/arpa_network.md` per endpoint e stazioni della regione target.
 Recupera: T attuale, precipitazioni ultime 6/24h, vento, umidità dalla stazione più vicina.
 Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
 
-#### E — Allerta Protezione Civile
-```
+#### D — Allerta Protezione Civile
+```http
 GET https://mappe.protezionecivile.gov.it/geowebcache/service/wms
   (vedi references/arpa_network.md per parametri corretti)
 ```
 Oppure consulta il bollettino testuale su `mappe.protezionecivile.gov.it`.
 Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
 
-#### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
+#### E — Dati marini (solo se coordinata costiera o use case mare/nautica)
 Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo), oppure Macroarea Sicilia/Sud (per Lupa di mare).
-```
+```http
 GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
   &hourly=wave_height,wave_direction,wave_period,
@@ -145,12 +127,12 @@ GET https://marine-api.open-meteo.com/v1/marine
 ```
 Vedi scala Beaufort e soglie operative in `references/uv_marine_recent.md`.
 
-#### G — UV Index
+#### F — UV Index
 Già incluso nel fetch A (`uv_index`, `uv_index_clear_sky`, `uv_index_max`).
 Includi la sezione UV nel report se: `uv_index_max` >5, use case spiaggia/montagna, o richiesta esplicita.
 Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 
-#### H — Qualità dell'Aria CAMS (condizionale)
+#### G — Qualità dell'Aria CAMS (condizionale)
 
 **Attiva sempre per:** Pianura Padana (ott–mar), use case salute/bambini/anziani/sport, scirocco con dust elevato, inversione termica prevista (vento <5 km/h + cielo sereno).
 **Attiva se AQI ≥ Moderato** per qualsiasi altra zona.
@@ -173,11 +155,11 @@ Interpreta con `references/air_quality.md`: scala AQI EEA (0-20 buono → >100 p
 scenari accumulo/dispersione da dati meteo, flag dust sahariano vs PM antropico,
 pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili.
 
-#### I — Nowcasting Radar DPC (solo se condizioni attivanti)
+#### H — Nowcasting Radar DPC (solo se condizioni attivanti)
 
 **Attiva se almeno una di queste condizioni è vera:**
-- Allerta PC ≥ gialla per temporali
-- CAPE previsto >800 J/kg da modelli NWP
+- Allerta PC ≥ gialla per temporali (Step D)
+- CAPE previsto >800 J/kg da modelli NWP (Step A)
 - `weather_code` corrente 80–99 (rovesci/temporali in atto)
 - Utente chiede situazione nelle prossime 1-3h ("sta arrivando?", "tra quanto finisce?")
 
@@ -225,7 +207,7 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 
 **Licenza obbligatoria**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
 
-#### J — Ensemble Spread (condizionale)
+#### I — Ensemble Spread (condizionale)
 
 **Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
 
@@ -251,11 +233,12 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble
 Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
 Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
 
-#### K — Osservazioni METAR/TAF (condizionale)
+#### J — Osservazioni METAR/TAF (condizionale)
 
 **Attiva sempre per:** use case aviazione/droni, città con aeroporto ICAO nella lista (`references/metar_taf.md`). **Attiva se:** l'utente chiede validazione forecast, oppure stazioni ARPA non disponibili per la zona, oppure divergenza >2°C tra NWP e ARPA.
 
 **Fetch primario (CheckWX — JSON decoded):**
+Richiede `CHECKWX_API_KEY` (vedi README).
 ```http
 GET https://api.checkwx.com/v2/metar/{ICAO1},{ICAO2},{ICAO3}/decoded
 Headers: X-API-KEY: {YOUR_API_KEY}
@@ -280,15 +263,15 @@ GET https://aviationweather.gov/api/data/metar?ids=LIRF,LIMC,LIPE&format=json
 4. **Copertura nuvolosa**: METAR OVC ma NWP weather_code ≤2 → modello sottostima nuvolosità
 5. **Pressione**: METAR QNH (altimeter.hpa) vs NWP pressure_msl — verifica coerenza sinottica
 
-**Gerarchia validazione:** TAF > NWP per orizzonte 0-6h su aeroporti. TAF è specifico per il punto, NWP è grigliato. Per zone senza aeroporto → usa stazioni ARPA (Step D).
+**Gerarchia validazione:** TAF > NWP per orizzonte 0-6h su aeroporti. TAF è specifico per il punto, NWP è grigliato. Per zone senza aeroporto → usa stazioni ARPA (Step C).
 
 **Nota:** CheckWX free tier: 3.000 req/giorno. Per uso intensivo, ruota su aviationweather.gov (formato raw, decodifica manuale).
 
-Vedi `references/metar_taf.md` per lista completa ICAO, guida interpretazione campi decoded, e soglie di validazione.
+Vedi `references/metar_taf.md` for lista completa ICAO, guida interpretazione campi decoded, e soglie di validazione.
 
-#### L — Lightning Detection (Nowcasting Temporali)
+#### K — Lightning Detection (Nowcasting Temporali)
 
-**Attiva sempre per:** allerta PC ≥ gialla per temporali, CAPE >800 J/kg da Step A, use case mare/nautica/montagna/eventi outdoor. **Altrimenti:** attiva se `weather_code` attuale 80-99 (rovesci/temporali in atto).
+**Attiva sempre per:** allerta PC ≥ gialla per temporali (Step D), CAPE >800 J/kg da Step A, use case mare/nautica/montagna/eventi outdoor. **Altrimenti:** attiva se `weather_code` attuale 80-99 (rovesci/temporali in atto).
 
 **Fetch DMI Open Data (GeoJSON, no auth):**
 ```http
@@ -308,7 +291,7 @@ Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare q
 1. **Conta fulmini** nell'area entro 50km dal punto target. Soglie: >10 fulmini in 50km² = temporale attivo, >20 = temporale severo
 2. **Verifica trend**: confronto con fetch 15 min precedente. +50% = intensificazione, -50% = dissolvimento
 3. **Integrazione con Step A (CAPE/LI)**: CAPE >1500 + fulmini >10/15min → supercella probabile
-4. **Integrazione con Step I (radar DPC)**: fulmini + VIL >25 kg/m² → grandine probabile (>70%)
+4. **Integrazione con Step H (radar DPC)**: fulmini + VIL >25 kg/m² → grandine probabile (>70%)
 5. **Dry lightning**: fulmini >5/15min ma precipitazioni osservate <1mm → rischio incendi (segnala esplicitamente)
 
 **Distanza e movimento:** calcola distanza dal punto target (Haversine). <5km = pericolo immediato. Confronta posizione fulmini t-15min vs t-30min per stimare direzione e velocità di movimento.
@@ -317,9 +300,9 @@ Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare q
 
 Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, integrazione con radar, e alternative API.
 
-#### M — Dati Idrologici (Rischio Alluvioni)
+#### L — Dati Idrologici (Rischio Alluvioni)
 
-**Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico, precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm da Step C, use case agricoltura/cantieri/viabilità. **Altrimenti:** disattiva.
+**Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico (Step D), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in A), use case agricoltura/cantieri/viabilità. **Altrimenti:** disattiva.
 
 **Fetch catalogo stazioni (floods.it — open data, no auth):**
 ```http
@@ -337,17 +320,17 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 2. **Trend (ultime 3-6 ore)**: in salita/discesa/stabile. Trend +0.5m in 6h = livello in rapida salita
 3. **Combinato con Step A (precipitazioni)**: se previsti >30mm/24h E livello > soglia gialla → scenario peggiorativo
 4. **Combinato con Step A (soil_moisture)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido
-5. **Combinato con Step C (storico recente)**: piogge cumulate 7gg >100mm → bacino già carico
+5. **Combinato con lo storico recente in A**: piogge cumulate 7gg >100mm → bacino già carico
 
-**Per zone fuori Trentino:** "Dati idrometrici real-time limitati al Trentino. Per altre regioni: monitorare precipitazioni ARPA (Step D) + allerta PC (Step E) + EFAS previsionale come contesto."
+**Per zone fuori Trentino:** "Dati idrometrici real-time limitati al Trentino. Per altre regioni: monitorare precipitazioni ARPA (Step C) + allerta PC (Step D) + EFAS previsionale come contesto."
 
 **Nota:** floods.it API open data, no auth. Copertura: solo Trentino-Alto Adige. Aggiornamento ogni 15 min.
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 
-#### N — Immagini Satellite (Validazione Visiva)
+#### M — Immagini Satellite (Validazione Visiva)
 
-**Attiva sempre per:** allerta PC ≥ gialla (qualsiasi tipo), divergenza >1.5σ tra modelli su precipitazioni (Step 4a), nebbia prevista (visibilità <500m da Step A), use case nautica/aeronautico. **Altrimenti:** disattiva (costo computazionale elevato).
+**Attiva sempre per:** allerta PC ≥ gialla (Step D), divergenza >1.5σ tra modelli su precipitazioni (Step 4a), nebbia prevista (visibilità <500m da Step A), use case nautica/aeronautico. **Altrimenti:** disattiva (costo computazionale elevato).
 
 **Fetch EUMETView (immagini pre-renderizzate, no auth):**
 ```http
@@ -360,12 +343,12 @@ GET https://eumetview.eumetsat.int/static-images/latest/WV062.jpg
 1. **Fronti atlantici**: bande nuvolose continue IR10.8 → fronte in arrivo, confronta posizione con NWP
 2. **Celle convettive**: tops molto freddi (IR10.8 scuro) → temporali intensi. Overshooting top → supercella
 3. **Nebbia**: strato uniforme basso in VIS0.6, non visibile in IR10.8 notturno → nebbia da irraggiamento
-4. **Dust sahariano**: area diffusa in IR8.7 → conferma dust CAMS (Step H)
+4. **Dust sahariano**: area diffusa in IR8.7 → conferma dust CAMS (Step G)
 5. **Copertura nuvolosa generale**: sereno/parzialmente coperto/coperto → validazione weather_code NWP
 
-**Integrazione con nowcasting radar (Step I):** satellite mostra contesto sinottico, radar mostra dettaglio locale. Convergenza = alta fiducia.
+**Integrazione con nowcasting radar (Step H):** satellite mostra contesto sinottico, radar mostra dettaglio locale. Convergenza = alta fiducia.
 
-**Nota:** L'agente AI può descrivere qualitativamente l'immagine. Per analisi quantitative usare i dati numerici degli Step A-J. Il satellite serve solo come validazione visiva di contesto. Se EUMETView non disponibile, usare il portale web https://eumetview.eumetsat.int/ per navigazione manuale.
+**Nota:** L'agente AI può descrivere qualitativamente l'immagine. Per analisi quantitative usare i dati numerici degli Step A-I. Il satellite serve solo come validazione visiva di contesto. Se EUMETView non disponibile, usare il portale web https://eumetview.eumetsat.int/ per navigazione manuale.
 
 Vedi `references/satellite.md` per canali SEVIRI, guida interpretazione pattern, e alternative (EUMETSAT Data Store, NASA GIBS).
 
@@ -405,7 +388,7 @@ Vedi `references/climatology.md` per valori di riferimento e classificazione ano
 Verifica automaticamente i pattern in `references/local_phenomena.md` e `references/italy_zones.md` → flag se attivi.
 
 #### 4f. Analisi Ensemble Spread
-Quando il fetch J è attivo:
+Quando il fetch I è attivo:
 1. Confronta **ensemble mean** con il **consensus deterministico** (fetch A)
 2. Classifica lo spread per variabile (soglie in `references/ensemble_spread.md`)
 3. Calcola probabilità da ensemble: P(pioggia >5/20/50mm), P(gelo), P(vento >70 km/h)
@@ -417,7 +400,7 @@ Quando il fetch J è attivo:
 5. Includi sempre scenario p10, mediana e p90 nel report per eventi significativi
 
 #### 4g. Integrazione nowcasting + NWP
-Quando il nowcasting radar è attivo, usa questa gerarchia per orizzonte:
+Quando il nowcasting radar (Step H) o i fulmini (Step K) sono attivi, usa questa gerarchia per orizzonte:
 - **0-30 min**: usa esclusivamente radar (estrapolazione lineare)
 - **30-90 min**: radar primario + NWP come contesto
 - **90 min-6h**: NWP primario + radar per verifica situazione attuale
@@ -457,7 +440,7 @@ Aggiungi: `elevation={quota_target}` nella chiamata API.
 Trigger: "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione"
 Focus: Finestre di volo (T > 10°C, vento < 25 km/h), secrezione nettarifero (T notturna > 12°C e UR > 60%),
 rischio gelate tardive su fioriture (Acacia, Castagno, Agrumi), rischio grandine e piogge battenti.
-**Storico recente obbligatorio**: giorni di volo nell'ultima settimana e piogge pregresse per stato vegetativo.
+**Storico recente**: giorni di volo nell'ultima settimana e piogge pregresse per stato vegetativo (incluso in Step A).
 Vedi soglie specifiche in `references/climatology.md`.
 
 ### ⚽ Evento sportivo / All'aperto
@@ -474,14 +457,14 @@ Somma Termica (GDD) per maturazione, Rischio Peronospora (Regola dei 3-10),
 siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
 umidità fogliare (UR >90% = rischio funghi/oidio), gelate tardive (T < -1°C in primavera).
 **Rischio allagamento campi**: se livello fiumi > soglia gialla + pioggia prevista >20mm/24h.
-**Ristagno idrico**: se soil_moisture >0.35 + livello falda in salita (dati idrologici Step M).
-**Storico recente obbligatorio**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case.
+**Ristagno idrico**: se soil_moisture >0.35 + livello falda in salita (dati idrologici Step L).
+**Storico recente**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case (incluso in Step A).
 
 ### 🏗️ Cantiere / Lavori all'aperto
 Trigger: "cantiere", "lavori", "operai", "gru", "ponteggio"
 Focus: vento >50 km/h (stop gru), pioggia cumulata (calcestruzzo), gelate notturne (ghiaccio su superfici), visibilità.
 **METAR per visibilità**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità orizzontale — utile per lavoro in quota (gru, ponteggi).
-**Rischio allagamento scavi**: se livello falda in salita (Step M) + precipitazioni previste >20mm/24h.
+**Rischio allagamento scavi**: se livello falda in salita (Step L) + precipitazioni previste >20mm/24h.
 **UV se estate**: rischio colpo di calore per i lavoratori.
 
 ### 🚗 Viabilità / Trasporti
@@ -490,14 +473,14 @@ Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), gelicidio (b
 acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
 **METAR per nebbia aeroportuale**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità RVR e ceiling — indicatore precoce di nebbia in pianura.
 **Satellite per nebbia in Val Padana**: immagini VIS0.6 (diurno) e IR3.9 (notturno) per estensione nebbia.
-**Rischio allagamento strade**: se livello fiume > soglia rossa per ponte/guado sul percorso, o pioggia >50mm/24h + dati ISPRA dissesto → rischio interruzione.
+**Rischio allagamento strade**: se livello fiume > soglia rossa per ponte/guado sul percorso (Step L), o pioggia >50mm/24h + dati ISPRA dissesto → rischio interruzione.
 
 ### 🏖️ Mare / Spiaggia / Nautica
 Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"
 Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), temporali costieri, UV index.
-**Marine API obbligatoria**: attiva fetch F per dati onde completi (wave_height, swell, periodo).
+**Marine API obbligatoria**: attiva fetch E per dati onde completi (wave_height, swell, periodo).
 **UV obbligatorio**: includi sempre per questo use case.
-**Fulmini**: se fulmini entro 10km dalla costa → evacuazione spiaggia, rientro imbarcazioni immediate.
+**Fulmini**: se fulmini entro 10km dalla costa (Step K) → evacuazione spiaggia, rientro imbarcazioni immediate.
 **Satellite per copertura nuvolosa costiera**: immagini IR10.8 per valutazione sistemi temporaleschi in avvicinamento dal mare.
 Vedi scale Douglas/Beaufort e soglie in `references/uv_marine_recent.md`.
 
@@ -524,8 +507,8 @@ Focus:
 **Eolico**: velocità e direzione vento a 80m e 120m (altezze hub turbine), raffiche (>90 km/h = stop sicurezza). Produzione stimata: vento 5-25 m/s = zona operativa, <3 m/s = cut-in (nessuna produzione), >25 m/s = cut-out (stop).
 **Solare**: `shortwave_radiation`, `direct_normal_irradiance` (DNI), `direct_radiation`, `diffuse_radiation`, `terrestrial_radiation`, `cloud_cover`. Produzione stimata: DNI > 600 W/m² = produzione ottimale, < 200 W/m² = produzione bassa. Rapporto `direct/diffuse` per valutazione efficienza impianti fissi vs inseguimento.
 **Forecast vs climatologia**: confronta irraggiamento e vento previsti con la norma del periodo per valutare se la produzione sarà sopra/sotto media.
-**Fulmini (Step L)**: se fulmini entro 10km da impianto eolico → stop preventivo turbine.
-**METAR (Step K)**: se aeroporto vicino, usa METAR per validazione vento osservato vs previsto.
+**Fulmini (Step K)**: se fulmini entro 10km da impianto eolico → stop preventivo turbine.
+**METAR (Step J)**: se aeroporto vicino, usa METAR per validazione vento osservato vs previsto.
 
 ### 🏖️ Turismo — Beach Index e Ski Index
 Trigger: "spiaggia", "bagno", "mare vacanza", "sci", "neve pista", "ski resort", "vacanza", "weekend fuori porta"
@@ -568,32 +551,32 @@ Focus:
 ```
 ## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA}
 
-### 📡 Nowcasting Radar (0-6h) — {HH:MM} ora locale (se attivato)
+### 📡 Nowcasting Radar (0-6h) — {HH:MM} ora locale (Step H)
 Situazione attuale: {sistema in atto / in avvicinamento / assente}
 VMI max: {X} dBZ → {intensità} | SRI: {X} mm/h | VIL: {X} kg/m²
 Movimento: {DIR} a {X} km/h | Distanza da {LUOGO}: {D} km
 +30min: {scenario} | +60min: {scenario} | +90min: {scenario}
 {se grandine: ⚠️ POH: {X}% — Echo Top: {X} km}
 Affidabilità: 0-30min Alta → 30-60min Media → >60min Bassa (usa NWP)
-Fonte: Radar-DPC DPC (CC-BY-SA)
+Fonte: Radar-DPC (CC-BY-SA)
 
-### 🚨 Allerta {COLORE} — {TIPO} (se attiva)
+### 🚨 Allerta {COLORE} — {TIPO} (Step D)
 {Dettaglio allerta Protezione Civile ufficiale}
 
 ### Consensus Multi-Modello
 Modelli: {N} | Macroarea: {ZONA} | Concordanza: Alta/Media/Bassa
 {lista modelli con pesi}
 
-### 📅 Ultimi 7 giorni (se rilevante)
+### 📅 Ultimi 7 giorni (Step A)
 Precipitazioni cumulate: {X}mm (norma: {Y}mm → {±Z}%)
 Giorni senza pioggia: {N} consecutivi | T media anomalia: {±X}°C
 Contesto: {frase — es. "suoli saturi" / "siccità in corso" / "nella norma"}
 
-### 📊 vs Climatologia
+### 📊 vs Climatologia (Step B)
 T max: {X}°C | Media storica: {Y}°C | Anomalia: {±Z}°C ({dentro norma/anomalo/estremo})
 Precipitazioni: {X}mm attesi | Media periodo: {Y}mm | {valutazione}
 
-### 📡 Osservato (stazione {NOME_STAZIONE}, ore {HH})
+### 📡 Osservato (stazione {NOME_STAZIONE}, ore {HH} — Step C)
 T: {X}°C | Pioggia ultime 6h: {X}mm | Vento: {X} km/h da {DIR}
 {confronto con forecast precedente: scarto modelli}
 
@@ -613,17 +596,17 @@ Consensus: {media}°C ±{σ}°C | Anomalia: {+/-X}°C vs norma
 Sostenuto: {X} km/h da {DIR} | Raffiche: {max} km/h
 {flag: FOEHN / BORA / TRAMONTANA / SCIROCCO / LIBECCIO / MAESTRALE / GARBINO / PONENTINO / GRECALE}
 
-### ☀️ UV Index (se rilevante)
+### ☀️ UV Index (Step F)
 Picco: {X} ({Basso/Moderato/Alto/Molto alto/Estremo}) alle {HH}:00
 Protezione: {raccomandazione SPF}
 
-### 🌊 Condizioni Marine (se costiero o use case mare)
+### 🌊 Condizioni Marine (Step E)
 Stato del mare: Grado {N} (Douglas) | Onde: {X}m | Beaufort (Vento): {N}
 **Mare Morto (Swell)**: {Bassa/Media/Alta} | Periodo: {X}s ({Descrizione})
 **SST (Temperatura Mare)**: {X}°C ({Comfort})
 Balneazione: {Ok/Cautela/Sconsigliata} | Nautica: {Ok/Cautela/Sconsigliata}
 
-### 📊 Ensemble Spread (se attivato)
+### 📊 Ensemble Spread (Step I)
 T max: p10={A}°C | mediana={B}°C | p90={C}°C | spread={D}°C → {Bassa/Media/Alta/Molto alta}
 Precipitazioni: mediana={X}mm | p90={Y}mm | P(>5mm)={P}% | P(>20mm)={Q}%
 Vento raffica: mediana={X} km/h | p90={Y} km/h | P(>70km/h)={P}%
@@ -631,7 +614,7 @@ Concordanza ensemble–deterministico: {Alta/Media/Bassa}
 Scenario p10 (ottimistico): {descrizione breve}
 Scenario p90 (pessimistico): {descrizione breve}
 
-### 💨 Qualità dell'Aria (se attivata)
+### 💨 Qualità dell'Aria (Step G)
 AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
 {se dust: Polvere sahariana: {X} µg/m³ ⚠️ evento naturale}
@@ -639,7 +622,7 @@ PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
 Condizioni: {accumulo/dispersione/neutro}
 Soggetti sensibili: {raccomandazione}
 
-### ✈️ Validazione METAR (se attivata)
+### ✈️ Validazione METAR (Step J)
 Aeroporto: {ICAO} | Osservato: {HH:MM} UTC
 T osservata: {X}°C | T prevista: {Y}°C → Scarto: {±Z}°C
 Vento osservato: {DIR}/{X}kt raffiche {Y}kt | Vento previsto: {DIR}/{X}kt
@@ -647,7 +630,7 @@ Visibilità: {X}m ({VFR/IFR/LIFR}) | Nuvole: {SKC/FEW/SCT/BKN/OVC}
 {se divergenza >2°C: ⚠️ modello sovrastima/sottostima — correggi forecast}
 {se visibilità <2000m: ⚠️ nebbia — critico per viabilità}
 
-### ⚡ Fulmini in Tempo Reale (se attivata)
+### ⚡ Fulmini in Tempo Reale (Step K)
 Fulmini ultimi 15min: {N} in {area}km² | Densità: {X}/50km²/15min
 Trend: {in intensificazione / stabile / in dissolvimento}
 Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontano})
@@ -655,14 +638,14 @@ Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontan
 {se fulmini + VIL>25: ⚠️ grandine probabile (>70%)}
 {se dry lightning: ⚠️ rischio incendi — fulmini senza pioggia}
 
-### 🌊 Dati Idrologici (se attivata)
+### 🌊 Dati Idrologici (Step L)
 Fiume: {NOME} a {LOCALITÀ} | Livello: {X}m (soglia {verde/giallo/rossa}: {Y}m)
 Trend 6h: {in salita / stabile / in discesa} ({±X}m)
 {se livello > soglia gialla + pioggia prevista: ⚠️ scenario peggiorativo}
 {se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo}
 {se fuori Trentino: "Dati real-time limitati al Trentino. Monitorare ARPA + allerte PC."}
 
-### 🛰️ Satellite (se attivata)
+### 🛰️ Satellite (Step M)
 Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}
 {se fronti: Banda frontale {in arrivo / in transito / in allontanamento} — posizione vs NWP: {convergente / divergente}}
 {se celle convettive: Tops freddi (<-60°C) → temporali intensi {con/senza} overshooting}

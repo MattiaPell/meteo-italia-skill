@@ -48,29 +48,29 @@ end_date:   {ANNO-1}-05-20
 
 ### Indice Rapido per Regione
 
-| Regione | Città | Riga |
-|---------|-------|------|
-| **Lombardia** | Milano | ~49 |
-| **Piemonte** | Torino | ~65 |
-| **Valle d'Aosta** | Aosta | ~81 |
-| **Liguria** | Genova | ~97 |
-| **Veneto** | Venezia, Rovigo, Verona, Padova | ~113, ~129, +nuove |
-| **Emilia-Romagna** | Bologna, Ferrara, Parma | ~145, +nuova |
-| **Toscana** | Firenze, Livorno | ~161, +nuova |
-| **Alto Adige** | Bolzano | ~177 |
-| **Trentino** | Trento | ~193 |
-| **Friuli-Venezia Giulia** | Trieste | ~209 |
-| **Abruzzo** | L'Aquila, Pescara | ~225, ~289 |
-| **Umbria** | Perugia | ~241 |
-| **Lazio** | Roma | ~257 |
-| **Marche** | Ancona | ~273 |
-| **Campania** | Napoli | ~305 |
-| **Basilicata** | Potenza | ~321 |
-| **Molise** | Campobasso | ~337 |
-| **Puglia** | Bari, Lecce, Foggia, Taranto | ~353, +nuova |
-| **Calabria** | Catanzaro, Reggio Calabria | ~369, +nuova |
-| **Sicilia** | Palermo, Catania, Messina | ~385, ~401, +nuova |
-| **Sardegna** | Cagliari, Sassari | ~417, +nuova |
+| Regione | Città |
+|---------|-------|
+| **Lombardia** | Milano |
+| **Piemonte** | Torino |
+| **Valle d'Aosta** | Aosta |
+| **Liguria** | Genova |
+| **Veneto** | Venezia, Rovigo, Verona, Padova |
+| **Emilia-Romagna** | Bologna, Ferrara, Parma |
+| **Toscana** | Firenze, Livorno |
+| **Alto Adige** | Bolzano |
+| **Trentino** | Trento |
+| **Friuli-Venezia Giulia** | Trieste |
+| **Abruzzo** | L'Aquila, Pescara |
+| **Umbria** | Perugia |
+| **Lazio** | Roma |
+| **Marche** | Ancona |
+| **Campania** | Napoli |
+| **Basilicata** | Potenza |
+| **Molise** | Campobasso |
+| **Puglia** | Bari, Lecce, Foggia, Taranto |
+| **Calabria** | Catanzaro, Reggio Calabria |
+| **Sicilia** | Palermo, Catania, Messina |
+| **Sardegna** | Cagliari, Sassari |
 
 ### Milano (45.47°N, 9.19°E, 122m)
 | Mese | T max media | T min media | Precip. media | Giorni pioggia |
@@ -701,11 +701,6 @@ L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica l
 - **<0.15 m³/m³**: Suolo molto secco (punto di appassimento)
 - **0.15–0.30 m³/m³**: Umidità moderata
 - **>0.35 m³/m³**: Suolo molto umido / saturo
-
-### Probabilità gelata
-T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)
-T min prevista <0°C → gelata quasi certa in zone aperte e pianura
-T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)
 
 ---
 

@@ -11,6 +11,18 @@ npx skills install MattiaPell/meteo-italia-skill
 ```
 oppure scarica la repository e importala manualmente.
 
+## Configurazione
+
+Alcune funzionalità avanzate richiedono chiavi API (facoltative ma consigliate):
+
+- **METAR/TAF (CheckWX)**: Per la validazione con dati aeroportuali, imposta la chiave API in un file `.env` o come variabile d'ambiente:
+  ```
+  CHECKWX_API_KEY=tua_chiave_qui
+  ```
+  Puoi ottenerne una gratuita su [checkwxapi.com](https://www.checkwxapi.com/).
+
+Tutte le altre API (Open-Meteo, DPC Radar, DMI Lightning, floods.it, EUMETSAT) sono ad accesso libero o non richiedono autenticazione per l'uso previsto in questa skill.
+
 ## Come funziona
 
 L'agente AI segue il flusso definito in `SKILL.md`:
