@@ -2,13 +2,14 @@
 
 Skill per **analisi comparativa multi-modello delle previsioni meteo** specializzata per il territorio italiano. Integra modelli numerici, osservazioni ARPA, allerte Protezione Civile e climatologia di riferimento.
 
-Progettata per agenti AI (OpenCode): l'agente carica `SKILL.md` come istruzioni operative per eseguire analisi meteo complete e strutturate.
+Progettata principalmente per agenti AI (OpenClaw, Hermes...): l'agente carica `SKILL.md` come istruzioni operative per eseguire analisi meteo complete e strutturate.
 
 ## Installazione
 
 ```bash
 npx skills install MattiaPell/meteo-italia-skill
 ```
+oppure scarica la repository e importala manualmente.
 
 ## Come funziona
 
