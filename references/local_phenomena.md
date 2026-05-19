@@ -568,3 +568,52 @@ Impatti: Nevicate improvvise e intermittenti (anche forti), accumuli significati
 Nota: Fenomeno spesso sottostimato dai modelli globali; affidarsi a modelli ad alta risoluzione (ICON D2, ARPAE).
 ```
 *Fonte: ARPA Marche / MeteoNetwork (Sea Effect Snow Adriatico)*
+
+---
+
+## MAREGGIATA (Coastal Storm)
+
+### Cos'è
+Invasione della costa da parte del mare a causa di onde eccezionali generate da venti forti (Libecciata, Sciroccata) con fetch lungo. Causa erosione costiera e danni a strutture balneari e portuali.
+
+### Dove colpisce
+Tutte le coste italiane esposte; in particolare Liguria (Libeccio), Sardegna (Maestrale), Adriatico (Bora/Scirocco).
+
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- **Douglas Sea State ≥ 5**: Altezza significativa onde (`wave_height`) > 2.5m.
+- **Vento sostenuto > 40-50 km/h** perpendicolare alla costa (Step 3A).
+- **Fetch lungo**: Vento costante sulla stessa direzione per 12+ ore.
+- **Bassa Pressione**: `pressure_msl` < 1005 hPa (sovra-elevazione del livello marino).
+
+### Come riportarlo
+```
+🌊 RISCHIO MAREGGIATA — Costa {ZONA}
+Stato del mare: Grado {N} (Douglas) | Altezza onde: {X}m
+Vento: {DIR} a {Y} km/h | Tendenza: {Aumento/Diminuzione}
+Impatti: Erosione costiera, danni a stabilimenti e porticcioli, allagamenti litoranei.
+```
+
+---
+
+## MARROBBIO (Meteotsunami)
+
+### Cos'è
+Improvvisa e rapida variazione del livello del mare (fino a 1-1.5m in pochi minuti) non dovuta a cause sismiche, ma a fluttuazioni della pressione atmosferica che risuonano con la batimetria costiera.
+
+### Dove colpisce
+Sicilia sud-occidentale (Mazara del Vallo è l'epicentro), occasionalmente altre zone del Mediterraneo.
+
+### Segnali nei dati (flag se presenti ≥2 di questi)
+- **Variazioni rapide di pressione**: Salti di pressione (Step 3A, `pressure_msl`) rilevati dai modelli orari.
+- **Vento da SW o SE**: Direzione favorevole alla propagazione dell'onda nel Canale di Sicilia.
+- **Configurazione sinottica**: Presenza di fronti o linee d'instabilità in rapido movimento (Step 3A, `weather_code` 80-99).
+- **Contesto**: Canale di Sicilia (lat 37.0–38.0, lon 12.0–13.5).
+
+### Come riportarlo
+```
+🌊 POSSIBILE MARROBBIO — Costa Sud-Ovest Sicilia
+Attenzione: Fenomeno improvviso di variazione del livello del mare (Meteotsunami).
+Segnali: Instabilità atmosferica marcata | Vento da: {DIR}
+Impatti: Repentino innalzamento/abbassamento del livello nei porti e foci fluviali (Mazara).
+```
+*Fonte: ARPA Sicilia / ISPRA (Meteotsunami nel Mediterraneo)*

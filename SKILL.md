@@ -118,7 +118,7 @@ Oppure consulta il bollettino testuale su `mappe.protezionecivile.gov.it`.
 Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
 
 #### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
-Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE).
+Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo).
 ```
 GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
@@ -341,14 +341,14 @@ acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti espos
 
 ### 🏖️ Mare / Spiaggia / Nautica
 Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"
-Focus: stato del mare, vento (Beaufort), temporali costieri, UV index.
+Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), temporali costieri, UV index.
 **Marine API obbligatoria**: attiva fetch F per dati onde completi (wave_height, swell, periodo).
 **UV obbligatorio**: includi sempre per questo use case.
-Vedi scala Beaufort e soglie in `references/uv_marine_recent.md`.
+Vedi scale Douglas/Beaufort e soglie in `references/uv_marine_recent.md`.
 
 ### 🌡️ Salute / Caldo estremo / Allergie
 Trigger: "caldo", "afa", "anziani", "bambini", "salute", "allergie", "polline", "asma"
-Focus: T percepita (heat index), notti tropicali (T >20°C), ondata di calore (T >35°C per 3+ giorni), UV index, qualità aria.
+Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calore (T >35°C per 3+ giorni), UV index, qualità aria.
 **UV obbligatorio**: includi picco, orario e raccomandazioni SPF.
 **Qualità aria obbligatoria**: AQI + PM2.5 + O3 + pollini stagionali + raccomandazioni soggetti sensibili.
 **Storico recente**: segnala se ondata calore già in corso da giorni.
@@ -425,7 +425,8 @@ Picco: {X} ({Basso/Moderato/Alto/Molto alto/Estremo}) alle {HH}:00
 Protezione: {raccomandazione SPF}
 
 ### 🌊 Condizioni Marine (se costiero o use case mare)
-Onde: {X}m | Beaufort: {N} — {descrizione}
+Stato del mare: Grado {N} (Douglas) | Onde: {X}m | Beaufort (Vento): {N}
+**Mare Morto (Swell)**: {Bassa/Media/Alta} | Periodo: {X}s ({Descrizione})
 **SST (Temperatura Mare)**: {X}°C ({Comfort})
 Balneazione: {Ok/Cautela/Sconsigliata} | Nautica: {Ok/Cautela/Sconsigliata}
 
