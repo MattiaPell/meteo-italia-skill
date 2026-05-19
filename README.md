@@ -58,7 +58,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [model_bias.md](references/model_bias.md) | Bias sistematici documentati per modello e stagione |
 | [italy_zones.md](references/italy_zones.md) | Macroaree italiane → set modelli + pesi configurabili |
 | [arpa_network.md](references/arpa_network.md) | Rete ARPA/ARPAS — endpoint osservativi regionali |
-| [climatology.md](references/climatology.md) | Climatologia ERA5 — benchmark e valori di riferimento |
+| [climatology.md](references/climatology.md) | Climatologia ERA5 1991-2020 — 32 città italiane, indici derivati, record storici |
 | [ensemble_spread.md](references/ensemble_spread.md) | Spread ensemble — incertezza probabilistica |
 | [event_reliability.md](references/event_reliability.md) | Affidabilità forecast per evento e orizzonte |
 | [local_phenomena.md](references/local_phenomena.md) | Flag automatici per fenomeni italiani |
