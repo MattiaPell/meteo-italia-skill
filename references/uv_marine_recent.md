@@ -123,6 +123,17 @@ Usa la temperatura percepita (`apparent_temperature`) per valutare il disagio fi
 | 41 – 54°C | Pericolo | Colpo di calore probabile |
 | > 54°C | Pericolo estremo | Colpo di calore imminente |
 
+### 🌡️ Bollettino Ondate di Calore (Ministero della Salute)
+
+Standard ufficiale italiano per la prevenzione degli effetti del caldo sulla salute.
+
+| Livello | Colore | Condizioni e Impatto |
+|---|---|---|
+| **Livello 0** | 🟢 Verde | Condizioni meteorologiche che non comportano rischi per la salute. |
+| **Livello 1** | 🟡 Giallo | **Pre-allerta**: condizioni che possono precedere un'ondata di calore. |
+| **Livello 2** | 🟠 Arancione | **Rischio**: temperature elevate ed effetti negativi su anziani, bambini e soggetti fragili. |
+| **Livello 3** | 🔴 Rosso | **Ondata di Calore**: condizioni ad elevato rischio che persistono per **3 o più giorni consecutivi**. Pericolo per tutta la popolazione. |
+
 ### 🌡️ Temperatura a Bulbo Umido (Wet Bulb Temperature - WBT)
 La variabile `wet_bulb_temperature_2m` (Step 3A) è il limite fisico del raffreddamento per evaporazione (sudore).
 
@@ -198,13 +209,3 @@ Contestualizza il forecast basandosi su quanto piovuto o quanto caldo ha fatto n
 - **Bassa Montagna**: 600 – 1200 m slm
 - **Media Montagna**: 1200 – 2000 m slm
 - **Alta Montagna**: > 2000 m slm
-
-
-|---|---|---|
-
-
----
-
-
-
-|---|---|---|
