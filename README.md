@@ -76,6 +76,21 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [hydro_italia.md](references/hydro_italia.md) | Dati idrologici — fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
 | [satellite.md](references/satellite.md) | Immagini satellite Meteosat — validazione visiva (EUMETSAT) |
 
+## Use Case
+
+| Use Case | Focus |
+|----------|-------|
+| 🏔️ Montagna / Escursionismo / Sci | Quota neve, temporali pomeridiani, UV in quota, valanghe (AINEVA), fulmini in cresta |
+| 🐝 Apicoltura / Impollinazione | Finestre di volo, secrezione nettarifero, gelate tardive |
+| ⚽ Evento sportivo / All'aperto | Probabilità pioggia nella finestra, vento strutture, fulmini (sospensione) |
+| 🌾 Agricoltura / Campagna | Gelate, grandine, bilancio idrico, umidità fogliare, allagamento campi |
+| 🏗️ Cantiere / Lavori all'aperto | Vento gru, pioggia calcestruzzo, visibilità METAR, allagamento scavi |
+| 🚗 Viabilità / Trasporti | Neve, nebbia, gelicidio, acquaplaning, vento laterale, allagamento strade |
+| 🏖️ Mare / Spiaggia / Nautica | Douglas Scale, Beaufort, swell, UV, fulmini costa, satellite nuvolosità |
+| 🌡️ Salute / Caldo estremo / Allergie | Heat Index, Notti Tropicali, AQI, pollini |
+| ⚡ Energia — Eolico e Solare | Produzione stimata, cut-in/cut-out vento, irraggiamento, nuvolosità |
+| 🏖️ Turismo — Beach/Ski Index | SST, UV, vento, neve fresca, snow depth, score 0-100 |
+
 ## Trigger
 
 Domande meteo sull'Italia: previsioni, confronto modelli, affidabilità forecast, allerte, fenomeni locali. Qualsiasi città/regione italiana.
@@ -88,6 +103,9 @@ Esempi di domande che attivano la skill:
 - _"Allerta meteo in Sicilia"_
 - _"Neve sugli Appennini?"_
 - _"Accordo modelli per il Nord-Est"_
+- _"Produzione eolica prevista in Puglia"_
+- _"Beach index per la Sardegna questo weekend"_
+- _"Ski index per Cortina"_
 
 ## Licenza
 
