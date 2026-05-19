@@ -623,6 +623,38 @@ Impatti: Repentino innalzamento/abbassamento del livello nei porti e foci fluvia
 
 ---
 
+## ACQUA ALTA (Venezia / Alto Adriatico)
+
+### Cos'è
+Fenomeno di sovralzo del livello del mare nell'Adriatico Settentrionale che causa l'allagamento di Venezia, Chioggia e altre località costiere. È causato dalla combinazione di marea astronomica (ciclica) e contributo meteorologico (storm surge). L'effetto è amplificato dalla forma a "catino" dell'Adriatico e dal fenomeno della **Sessa** (oscillazione libera del bacino).
+
+### Stagione: Settembre–Aprile (picco Novembre–Dicembre)
+
+### Segnali nei dati (flag se presenti ≥2 di questi)
+- **Bassa Pressione**: `pressure_msl` < 1000-1005 hPa sul Nord Adriatico. Ogni hPa in meno rispetto alla media (1013 hPa) comporta un innalzamento teorico del livello marino di ~1 cm (effetto barometrico inverso).
+- **Scirocco persistente**: Vento da SE (`wind_direction_10m` 120-160°) con velocità sostenuta > 30-40 km/h lungo tutto l'asse Adriatico per 12+ ore.
+- **Bora locale**: Vento da NE nel Golfo di Venezia che può ostacolare il deflusso delle acque dalle lagune (effetto accumulo locale).
+- **Sessa**: Presenza di un forte gradiente di pressione N-S tra l'Adriatico Settentrionale e Meridionale nei giorni precedenti.
+
+### Soglie di Marea (Rif. Zero Mareografico Punta della Salute - ZMPS)
+| Livello | Soglia | Impatto a Venezia | Azione |
+|---|---|---|---|
+| **Sostenuta** | 80–109 cm | Allagamento aree più basse (Piazza San Marco) | Info popolazione |
+| **Molto Sostenuta** | 110–139 cm | Allagamento significativo (>12% città) | **Attivazione MOSE** |
+| **Eccezionale** | ≥ 140 cm | Allagamento esteso (>59% città) | Emergenza |
+
+### Come riportarlo
+```
+🌊 RISCHIO ACQUA ALTA — Venezia / Laguna / Alto Adriatico
+Contributo Meteorologico: {Stimato} cm | Pressione: {X} hPa
+Vento: {DIR} (Scirocco) a {Y} km/h | Persistenza: {H} ore
+Scenario: {Marea Sostenuta / Molto Sostenuta / Eccezionale}
+Nota: Dal 2020 il sistema MOSE protegge la città per maree ≥ 110 cm. Seguire bollettino CPSM Venezia.
+```
+*Fonte: CPSM Venezia / ISPRA (Previsione maree e contributi meteorologici)*
+
+---
+
 ## GALAVERNA, CALABROSA e BRINA
 
 ### GALAVERNA (Soft Rime)
