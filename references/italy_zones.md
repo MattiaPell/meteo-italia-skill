@@ -19,7 +19,7 @@ ecmwf_ifs, arome_france, gfs_seamless
 | `arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera).
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera), Maccaja (costa ligure).
 
 **Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `arome_france` per la fascia costiera.
 
@@ -68,7 +68,7 @@ meteofrance_seamless, gfs_seamless
 | `meteofrance_seamless` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Temporali convettivi su Appennino Tosco-Emiliano (estate), nebbia padana (pianura emiliana ottobre-febbraio), tramontana su Toscana tirrenica, alluvioni vallate appenniniche (autunno), cuscino freddo, gelicidio (versante emiliano), neve oltre 400m (inverno).
+**Fenomeni locali prioritari:** Temporali convettivi su Appennino Tosco-Emiliano (estate), nebbia padana (pianura emiliana ottobre-febbraio), tramontana su Toscana tirrenica, alluvioni vallate appenniniche (autunno), cuscino freddo, gelicidio (versante emiliano), neve oltre 400m (inverno), Garbino (versante romagnolo).
 
 ---
 
@@ -90,7 +90,7 @@ arpege_europe, gfs_seamless, icon_eu
 | `icon_eu` | 1.0 |
 | `gfs_seamless` | 0.8 |
 
-**Fenomeni locali prioritari:** Tramontana su Lazio tirrenico, grecale su Marche/Abruzzo, scirocco (Sud Lazio, Campania N), neve su Appennino centrale (frequente, impatto viabilità A24/A25), temporali estivi sui Castelli Romani.
+**Fenomeni locali prioritari:** Tramontana su Lazio tirrenico, grecale su Marche/Abruzzo, scirocco (Sud Lazio, Campania N), neve su Appennino centrale (frequente, impatto viabilità A24/A25), temporali estivi sui Castelli Romani, Garbino (Marche/Abruzzo), Ponentino (Roma/Lazio).
 
 ---
 
@@ -133,7 +133,7 @@ gfs_seamless, meteofrance_seamless
 | `gfs_seamless` | 1.0 |
 | `meteofrance_seamless` | 0.8 |
 
-**Fenomeni locali prioritari:** Scirocco intenso (sabbia dal Sahara, visibilità ridotta, T >40°C in estate), grecale su versante orientale (Catania, Messina), temporali di Tramontana sui Nebrodi/Madonie, neve sull'Etna (tutto l'anno oltre 2000m), alluvioni improvvise (ottobre-novembre), Lupa di mare (Stretto, primavera).
+**Fenomeni locali prioritari:** Scirocco intenso (sabbia dal Sahara, visibilità ridotta, T >40°C in estate), grecale su versante orientale (Catania, Messina), temporali di Tramontana sui Nebrodi/Madonie, neve sull'Etna (tutto l'anno oltre 2000m), alluvioni improvvise (ottobre-novembre), Lupa di mare (Stretto, primavera), Marrobbio (costa SW).
 
 **Nota:** ARPAE ICON 2I ha copertura ridotta sulla Sicilia — usa ECMWF come riferimento principale.
 
@@ -178,7 +178,7 @@ ecmwf_ifs, gfs_seamless
 | `icon_seamless` | 1.0 |
 | `gfs_seamless` | 0.8 |
 
-**Fenomeni locali prioritari:** Bora (versante nord), grecale (versante sud), temporali adriatici da convergenza (autunno), [Acqua Alta](local_phenomena.md#acqua-alta-venezia--alto-adriatico) a Venezia (Bora + Scirocco + Sessa).
+**Fenomeni locali prioritari:** Bora (versante nord), grecale (versante sud), temporali adriatici da convergenza (autunno), [Acqua Alta](local_phenomena.md#acqua-alta-venezia--alto-adriatico) a Venezia (Bora + Scirocco + Sessa), Garbino (versante centro-sud).
 
 ---
 

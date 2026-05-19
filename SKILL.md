@@ -8,10 +8,12 @@ description: >
   garbino, ponentino, cuscino freddo, gelicidio, grandine padana, neve appenninica,
   temporali adriatici, adriatic sea effect, allerte Protezione Civile).
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
-  "maestrale", "levante", "ostro", "ponente", "garbino", "ponentino",
+  "maestrale", "bora", "scirocco", "tramontana", "libeccio", "levante", "ostro",
+  "ponente", "grecale", "garbino", "ponentino", "maccaja", "caligo", "lupa di mare",
   "cuscino freddo", "inversione termica",
   "gelicidio", "pioggia congelantesi",
   "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
+  "ciclismo", "bici", "bicicletta", "uscita in bici",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
   "analisi meteo [città italiana]", "weekend meteo", "settimana meteo".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
@@ -230,7 +232,7 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 ```http
 GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_eu_ensemble_mean,gfs025_ensemble_mean
+  &models=ecmwf_ifs025_ensemble_mean,icon_seamless_ensemble_mean,gfs025_ensemble_mean
   &hourly=temperature_2m,temperature_2m_spread,
           apparent_temperature,apparent_temperature_spread,
           precipitation_mean,precipitation_spread,
@@ -505,6 +507,16 @@ Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calor
 **UV obbligatorio**: includi picco, orario e raccomandazioni SPF.
 **Qualità aria obbligatoria**: AQI + PM2.5 + O3 + pollini stagionali + raccomandazioni soggetti sensibili.
 **Storico recente**: segnala se ondata calore già in corso da giorni.
+
+### 🚲 Ciclismo / Sport su strada
+Trigger: "ciclismo", "bici", "bicicletta", "uscita in bici", "corsa su strada", "granfondo"
+Focus: Vento (intensità e direzione), T percepita (comfort), rischio pioggia (grip), qualità aria.
+**Soglie Operative**:
+- **Vento**: >25 km/h = disturbo significativo (laterale/frontale), >40 km/h = rischio sicurezza.
+- **Comfort**: T percepita 15-25°C = ideale, <10°C = rischio ipotermia (abbigliamento tecnico), >30°C = rischio disidratazione/colpo di calore.
+- **Sicurezza**: probabilità pioggia >30% = rischio asfalto viscido/perdita grip.
+- **Qualità Aria**: AQI >60 (Scarso) = sconsigliato sforzo intenso (Vedi `references/air_quality.md`).
+**UV Index**: includi sempre per uscite diurne (Vedi `references/uv_marine_recent.md`).
 
 ### ⚡ Energia — Eolico e Solare
 Trigger: "eolico", "solare", "fotovoltaico", "energia", "produzione", "impianto", "turbina", "pannelli", "grid"
