@@ -60,8 +60,10 @@ GET https://api.open-meteo.com/v1/forecast
   &models={MODEL1,MODEL2,...}
   &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
           precipitation_probability,wind_speed_10m,wind_direction_10m,
-          wind_gusts_10m,cloud_cover,visibility,weather_code,
-          relative_humidity_2m,cape,lifted_index,freezing_level_height,
+          wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,
+          cloud_cover_high,visibility,weather_code,
+          relative_humidity_2m,cape,lifted_index,convective_inhibition,
+          freezing_level_height,boundary_layer_height,wet_bulb_temperature_2m,
           snowfall,snow_depth,
           temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
           relative_humidity_925hPa,geopotential_height_925hPa,

@@ -274,7 +274,8 @@ Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
 - Vento <5 km/h
 - T prossima al punto di rugiada (T - Tdew <2°C)
 - **Inversione termica bassa**: T(2m) < T(925hPa) → indica ristagno d'aria e nebbia al suolo
-- `cloud_cover` <10% (cielo sereno → irraggiamento notturno)
+- **Cloud cover low**: >75% (presenza di strati o nebbia persistente)
+- `cloud_cover` <10% (cielo sereno → irraggiamento notturno in formazione)
 - Stagione: ottobre-febbraio
 - Pianura alluvionale (quota <50m)
 
@@ -307,6 +308,7 @@ Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raff
 
 ### Segnali nei dati (flag se ≥2)
 - CAPE >800 J/kg (significativo), >1500 J/kg (alto), >2500 J/kg (molto alto)
+- **CIN (Convective Inhibition)**: < 50 J/kg (assenza di "tappo" che impedisce la convezione)
 - `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
 - Wind shear in quota (differenza vento 850hPa vs 500hPa >55 km/h → MCS organizzato)
 - `weather_code` 95-99 previsto
@@ -392,6 +394,7 @@ Liguria (soprattutto centro-levante: Genova, Chiavari, Spezia), Toscana (costa e
 - **Convergenza al suolo** marcata (es. Tramontana fredda vs Scirocco caldo/umido nel Golfo di Genova)
 - **Moisture Flux** (flusso di umidità) elevato e persistente nei bassi strati verso la linea di convergenza
 - **CAPE** >1000-1500 J/kg persistente nell'area di alimentazione
+- **CIN**: < 50 J/kg (facilità di innesco dei nuclei temporaleschi)
 - **Vento a 500hPa** forte (>75-90 km/h) che "stira" l'incudine del temporale creando la forma a V
 - **Stazionarietà**: linea di convergenza che non si sposta per 3+ ore
 - **Precipitazioni concentrate**: modelli ad alta risoluzione (ICON D2, AROME) che prevedono >100mm in 3-6h su una fascia stretta
@@ -422,6 +425,7 @@ Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), 
 - **Stagione**: Inverno (novembre–febbraio)
 - **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
 - **Umidità elevata**: UR(2m) >85% con nebbia o nubi basse (Galaverna)
+- **Mixing Layer**: `boundary_layer_height` < 300m (aria intrappolata e scarsa ventilazione verticale)
 - **Pressione elevata**: regime anticiclonico invernale persistente (`pressure_msl` > 1020 hPa)
 - **Zona**: Macroaree Nord-Ovest, Nord-Est, Centro-Nord (pianura)
 - **Contesto**: flusso di aria mite in quota (T850hPa >0°C) mentre al suolo persiste il gelo
@@ -510,7 +514,7 @@ Liguria (settore centro-occidentale), occasionalmente Toscana costiera e Versili
 - **UR(2m) > 85-90%** sulla costa
 - **Vento da S/SE/SW**: Bassa intensità (<15-20 km/h)
 - **Stagione**: Primavera e Autunno
-- **Cloud cover**: >80% (nubi basse) mentre nell'entroterra/Pianura Padana è sereno
+- **Cloud cover low**: >75% (nubi basse/nebbia) mentre nell'entroterra è sereno
 - **Escursione termica**: Molto ridotta tra giorno e notte
 
 ### Come riportarlo

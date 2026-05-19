@@ -129,8 +129,19 @@ Disponibili: `alder_pollen`, `birch_pollen`, `grass_pollen`,
 
 Questa è la parte più utile per l'integrazione con il forecast meteorologico:
 
+### Altezza del Mixing Layer (Strato di Rimescolamento)
+La variabile `boundary_layer_height` (Step 3A) indica lo spessore dell'atmosfera in cui gli inquinanti vengono rimescolati e diluiti.
+
+| Boundary Layer Height | Rischio Accumulo | Scenario |
+|---|---|---|
+| **< 300 m** | **Estremo** | Inquinanti intrappolati vicino al suolo (tipico inversione notturna) |
+| **300 – 500 m** | **Alto** | Ventilazione scarsa, ristagno PM10/NO2 |
+| **500 – 1000 m** | **Moderato** | Condizioni di dispersione medie |
+| **> 1000 m** | **Basso** | Ottima dispersione verticale (aria pulita) |
+
 ### Scenari di accumulo (aria stagnante)
 **Condizioni trigger** (controlla dai dati NWP):
+- `boundary_layer_height` < 300-500 m persistente
 - Vento <5 km/h per >12h consecutive
 - `cloud_cover` <20% (cielo sereno → irraggiamento notturno → inversione)
 - T min < T max - 10°C (escursione termica elevata → inversione termica probabile)
