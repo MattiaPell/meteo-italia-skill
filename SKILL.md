@@ -10,6 +10,7 @@ description: >
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
   "maestrale", "garbino", "ponentino", "cuscino freddo", "inversione termica",
   "gelicidio", "pioggia congelantesi",
+  "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
   "analisi meteo [città italiana]", "weekend meteo", "settimana meteo".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
@@ -320,6 +321,14 @@ Focus: quota neve (`freezing_level_height`), visibilità, temporali pomeridiani 
 vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target, rischio valanghe (neve fresca + vento).
 Aggiungi: `elevation={quota_target}` nella chiamata API.
 **UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV.
+**Valanghe**: Consulta sempre il bollettino ufficiale **AINEVA** (valanghe.aineva.it) in presenza di neve fresca >30cm o forte vento.
+
+### 🐝 Apicoltura / Impollinazione
+Trigger: "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione"
+Focus: Finestre di volo (T > 10°C, vento < 25 km/h), secrezione nettarifero (T notturna > 12°C e UR > 60%),
+rischio gelate tardive su fioriture (Acacia, Castagno, Agrumi), rischio grandine e piogge battenti.
+**Storico recente obbligatorio**: giorni di volo nell'ultima settimana e piogge pregresse per stato vegetativo.
+Vedi soglie specifiche in `references/climatology.md`.
 
 ### ⚽ Evento sportivo / All'aperto
 Trigger: "partita", "evento", "concerto", "gara", "sagra", orario specifico citato
