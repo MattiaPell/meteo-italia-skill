@@ -34,6 +34,7 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 | **Bias noti** | Calibrazione per macroarea italiana con bias documentati per modello e stagione |
 | **METAR/TAF** | Validazione forecast con dati aeroportuali osservati (CheckWX API) |
 | **Lightning Detection** | Nowcasting temporali con fulmini in tempo reale (DMI API) |
+| **Dati Idrologici** | Monitoraggio fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
 
 ## Modelli Supportati
 
@@ -70,6 +71,8 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [nowcasting_radar.md](references/nowcasting_radar.md) | Nowcasting radar — precipitazioni in tempo reale |
 | [uv_marine_recent.md](references/uv_marine_recent.md) | UV index e condizioni marine recenti |
 | [metar_taf.md](references/metar_taf.md) | METAR/TAF aeroporti italiani — validazione forecast (CheckWX API) |
+| [lightning.md](references/lightning.md) | Lightning detection — nowcasting temporali (DMI Open Data API) |
+| [hydro_italia.md](references/hydro_italia.md) | Dati idrologici — fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
 
 ## Trigger
 
