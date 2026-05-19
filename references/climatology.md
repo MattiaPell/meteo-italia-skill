@@ -46,6 +46,32 @@ end_date:   {ANNO-1}-05-20
 
 *(ERA5 1991-2020 — periodo di riferimento WMO)*
 
+### Indice Rapido per Regione
+
+| Regione | Città | Riga |
+|---------|-------|------|
+| **Lombardia** | Milano | ~49 |
+| **Piemonte** | Torino | ~65 |
+| **Valle d'Aosta** | Aosta | ~81 |
+| **Liguria** | Genova | ~97 |
+| **Veneto** | Venezia, Rovigo, Verona, Padova | ~113, ~129, +nuove |
+| **Emilia-Romagna** | Bologna, Ferrara | ~145, +nuova |
+| **Toscana** | Firenze, Livorno | ~161, +nuova |
+| **Alto Adige** | Bolzano | ~177 |
+| **Trentino** | Trento | ~193 |
+| **Friuli-Venezia Giulia** | Trieste | ~209 |
+| **Abruzzo** | L'Aquila, Pescara | ~225, ~289 |
+| **Umbria** | Perugia | ~241 |
+| **Lazio** | Roma | ~257 |
+| **Marche** | Ancona | ~273 |
+| **Campania** | Napoli | ~305 |
+| **Basilicata** | Potenza | ~321 |
+| **Molise** | Campobasso | ~337 |
+| **Puglia** | Bari, Lecce | ~353, +nuova |
+| **Calabria** | Catanzaro | ~369 |
+| **Sicilia** | Palermo, Catania, Messina | ~385, ~401, +nuova |
+| **Sardegna** | Cagliari, Sassari | ~417, +nuova |
+
 ### Milano (45.47°N, 9.19°E, 122m)
 | Mese | T max media | T min media | Precip. media | Giorni pioggia |
 |------|-------------|-------------|---------------|----------------|
@@ -429,6 +455,134 @@ end_date:   {ANNO-1}-05-20
 | Ott | 23.1°C | 15.8°C | 43mm | |
 | Nov | 18.0°C | 11.9°C | 62mm | |
 | Dic | 14.7°C | 8.8°C | 53mm | |
+
+### Verona (45.44°N, 10.99°E, 59m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.2°C | -0.8°C | 42mm | Nebbia frequente |
+| Feb | 9.1°C | 0.5°C | 38mm | |
+| Mar | 14.2°C | 4.0°C | 52mm | |
+| Apr | 18.8°C | 8.2°C | 68mm | |
+| Mag | 23.5°C | 12.5°C | 82mm | |
+| Giu | 27.8°C | 16.0°C | 72mm | |
+| Lug | 30.5°C | 18.3°C | 55mm | |
+| Ago | 29.8°C | 18.0°C | 68mm | |
+| Set | 25.1°C | 14.0°C | 72mm | |
+| Ott | 18.5°C | 9.5°C | 88mm | |
+| Nov | 11.2°C | 3.8°C | 78mm | Nebbia in aumento |
+| Dic | 6.8°C | -0.2°C | 48mm | Nebbia frequente |
+
+### Padova (45.41°N, 11.88°E, 12m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.5°C | -0.2°C | 45mm | Nebbia frequente |
+| Feb | 9.2°C | 1.0°C | 42mm | |
+| Mar | 14.0°C | 4.5°C | 58mm | |
+| Apr | 18.5°C | 8.5°C | 72mm | |
+| Mag | 23.2°C | 12.8°C | 85mm | |
+| Giu | 27.5°C | 16.5°C | 75mm | |
+| Lug | 30.2°C | 18.8°C | 58mm | |
+| Ago | 29.5°C | 18.5°C | 70mm | |
+| Set | 24.8°C | 14.5°C | 78mm | |
+| Ott | 18.2°C | 9.8°C | 85mm | |
+| Nov | 11.5°C | 4.2°C | 75mm | Nebbia in aumento |
+| Dic | 7.0°C | 0.5°C | 50mm | Nebbia frequente |
+
+### Brescia (45.54°N, 10.21°E, 149m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.5°C | -1.0°C | 52mm | |
+| Feb | 9.0°C | 0.5°C | 50mm | |
+| Mar | 14.0°C | 4.0°C | 65mm | |
+| Apr | 18.2°C | 8.0°C | 82mm | |
+| Mag | 22.8°C | 12.2°C | 95mm | |
+| Giu | 27.0°C | 15.8°C | 85mm | |
+| Lug | 29.8°C | 18.0°C | 62mm | |
+| Ago | 29.2°C | 17.8°C | 72mm | |
+| Set | 24.5°C | 13.8°C | 75mm | |
+| Ott | 18.5°C | 9.2°C | 92mm | |
+| Nov | 11.5°C | 3.5°C | 88mm | |
+| Dic | 7.0°C | -0.5°C | 58mm | |
+
+### Ferrara (44.84°N, 11.62°E, 9m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.8°C | -0.2°C | 48mm | Nebbia frequente |
+| Feb | 9.5°C | 1.2°C | 45mm | |
+| Mar | 14.5°C | 4.8°C | 60mm | |
+| Apr | 19.0°C | 8.8°C | 75mm | |
+| Mag | 23.8°C | 13.0°C | 80mm | |
+| Giu | 28.0°C | 16.8°C | 65mm | |
+| Lug | 30.8°C | 19.0°C | 48mm | |
+| Ago | 30.2°C | 18.8°C | 60mm | |
+| Set | 25.5°C | 14.8°C | 68mm | |
+| Ott | 19.0°C | 10.2°C | 82mm | |
+| Nov | 12.0°C | 4.5°C | 78mm | Nebbia in aumento |
+| Dic | 7.2°C | 0.5°C | 52mm | Nebbia frequente |
+
+### Livorno (43.55°N, 10.31°E, 3m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 12.5°C | 5.5°C | 72mm | |
+| Feb | 13.2°C | 5.5°C | 68mm | |
+| Mar | 16.0°C | 7.8°C | 65mm | |
+| Apr | 18.8°C | 10.2°C | 72mm | |
+| Mag | 23.0°C | 13.8°C | 55mm | |
+| Giu | 27.2°C | 17.5°C | 35mm | |
+| Lug | 30.5°C | 20.2°C | 18mm | |
+| Ago | 30.8°C | 20.5°C | 28mm | |
+| Set | 26.2°C | 17.0°C | 72mm | |
+| Ott | 21.5°C | 13.8°C | 105mm | |
+| Nov | 16.5°C | 9.5°C | 115mm | |
+| Dic | 13.0°C | 6.2°C | 88mm | |
+
+### Lecce (40.35°N, 18.17°E, 49m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 12.5°C | 5.8°C | 58mm | |
+| Feb | 13.0°C | 5.5°C | 55mm | |
+| Mar | 15.2°C | 7.5°C | 58mm | |
+| Apr | 18.5°C | 10.2°C | 48mm | |
+| Mag | 23.0°C | 14.5°C | 35mm | |
+| Giu | 27.5°C | 18.8°C | 28mm | |
+| Lug | 30.2°C | 21.5°C | 20mm | |
+| Ago | 30.5°C | 21.8°C | 22mm | |
+| Set | 26.5°C | 18.5°C | 52mm | |
+| Ott | 22.0°C | 14.8°C | 68mm | |
+| Nov | 17.2°C | 10.5°C | 75mm | |
+| Dic | 13.5°C | 7.2°C | 62mm | |
+
+### Messina (38.19°N, 15.55°E, 3m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 14.5°C | 8.2°C | 95mm | |
+| Feb | 14.8°C | 7.8°C | 85mm | |
+| Mar | 16.5°C | 9.2°C | 78mm | |
+| Apr | 19.2°C | 11.5°C | 62mm | |
+| Mag | 23.5°C | 15.2°C | 38mm | |
+| Giu | 28.0°C | 19.5°C | 18mm | |
+| Lug | 31.2°C | 22.5°C | 12mm | |
+| Ago | 31.5°C | 23.0°C | 22mm | |
+| Set | 27.5°C | 20.0°C | 58mm | |
+| Ott | 23.5°C | 16.5°C | 95mm | |
+| Nov | 19.0°C | 12.5°C | 105mm | |
+| Dic | 15.5°C | 9.5°C | 102mm | |
+
+### Sassari (40.73°N, 8.56°E, 225m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 11.5°C | 4.8°C | 62mm | |
+| Feb | 12.2°C | 4.5°C | 58mm | |
+| Mar | 14.5°C | 6.2°C | 55mm | |
+| Apr | 17.0°C | 8.5°C | 52mm | |
+| Mag | 21.5°C | 12.0°C | 38mm | |
+| Giu | 26.2°C | 15.8°C | 18mm | |
+| Lug | 29.5°C | 18.5°C | 6mm | |
+| Ago | 30.0°C | 19.2°C | 10mm | |
+| Set | 25.5°C | 16.5°C | 32mm | |
+| Ott | 21.2°C | 13.5°C | 55mm | |
+| Nov | 16.2°C | 9.5°C | 72mm | |
+| Dic | 12.5°C | 6.2°C | 68mm | |
 
 ## Record Storici Notevoli per Zona (contesto per eventi estremi)
 
