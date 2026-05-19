@@ -55,7 +55,7 @@ end_date:   {ANNO-1}-05-20
 | **Valle d'Aosta** | Aosta | ~81 |
 | **Liguria** | Genova | ~97 |
 | **Veneto** | Venezia, Rovigo, Verona, Padova | ~113, ~129, +nuove |
-| **Emilia-Romagna** | Bologna, Ferrara | ~145, +nuova |
+| **Emilia-Romagna** | Bologna, Ferrara, Parma | ~145, +nuova |
 | **Toscana** | Firenze, Livorno | ~161, +nuova |
 | **Alto Adige** | Bolzano | ~177 |
 | **Trentino** | Trento | ~193 |
@@ -67,7 +67,7 @@ end_date:   {ANNO-1}-05-20
 | **Campania** | Napoli | ~305 |
 | **Basilicata** | Potenza | ~321 |
 | **Molise** | Campobasso | ~337 |
-| **Puglia** | Bari, Lecce | ~353, +nuova |
+| **Puglia** | Bari, Lecce, Foggia, Taranto | ~353, +nuova |
 | **Calabria** | Catanzaro, Reggio Calabria | ~369, +nuova |
 | **Sicilia** | Palermo, Catania, Messina | ~385, ~401, +nuova |
 | **Sardegna** | Cagliari, Sassari | ~417, +nuova |
@@ -536,6 +536,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 12.0°C | 4.5°C | 78mm | Nebbia in aumento |
 | Dic | 7.2°C | 0.5°C | 52mm | Nebbia frequente |
 
+### Parma (44.80°N, 10.32°E, 55m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.9°C | 1.1°C | 57mm | |
+| Feb | 9.8°C | 2.2°C | 55mm | |
+| Mar | 15.5°C | 5.9°C | 65mm | |
+| Apr | 19.5°C | 9.5°C | 76mm | |
+| Mag | 24.6°C | 14.0°C | 73mm | |
+| Giu | 29.2°C | 18.1°C | 56mm | |
+| Lug | 31.8°C | 20.4°C | 37mm | |
+| Ago | 31.3°C | 20.4°C | 48mm | |
+| Set | 25.6°C | 15.9°C | 67mm | |
+| Ott | 18.7°C | 11.5°C | 96mm | |
+| Nov | 11.9°C | 6.6°C | 84mm | |
+| Dic | 7.3°C | 2.0°C | 63mm | |
+
 ### Livorno (43.55°N, 10.31°E, 3m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -567,6 +583,38 @@ end_date:   {ANNO-1}-05-20
 | Ott | 22.0°C | 14.8°C | 68mm | |
 | Nov | 17.2°C | 10.5°C | 75mm | |
 | Dic | 13.5°C | 7.2°C | 62mm | |
+
+### Foggia (41.54°N, 15.72°E, 60m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 11.9°C | 3.1°C | 35.5mm | |
+| Feb | 12.7°C | 3.0°C | 41.3mm | |
+| Mar | 15.3°C | 4.5°C | 39.8mm | |
+| Apr | 18.5°C | 6.9°C | 37.7mm | |
+| Mag | 24.2°C | 11.3°C | 36.1mm | |
+| Giu | 28.8°C | 15.3°C | 33.5mm | |
+| Lug | 31.8°C | 18.1°C | 26.0mm | |
+| Ago | 31.8°C | 18.4°C | 28.6mm | |
+| Set | 27.5°C | 15.3°C | 42.3mm | |
+| Ott | 22.2°C | 11.5°C | 45.6mm | |
+| Nov | 16.3°C | 6.9°C | 58.3mm | |
+| Dic | 12.9°C | 4.3°C | 44.5mm | |
+
+### Taranto (40.45°N, 17.30°E, 3m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 12.2°C | 6.0°C | 43.0mm | |
+| Feb | 12.9°C | 6.1°C | 43.0mm | |
+| Mar | 15.0°C | 7.4°C | 42.0mm | |
+| Apr | 17.9°C | 10.1°C | 27.5mm | |
+| Mag | 22.2°C | 14.0°C | 22.0mm | |
+| Giu | 26.9°C | 18.0°C | 13.5mm | |
+| Lug | 29.9°C | 20.8°C | 11.0mm | |
+| Ago | 29.8°C | 20.9°C | 17.0mm | |
+| Set | 26.8°C | 18.0°C | 24.5mm | |
+| Ott | 21.9°C | 14.2°C | 61.0mm | |
+| Nov | 17.2°C | 10.2°C | 52.5mm | |
+| Dic | 13.8°C | 7.1°C | 59.5mm | |
 
 ### Messina (38.19°N, 15.55°E, 3m)
 | Mese | T max media | T min media | Precip. media | Note |
