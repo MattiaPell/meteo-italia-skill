@@ -19,7 +19,7 @@ ecmwf_ifs, arome_france, gfs_seamless
 | `arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera).
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera).
 
 **Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `arome_france` per la fascia costiera.
 
@@ -112,7 +112,7 @@ icon_seamless, gfs_seamless, meteofrance_seamless
 | `icon_seamless` | 0.9 |
 | `meteofrance_seamless` | 0.9 |
 
-**Fenomeni locali prioritari:** Scirocco (intenso, polvere sahariana), grecale su Adriatico meridionale, temporali convettivi estivi (violenti, grandine su Puglia), tramontana su Calabria tirrenica, neve su Sila/Aspromonte/Pollino (impatto viabilità), Lupa di mare (Stretto, primavera).
+**Fenomeni locali prioritari:** Scirocco (intenso, polvere sahariana), Ostro (advezione calda), grecale su Adriatico meridionale, temporali convettivi estivi (violenti, grandine su Puglia), tramontana su Calabria tirrenica, neve su Sila/Aspromonte/Pollino (impatto viabilità), Lupa di mare (Stretto, primavera).
 
 ---
 
@@ -156,7 +156,7 @@ arpege_europe, gfs_seamless
 | `arpege_europe` | 1.0 |
 | `gfs_seamless` | 0.9 |
 
-**Fenomeni locali prioritari:** Maestrale (forte e frequente, raffiche 80-100 km/h), scirocco, temporali su Gennargentu (estate), alluvioni Campidano (autunno — evento estremo ottobre 2018 e 2024), siccità estiva severa.
+**Fenomeni locali prioritari:** Maestrale (forte e frequente, raffiche 80-100 km/h), Ponente (refresh post-fronte), scirocco, temporali su Gennargentu (estate), alluvioni Campidano (autunno — evento estremo ottobre 2018 e 2024), siccità estiva severa.
 
 ---
 
