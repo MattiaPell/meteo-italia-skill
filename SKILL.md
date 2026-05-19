@@ -67,7 +67,7 @@ GET https://api.open-meteo.com/v1/forecast
           temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
           relative_humidity_500hPa,geopotential_height_500hPa,
           pressure_msl,uv_index,uv_index_clear_sky,
-          soil_moisture_0_to_1cm
+          soil_moisture_0_to_1cm,soil_temperature_0cm,soil_temperature_6cm
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
@@ -219,7 +219,7 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 ```http
 GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_eu,gfs025
+  &models=ecmwf_ifs025_ensemble_mean,icon_eu_ensemble_mean,gfs025_ensemble_mean
   &hourly=temperature_2m,temperature_2m_spread,
           precipitation_mean,precipitation_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,
