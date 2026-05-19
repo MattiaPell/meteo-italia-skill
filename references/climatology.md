@@ -98,21 +98,37 @@ end_date:   {ANNO-1}-05-20
 | Nov | 13.7°C | 8.4°C | 198mm | |
 | Dic | 10.3°C | 4.8°C | 126mm | |
 
-### Venezia / Rovigo (area polesana, ~45.07°N, 11.79°E, 5m)
+### Venezia (45.44°N, 12.33°E, 2m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
-| Gen | 6.2°C | 0.5°C | 42mm | Nebbia frequente |
-| Feb | 9.1°C | 1.8°C | 40mm | |
-| Mar | 14.2°C | 5.8°C | 58mm | |
-| Apr | 18.8°C | 9.5°C | 72mm | |
-| Mag | 23.5°C | 13.8°C | 78mm | |
-| Giu | 27.8°C | 18.2°C | 68mm | |
-| Lug | 30.5°C | 20.5°C | 52mm | |
-| Ago | 29.8°C | 20.1°C | 65mm | |
-| Set | 25.1°C | 16.2°C | 62mm | |
-| Ott | 18.5°C | 10.8°C | 78mm | |
-| Nov | 11.2°C | 5.2°C | 75mm | Nebbia in aumento |
-| Dic | 6.8°C | 1.1°C | 50mm | Nebbia frequente |
+| Gen | 6.8°C | 1.2°C | 45mm | |
+| Feb | 8.6°C | 1.5°C | 42mm | |
+| Mar | 12.5°C | 4.8°C | 54mm | |
+| Apr | 16.3°C | 8.2°C | 68mm | |
+| Mag | 21.2°C | 12.8°C | 68mm | |
+| Giu | 25.1°C | 16.7°C | 72mm | |
+| Lug | 28.2°C | 19.1°C | 62mm | |
+| Ago | 28.0°C | 18.9°C | 65mm | |
+| Set | 23.9°C | 15.2°C | 70mm | |
+| Ott | 18.2°C | 10.5°C | 75mm | |
+| Nov | 12.2°C | 5.6°C | 82mm | |
+| Dic | 7.8°C | 1.9°C | 58mm | |
+
+### Rovigo (45.07°N, 11.79°E, 5m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.2°C | -0.5°C | 42mm | Nebbia frequente |
+| Feb | 9.1°C | 0.8°C | 40mm | |
+| Mar | 14.2°C | 4.2°C | 58mm | |
+| Apr | 18.8°C | 8.5°C | 72mm | |
+| Mag | 23.5°C | 12.8°C | 78mm | |
+| Giu | 27.8°C | 16.2°C | 68mm | |
+| Lug | 30.5°C | 18.5°C | 52mm | |
+| Ago | 29.8°C | 18.3°C | 65mm | |
+| Set | 25.1°C | 14.2°C | 62mm | |
+| Ott | 18.5°C | 9.8°C | 78mm | |
+| Nov | 11.2°C | 4.2°C | 75mm | Nebbia in aumento |
+| Dic | 6.8°C | 0.1°C | 50mm | Nebbia frequente |
 
 ### Bologna (44.49°N, 11.34°E, 54m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -146,6 +162,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 15.7°C | 6.7°C | 118mm | |
 | Dic | 11.4°C | 2.8°C | 88mm | |
 
+### Bolzano (46.50°N, 11.35°E, 262m)
+| Mese | T max media | T min media | Precip. media |
+|------|-------------|-------------|---------------|
+| Gen | 6.7°C | -2.6°C | 50mm |
+| Feb | 8.6°C | -0.7°C | 51mm |
+| Mar | 12.8°C | 3.6°C | 72mm |
+| Apr | 16.6°C | 6.9°C | 96mm |
+| Mag | 21.1°C | 11.4°C | 107mm |
+| Giu | 24.9°C | 15.0°C | 94mm |
+| Lug | 27.0°C | 16.8°C | 88mm |
+| Ago | 26.7°C | 16.8°C | 93mm |
+| Set | 22.3°C | 13.2°C | 95mm |
+| Ott | 17.5°C | 9.2°C | 126mm |
+| Nov | 11.5°C | 4.3°C | 126mm |
+| Dic | 7.3°C | -1.0°C | 68mm |
+
 ### Trieste (45.65°N, 13.76°E, 2m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -161,6 +193,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 17.6°C | 11.1°C | 184mm | |
 | Nov | 12.5°C | 6.8°C | 192mm | |
 | Dic | 8.3°C | 2.4°C | 128mm | |
+
+### L'Aquila (42.35°N, 13.40°E, 714m)
+| Mese | T max media | T min media | Precip. media |
+|------|-------------|-------------|---------------|
+| Gen | 6.7°C | -0.4°C | 71mm |
+| Feb | 7.5°C | -0.5°C | 71mm |
+| Mar | 10.9°C | 2.1°C | 89mm |
+| Apr | 14.6°C | 5.3°C | 91mm |
+| Mag | 19.0°C | 9.6°C | 80mm |
+| Giu | 23.5°C | 13.8°C | 58mm |
+| Lug | 26.5°C | 16.6°C | 44mm |
+| Ago | 27.1°C | 17.2°C | 38mm |
+| Set | 21.7°C | 12.9°C | 72mm |
+| Ott | 17.5°C | 9.3°C | 80mm |
+| Nov | 12.1°C | 4.9°C | 104mm |
+| Dic | 7.6°C | 0.9°C | 96mm |
 
 ### Perugia (43.11°N, 12.39°E, 493m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -225,6 +273,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 20.9°C | 14.0°C | 132mm | |
 | Nov | 16.3°C | 10.3°C | 174mm | |
 | Dic | 12.6°C | 6.7°C | 133mm | |
+
+### Potenza (40.64°N, 15.80°E, 819m)
+| Mese | T max media | T min media | Precip. media |
+|------|-------------|-------------|---------------|
+| Gen | 8.0°C | 0.9°C | 65mm |
+| Feb | 8.6°C | 0.7°C | 62mm |
+| Mar | 11.7°C | 2.9°C | 76mm |
+| Apr | 15.1°C | 5.5°C | 73mm |
+| Mag | 19.7°C | 9.7°C | 56mm |
+| Giu | 24.6°C | 13.7°C | 40mm |
+| Lug | 27.6°C | 16.2°C | 28mm |
+| Ago | 28.0°C | 16.9°C | 26mm |
+| Set | 22.7°C | 13.3°C | 51mm |
+| Ott | 18.6°C | 10.0°C | 61mm |
+| Nov | 13.4°C | 5.8°C | 70mm |
+| Dic | 9.0°C | 2.3°C | 74mm |
 
 ### Bari (41.13°N, 16.75°E, 44m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -329,6 +393,22 @@ Usa quando T <10°C e vento >4.8 km/h:
 WC = 13.12 + 0.6215*T - 11.37*V^0.16 + 0.3965*T*V^0.16
 (V in km/h, T in °C)
 ```
+
+## Bilancio Idrologico (ET0 vs Precipitazioni)
+
+L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica lo stato idrico del suolo.
+
+| Condizione | Interpretazione | Impatto |
+|---|---|---|
+| Precip >> ET0 | Surplus idrico | Rischio alluvionamenti, suolo saturo |
+| Precip ≈ ET0 | Equilibrio | Condizioni ideali per vegetazione |
+| Precip < ET0 | Deficit idrico | Necessaria irrigazione, stress idrico |
+| ET0 > 5mm/giorno | Elevata evaporazione | Tipico di giornate calde/ventose, rapido disseccamento |
+
+**Soglie Umidità del Suolo (soil_moisture_0_to_1cm):**
+- **<0.15 m³/m³**: Suolo molto secco (punto di appassimento)
+- **0.15–0.30 m³/m³**: Umidità moderata
+- **>0.35 m³/m³**: Suolo molto umido / saturo
 
 ### Probabilità gelata
 T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)

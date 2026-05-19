@@ -4,10 +4,10 @@ Guida per identificare automaticamente i fenomeni tipici italiani dai dati dei m
 
 ---
 
-## FOEHN
+## FOEHN (FAVONIO)
 
 ### Cos'è
-Vento caldo e secco che scende dalle Alpi verso la pianura padana settentrionale.
+Vento caldo e secco che scende dalle Alpi verso la pianura padana settentrionale (chiamato Favonio in italiano).
 Si forma quando una perturbazione atlantica porta aria umida sul versante nord alpino:
 l'aria precipita sul versante sud perdendo umidità e riscaldandosi adiabaticamente.
 
@@ -25,7 +25,7 @@ Alto Adige (valle dell'Adige), Veneto alpino (Belluno)
 
 ### Come riportarlo
 ```
-🌬️ FOEHN ATTIVO — Versante alpino meridionale
+🌬️ FOEHN (FAVONIO) ATTIVO — Versante alpino meridionale
 T anomala: +{X}°C rispetto alla norma | UR: {Y}%
 Impatti: secchezza (rischio incendi), visibilità eccellente, T percepita mite
 Durata tipica: 12-48h | Cessa con il passaggio del fronte
@@ -490,6 +490,56 @@ Fenomeno: Nebbia da avvezione (aria calda su mare freddo)
 Visibilità: <200m sulla costa | Entroterra: Sereno
 Impatti: Disagi a navigazione, porti e aeroporti costieri (GOA, PMO, REG).
 Note: Fenomeno improvviso che può causare cali termici di 5-10°C in pochi minuti.
+```
+
+---
+
+## MACCAJA
+
+### Cos'è
+Fenomeno tipico della Liguria e del Golfo di Genova caratterizzato da nubi basse e compatte, nebbie costiere e alta umidità. Si forma quando venti meridionali (spesso Scirocco) trasportano aria calda e umida sopra la superficie marina più fredda, o quando l'aria satura viene bloccata dall'Appennino.
+
+### Dove colpisce
+Liguria (settore centro-occidentale), occasionalmente Toscana costiera e Versilia.
+
+### Segnali nei dati (flag se presenti ≥3 di questi)
+- **SST < T(2m)**: Temperatura mare inferiore alla temperatura aria (anche con scarto ridotto)
+- **UR(2m) > 85-90%** sulla costa
+- **Vento da S/SE/SW**: Bassa intensità (<15-20 km/h)
+- **Stagione**: Primavera e Autunno
+- **Cloud cover**: >80% (nubi basse) mentre nell'entroterra/Pianura Padana è sereno
+- **Escursione termica**: Molto ridotta tra giorno e notte
+
+### Come riportarlo
+```
+☁️ MACCAJA ATTIVA — Costa Ligure / {ZONA}
+Cielo: Coperto da nubi basse | UR: {X}% | Vento da: {DIR}
+Impatti: Umidità elevata, visibilità ridotta sulla costa, T stazionaria.
+Nota: Fenomeno tipico che permane anche con alta pressione.
+```
+
+---
+
+## BURIAN (Vento Siberiano)
+
+### Cos'è
+Vento gelido proveniente dalle steppe siberiane che porta ondate di freddo estremo in Italia. Attraversa la porta della Bora e dilaga su tutta la penisola.
+
+### Dove colpisce
+Tutta Italia, con picchi di freddo e neve su versante Adriatico e Nord.
+
+### Segnali nei dati (flag se presenti TUTTI i seguenti)
+- **T 850hPa < -10/-12°C**
+- **Vento da E/NE**: Costante e sostenuto
+- **UR in calo**: Aria continentale molto secca originariamente, ma si carica di umidità sull'Adriatico (vedi ASE)
+- **Stagione**: Inverno (Gennaio-Marzo)
+- **Anomalia termica**: >-10°C rispetto alla media
+
+### Come riportarlo
+```
+❄️ ALLERTA BURIAN — ONDATA DI GELO SIBERIANO
+T 850hPa: {X}°C | T suolo: {Y}°C | Vento: NE costante
+Impatti: Gelo intenso, bufere di neve su versante adriatico, rischio danni a tubature e agricoltura.
 ```
 
 ---
