@@ -129,7 +129,7 @@ Oppure consulta il bollettino testuale su `mappe.protezionecivile.gov.it`.
 Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
 
 #### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
-Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo).
+Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo), oppure Macroarea Sicilia/Sud (per Lupa di mare).
 ```
 GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
@@ -465,11 +465,12 @@ Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra
 **Fulmini**: se fulmini entro 20km → sospensione evento. Ripresa >30 min dall'ultimo fulmine rilevato.
 
 ### 🌾 Agricoltura / Campagna
-Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura"
+Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura", "peronospora", "viticoltura", "olivicoltura"
 Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), grandine (CAPE + LI),
 bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture),
+Somma Termica (GDD) per maturazione, Rischio Peronospora (Regola dei 3-10),
 siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
-umidità fogliare (UR >90% = rischio funghi).
+umidità fogliare (UR >90% = rischio funghi/oidio), gelate tardive (T < -1°C in primavera).
 **Rischio allagamento campi**: se livello fiumi > soglia gialla + pioggia prevista >20mm/24h.
 **Ristagno idrico**: se soil_moisture >0.35 + livello falda in salita (dati idrologici Step M).
 **Storico recente obbligatorio**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case.

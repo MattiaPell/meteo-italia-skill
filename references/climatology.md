@@ -68,7 +68,7 @@ end_date:   {ANNO-1}-05-20
 | **Basilicata** | Potenza | ~321 |
 | **Molise** | Campobasso | ~337 |
 | **Puglia** | Bari, Lecce | ~353, +nuova |
-| **Calabria** | Catanzaro | ~369 |
+| **Calabria** | Catanzaro, Reggio Calabria | ~369, +nuova |
 | **Sicilia** | Palermo, Catania, Messina | ~385, ~401, +nuova |
 | **Sardegna** | Cagliari, Sassari | ~417, +nuova |
 
@@ -408,6 +408,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 17.0°C | 10.5°C | 114mm | |
 | Dic | 13.3°C | 6.9°C | 102mm | |
 
+### Reggio Calabria (38.11°N, 15.66°E, 31m)
+| Mese | T max media | T min media | Precip. media |
+|------|-------------|-------------|---------------|
+| Gen | 13.0°C | 7.8°C | 151mm |
+| Feb | 13.9°C | 8.1°C | 119mm |
+| Mar | 15.0°C | 8.7°C | 171mm |
+| Apr | 18.1°C | 11.2°C | 84mm |
+| Mag | 21.8°C | 14.6°C | 85mm |
+| Giu | 26.8°C | 19.0°C | 64mm |
+| Lug | 30.1°C | 22.0°C | 39mm |
+| Ago | 29.8°C | 22.4°C | 53mm |
+| Set | 26.3°C | 19.7°C | 89mm |
+| Ott | 22.4°C | 16.5°C | 126mm |
+| Nov | 18.5°C | 13.2°C | 131mm |
+| Dic | 14.9°C | 9.9°C | 140mm |
+
 ### Palermo (38.12°N, 13.36°E, 14m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -645,6 +661,28 @@ T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)
 
 ---
 
+## 📈 Somma Termica (GDD - Growing Degree Days)
+
+Indice termico per valutare lo sviluppo delle colture e prevedere le fasi fenologiche.
+
+### Formula
+```
+GDD = max((Tmax + Tmin) / 2 - Tbase, 0)
+```
+
+### Soglie Tbase per l'Italia
+- **Mais**: 10°C
+- **Vite**: 10°C
+- **Frumento**: 0°C
+- **Olivo**: 10°C
+
+### Applicazione
+- **0–300 GDD**: Fase iniziale (risveglio/germogliamento)
+- **1200–1600 GDD**: Maturazione per molte varietà di Mais
+- **Fioritura Vite**: Tipicamente raggiunta tra 350 e 450 GDD (base 10°C dal 1° gennaio)
+
+---
+
 ## Focus Agrometeorologico — Soglie di Germinazione
 
 Riferimento per l'uso della variabile `soil_temperature_6cm` (Step 3A). Soglie ARPAE/ARPAV per le principali colture italiane.
@@ -657,6 +695,36 @@ Riferimento per l'uso della variabile `soil_temperature_6cm` (Step 3A). Soglie A
 | **Girasole** | 8°C | 10–12°C | |
 
 **Nota Operativa**: Utilizzare la temperatura del suolo media giornaliera a 6cm per valutare la finestra di semina.
+
+---
+
+## 🍇 Focus Viticoltura (Vitis vinifera)
+
+### Rischio Peronospora (Regola dei Tre Dieci)
+La regola empirica per l'avvio delle infezioni primarie di *Plasmopara viticola*:
+1. **Temperatura**: T minima e media > 10°C.
+2. **Germogli**: Lunghezza del tralcio > 10 cm.
+3. **Pioggia**: Almeno 10 mm di pioggia caduti in 24-48 ore.
+*Nota: Se tutte e tre le condizioni sono vere, il rischio di infezione è elevato.*
+
+### Altre Soglie Vite
+- **Fioritura**: Condizioni ideali 15–25°C e UR 50–70%. Piogge battenti o forte umidità (>85%) durante la fioritura possono causare colatura (mancata allegagione).
+- **Gelate Tardive**: Danni gravi se T < -1/-2°C dopo il germogliamento (marzo-maggio).
+- **Oidio**: Favorito da T 20–27°C e UR elevata ma senza pioggia battente (che lava le spore).
+
+---
+
+## 🫒 Focus Olivicoltura (Olea europaea)
+
+### Resistenza al Freddo
+- **Danni lievi (foglie/germogli)**: T < -5°C.
+- **Danni gravi (legno)**: T < -10°C.
+- **Morte della pianta**: T < -12/-15°C (specialmente se persistente).
+
+### Mosca dell'Olivo (*Bactrocera oleae*)
+- **Sviluppo ottimale**: T 22–25°C.
+- **Lethal Threshold**: T > 30°C associata a UR < 30% causa elevata mortalità di uova e larve di I età.
+- **Stop attività**: T > 35°C per più giorni arresta l'attività degli adulti.
 
 ---
 
