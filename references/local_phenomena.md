@@ -308,7 +308,7 @@ Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raff
 ### Segnali nei dati (flag se ≥2)
 - CAPE >800 J/kg (significativo), >1500 J/kg (alto), >2500 J/kg (molto alto)
 - `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
-- Wind shear in quota (differenza vento 850hPa vs 500hPa >15 m/s → MCS organizzato)
+- Wind shear in quota (differenza vento 850hPa vs 500hPa >55 km/h → MCS organizzato)
 - `weather_code` 95-99 previsto
 - Zone: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
 
@@ -392,7 +392,7 @@ Liguria (soprattutto centro-levante: Genova, Chiavari, Spezia), Toscana (costa e
 - **Convergenza al suolo** marcata (es. Tramontana fredda vs Scirocco caldo/umido nel Golfo di Genova)
 - **Moisture Flux** (flusso di umidità) elevato e persistente nei bassi strati verso la linea di convergenza
 - **CAPE** >1000-1500 J/kg persistente nell'area di alimentazione
-- **Vento a 500hPa** forte (>40-50 nodi) che "stira" l'incudine del temporale creando la forma a V
+- **Vento a 500hPa** forte (>75-90 km/h) che "stira" l'incudine del temporale creando la forma a V
 - **Stazionarietà**: linea di convergenza che non si sposta per 3+ ore
 - **Precipitazioni concentrate**: modelli ad alta risoluzione (ICON D2, AROME) che prevedono >100mm in 3-6h su una fascia stretta
 
