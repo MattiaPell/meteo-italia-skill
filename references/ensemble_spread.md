@@ -129,6 +129,13 @@ spread = np.std(members)  # = (p90 - p10) / 2.56 approssimativamente
 | 4–6°C | Alta | Forecast incerto — verifica domani |
 | >6°C | Molto alta | Situazione caotica — solo tendenza generale |
 
+### Spread Percepita (Apparent T) — Afa/Cold Stress
+| Spread (p90-p10) | Incertezza | Significato operativo |
+|---|---|---|
+| <2°C | Bassa | Livello di disagio termico (Afa) ben definito |
+| 2–4°C | Media | Possibili variazioni nel livello di allerta sanitaria |
+| >4°C | Alta | Elevata incertezza sulla percezione fisica (vento/umidità variabili) |
+
 ### Spread precipitazioni (mm)
 | Spread (p90-p10) | Incertezza |
 |---|---|
@@ -276,6 +283,7 @@ Usa `area` chart con:
 **Temperatura max {DATA}:**
 p10: {X}°C | Mediana: {Y}°C | p90: {Z}°C
 Spread: {W}°C → Incertezza: {Bassa/Media/Alta/Molto alta}
+**Percepita (Apparent)**: mediana {X}°C | p90 {Y}°C
 
 **Precipitazioni {DATA}:**
 Mediana: {X}mm | p75: {Y}mm | p90: {Z}mm

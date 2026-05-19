@@ -62,12 +62,14 @@ GET https://api.open-meteo.com/v1/forecast
           wind_gusts_10m,cloud_cover,visibility,weather_code,
           relative_humidity_2m,cape,lifted_index,freezing_level_height,
           snowfall,snow_depth,
+          temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
+          relative_humidity_925hPa,geopotential_height_925hPa,
           temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,
           relative_humidity_850hPa,geopotential_height_850hPa,
           temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,
           relative_humidity_500hPa,geopotential_height_500hPa,
           pressure_msl,uv_index,uv_index_clear_sky,
-          soil_moisture_0_to_1cm
+          soil_temperature_6cm,soil_moisture_0_to_1cm
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
          precipitation_probability_max,wind_speed_10m_max,
@@ -83,8 +85,9 @@ Per confrontare il forecast con la norma storica del periodo.
 GET https://archive-api.open-meteo.com/v1/archive
   ?latitude={LAT}&longitude={LON}
   &start_date={STESSO_GIORNO_-10_ANNI}&end_date={STESSO_GIORNO_-1_ANNO}
-  &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,
-         wind_speed_10m_max,et0_fao_evapotranspiration
+  &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
+         apparent_temperature_min,precipitation_sum,wind_speed_10m_max,
+         et0_fao_evapotranspiration
   &timezone=Europe/Rome
 ```
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
@@ -95,9 +98,9 @@ Contestualizza il forecast con le condizioni degli ultimi 7 giorni.
 GET https://historical-forecast-api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
   &start_date={OGGI-7}&end_date={OGGI-1}
-  &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,
-         snowfall_sum,wind_speed_10m_max,weather_code,
-         et0_fao_evapotranspiration
+  &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
+         apparent_temperature_min,precipitation_sum,snowfall_sum,
+         wind_speed_10m_max,weather_code,et0_fao_evapotranspiration
   &timezone=Europe/Rome
 ```
 Calcola: precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media.
@@ -221,12 +224,14 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble
   ?latitude={LAT}&longitude={LON}
   &models=ecmwf_ifs025_ensemble_mean,icon_eu,gfs025
   &hourly=temperature_2m,temperature_2m_spread,
+          apparent_temperature,apparent_temperature_spread,
           precipitation_mean,precipitation_spread,
           wind_gusts_10m_mean,wind_gusts_10m_spread,
           cape_mean,cape_spread,
           snowfall_mean,snowfall_spread,
           precipitation_probability_mean
   &daily=temperature_2m_max,temperature_2m_min,
+         apparent_temperature_max,apparent_temperature_min,
          precipitation_sum,wind_speed_10m_max
   &timezone=Europe/Rome
   &forecast_days=16

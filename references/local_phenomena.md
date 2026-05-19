@@ -273,6 +273,7 @@ Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
 - UR >92% alle ore 21-06
 - Vento <5 km/h
 - T prossima al punto di rugiada (T - Tdew <2°C)
+- **Inversione termica bassa**: T(2m) < T(925hPa) → indica ristagno d'aria e nebbia al suolo
 - `cloud_cover` <10% (cielo sereno → irraggiamento notturno)
 - Stagione: ottobre-febbraio
 - Pianura alluvionale (quota <50m)
@@ -416,7 +417,8 @@ Strato di aria fredda e densa che ristagna nei bassi strati della Pianura Padana
 Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), conche di Toscana (Valdarno, piana di Lucca), Umbria (conca Ternana).
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
-- **Inversione termica**: T(2m) < T(850hPa) o T(2m) < T(elevation+1000m)
+- **Inversione termica**: T(2m) < T(925hPa) o T(2m) < T(850hPa)
+- **Intensità inversione**: Delta T (T925hPa - T2m) > 5°C → **Inversione forte/persistente**
 - **Stagione**: Inverno (novembre–febbraio)
 - **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
 - **Umidità elevata**: UR(2m) >85% con nebbia o nubi basse (Galaverna)
