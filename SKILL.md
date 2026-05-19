@@ -501,6 +501,34 @@ Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calor
 **Qualità aria obbligatoria**: AQI + PM2.5 + O3 + pollini stagionali + raccomandazioni soggetti sensibili.
 **Storico recente**: segnala se ondata calore già in corso da giorni.
 
+### ⚡ Energia — Eolico e Solare
+Trigger: "eolico", "solare", "fotovoltaico", "energia", "produzione", "impianto", "turbina", "pannelli", "grid"
+Focus:
+**Eolico**: velocità vento a 10m e 80m (stima: `wind_speed_10m × 1.5` per hub 80m), raffiche (>90 km/h = stop turbine), direzione vento prevalente. Produzione stimata: vento 5-25 m/s = zona operativa, <3 m/s = cut-in (nessuna produzione), >25 m/s = cut-out (stop sicurezza).
+**Solare**: `uv_index`, `uv_index_clear_sky`, `cloud_cover` (copertura nuvolosa), `shortwave_radiation` (se disponibile). Produzione stimata: cielo sereno (cloud_cover <20%) = 80-100% capacità, parzialmente nuvoloso (20-70%) = 30-80%, coperto (>70%) = <30%.
+**Forecast vs climatologia**: confronta irraggiamento e vento previsti con la norma del periodo per valutare se la produzione sarà sopra/sotto media.
+**Fulmini (Step L)**: se fulmini entro 10km da impianto eolico → stop preventivo turbine.
+**METAR (Step K)**: se aeroporto vicino, usa METAR per validazione vento osservato vs previsto.
+
+### 🏖️ Turismo — Beach Index e Ski Index
+Trigger: "spiaggia", "bagno", "mare vacanza", "sci", "neve pista", "ski resort", "vacanza", "weekend fuori porta"
+Focus:
+**Beach Index** (trigger: mare, spiaggia, bagno, vacanza estiva):
+- SST (Sea Surface Temperature) da Marine API: >22°C = confortevole, 18-22°C = fresco, <18°C = freddo
+- UV Index: picco + orario + raccomandazione SPF
+- Vento: <15 km/h = ideale, 15-30 km/h = ventilato (piacevole), >30 km/h = vento forte (sabbia)
+- Pioggia: probabilità nella fascia 10-18h
+- Stato del mare: Douglas 0-2 = calmo, 3-4 = mosso, ≥5 = agitato (sconsigliato bagno)
+- **Score**: 0-100 basato su T mare (30%), UV (20%), vento (20%), pioggia (20%), mare (10%)
+
+**Ski Index** (trigger: sci, neve pista, ski resort, vacanza in montagna):
+- Neve fresca prevista (`snowfall_sum`): >10cm = ottimo, 5-10cm = buono, <5cm = scarso
+- Temperatura in quota: -5 a 0°C = ideale (neve farinosa), >2°C = neve pesante/marcia, <-10°C = molto freddo
+- Vento in quota (stima: `wind_speed_10m × 2` per 2000m): >60 km/h = impianti chiusi
+- Visibilità: >5km = ottimo, 1-5km = foschia, <1km = nebbia (impianti rallentati)
+- **Snow depth** (`snow_depth`): >50cm = ottima copertura, 20-50cm = sufficiente, <20cm = scarsa
+- **Score**: 0-100 basato su neve fresca (30%), T (20%), vento (20%), visibilità (15%), snow depth (15%)
+
 ---
 
 ## Granularità Temporale
@@ -594,6 +622,36 @@ PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
 Condizioni: {accumulo/dispersione/neutro}
 Soggetti sensibili: {raccomandazione}
 
+### ✈️ Validazione METAR (se attivata)
+Aeroporto: {ICAO} | Osservato: {HH:MM} UTC
+T osservata: {X}°C | T prevista: {Y}°C → Scarto: {±Z}°C
+Vento osservato: {DIR}/{X}kt raffiche {Y}kt | Vento previsto: {DIR}/{X}kt
+Visibilità: {X}m ({VFR/IFR/LIFR}) | Nuvole: {SKC/FEW/SCT/BKN/OVC}
+{se divergenza >2°C: ⚠️ modello sovrastima/sottostima — correggi forecast}
+{se visibilità <2000m: ⚠️ nebbia — critico per viabilità}
+
+### ⚡ Fulmini in Tempo Reale (se attivata)
+Fulmini ultimi 15min: {N} in {area}km² | Densità: {X}/50km²/15min
+Trend: {in intensificazione / stabile / in dissolvimento}
+Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontano})
+{se CAPE>1500 + fulmini>10: ⚠️ supercella probabile}
+{se fulmini + VIL>25: ⚠️ grandine probabile (>70%)}
+{se dry lightning: ⚠️ rischio incendi — fulmini senza pioggia}
+
+### 🌊 Dati Idrologici (se attivata)
+Fiume: {NOME} a {LOCALITÀ} | Livello: {X}m (soglia {verde/giallo/rossa}: {Y}m)
+Trend 6h: {in salita / stabile / in discesa} ({±X}m)
+{se livello > soglia gialla + pioggia prevista: ⚠️ scenario peggiorativo}
+{se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo}
+{se fuori Trentino: "Dati real-time limitati al Trentino. Monitorare ARPA + allerte PC."}
+
+### 🛰️ Satellite (se attivata)
+Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}
+{se fronti: Banda frontale {in arrivo / in transito / in allontanamento} — posizione vs NWP: {convergente / divergente}}
+{se celle convettive: Tops freddi (<-60°C) → temporali intensi {con/senza} overshooting}
+{se nebbia: Strato nuvoloso basso confermato in {Val Padana / zona costiera}}
+{se dust: Area diffusa IR8.7 → conferma dust CAMS}
+
 ### ⚠️ Fenomeni speciali
 {solo se presenti — con spiegazione del meccanismo fisico}
 
@@ -606,9 +664,10 @@ Tipo evento: {TIPO} | Affidabilità contestuale: {Alta/Media/Bassa}
 
 ---
 Fonte previsioni: Open-Meteo (CC BY 4.0) | Modelli: {lista}
-Osservazioni: {ARPA regionale}
-Allerte: Protezione Civile Italiana
-Climatologia: ERA5 (media {N} anni)
+Osservazioni: {ARPA regionale} | METAR: CheckWX / aviationweather.gov
+Allerte: Protezione Civile Italiana | Radar: DPC (CC-BY-SA)
+Climatologia: ERA5 (media {N} anni) | Fulmini: DMI Open Data
+Idrologia: floods.it (Trentino) | Satellite: EUMETSAT
 ```
 
 ---
