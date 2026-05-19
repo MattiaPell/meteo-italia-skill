@@ -51,7 +51,7 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
 ### 3. Fetch in parallelo (esegui tutto insieme)
 
-Esegui simultaneamente i passi A–K:
+Esegui simultaneamente i passi A–L:
 
 #### A — Previsioni numeriche (Open-Meteo)
 Vedi `references/models.md` per il set corretto per macroarea.
@@ -280,6 +280,37 @@ GET https://aviationweather.gov/api/data/metar?ids=LIRF,LIMC,LIPE&format=json
 
 Vedi `references/metar_taf.md` per lista completa ICAO, guida interpretazione campi decoded, e soglie di validazione.
 
+#### L — Lightning Detection (Nowcasting Temporali)
+
+**Attiva sempre per:** allerta PC ≥ gialla per temporali, CAPE >800 J/kg da Step A, use case mare/nautica/montagna/eventi outdoor. **Altrimenti:** attiva se `weather_code` attuale 80-99 (rovesci/temporali in atto).
+
+**Fetch DMI Open Data (GeoJSON, no auth):**
+```http
+GET https://opendataapi.dmi.dk/data/observations/lightning
+  ?limit=1000
+  &bbox={BBOX}
+```
+Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare quale):
+- Nord Italia: `bbox=6.5,44.0,14.0,47.0`
+- Centro Italia: `bbox=9.0,41.0,14.5,44.5`
+- Sud Italia e Isole: `bbox=7.5,36.5,18.5,42.0`
+- Italia intera: `bbox=6.5,36.5,18.5,47.0`
+
+**Fetch comparativo per trend (opzionale):** seconda chiamata con `&observed_after={NOW-15MIN}` per valutare intensificazione/dissolvimento.
+
+**Interpretazione:**
+1. **Conta fulmini** nell'area entro 50km dal punto target. Soglie: >10 fulmini in 50km² = temporale attivo, >20 = temporale severo
+2. **Verifica trend**: confronto con fetch 15 min precedente. +50% = intensificazione, -50% = dissolvimento
+3. **Integrazione con Step A (CAPE/LI)**: CAPE >1500 + fulmini >10/15min → supercella probabile
+4. **Integrazione con Step I (radar DPC)**: fulmini + VIL >25 kg/m² → grandine probabile (>70%)
+5. **Dry lightning**: fulmini >5/15min ma precipitazioni osservate <1mm → rischio incendi (segnala esplicitamente)
+
+**Distanza e movimento:** calcola distanza dal punto target (Haversine). <5km = pericolo immediato. Confronta posizione fulmini t-15min vs t-30min per stimare direzione e velocità di movimento.
+
+**Nota:** DMI API pubblica, nessuna autenticazione. Rate limit: ~60 req/min stimato. Precisione localizzazione ±1-5km.
+
+Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, integrazione con radar, e alternative API.
+
 ### 4. Analisi Comparativa
 
 #### 4a. Consensus modelli numerici
@@ -361,6 +392,7 @@ vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target
 Aggiungi: `elevation={quota_target}` nella chiamata API.
 **UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV (Vedi `references/uv_marine_recent.md`).
 **Valanghe**: Consulta sempre il bollettino ufficiale **AINEVA** (valanghe.aineva.it) in presenza di neve fresca >30cm o forte vento.
+**Fulmini**: rischio elevato in cresta/esposto se lightning density >5 in 50km² — verifica trend ore 12-18 per temporali pomeridiani.
 
 ### 🐝 Apicoltura / Impollinazione
 Trigger: "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione"
@@ -373,6 +405,7 @@ Vedi soglie specifiche in `references/climatology.md`.
 Trigger: "partita", "evento", "concerto", "gara", "sagra", orario specifico citato
 Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra, vento (soglia 50 km/h per strutture), temperatura percepita.
 **UV se evento diurno**: includi picco UV e orario.
+**Fulmini**: se fulmini entro 20km → sospensione evento. Ripresa >30 min dall'ultimo fulmine rilevato.
 
 ### 🌾 Agricoltura / Campagna
 Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura"
@@ -399,6 +432,7 @@ Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"
 Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), temporali costieri, UV index.
 **Marine API obbligatoria**: attiva fetch F per dati onde completi (wave_height, swell, periodo).
 **UV obbligatorio**: includi sempre per questo use case.
+**Fulmini**: se fulmini entro 10km dalla costa → evacuazione spiaggia, rientro imbarcazioni immediate.
 Vedi scale Douglas/Beaufort e soglie in `references/uv_marine_recent.md`.
 
 ### 🌡️ Salute / Caldo estremo / Allergie

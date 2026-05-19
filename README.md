@@ -33,6 +33,7 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 | **Matrice affidabilità** | Affidabilità forecast per tipo di evento × orizzonte temporale |
 | **Bias noti** | Calibrazione per macroarea italiana con bias documentati per modello e stagione |
 | **METAR/TAF** | Validazione forecast con dati aeroportuali osservati (CheckWX API) |
+| **Lightning Detection** | Nowcasting temporali con fulmini in tempo reale (DMI API) |
 
 ## Modelli Supportati
 
