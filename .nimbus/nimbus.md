@@ -23,3 +23,7 @@ Action: Updated SKILL.md to remove the failing 'type=SITES' call and added 850hP
 ## 2025-05-20 — [Accuracy] Agrometeorology and High-Res Global Models
 Learning: Discovered that Open-Meteo provides 'ecmwf_ifs' as the primary 9km HRES global model (free), which is superior to the 25km 'ecmwf_ifs025' for Italy's complex terrain. Also identified 'Maccaja' and 'Burian' as critical missing patterns and integrated 'et0_fao_evapotranspiration' for agriculture.
 Action: Promoted 'ecmwf_ifs' to primary global reference in weights and fetch logic. Added agrometeorological variables and detection logic for Ligurian maritime clouds (Maccaja) and Siberian cold (Burian).
+
+## 2025-05-21 — [Accuracy] Standards for Sea State and Health
+**Learning:** Found that generic Beaufort Scale usage often conflates wind force with wave height. In Italy, the Douglas Scale is the standard for sea state (wave height) vs wind force. Also confirmed 'Notti Tropicali' (Tmin > 20°C) as a key health indicator in Italian climate reports.
+**Action:** Use Douglas Scale for `wave_height` interpretation and include Tropical Night flags when Tmin > 20°C to improve the operational utility of Marine and Health use cases.

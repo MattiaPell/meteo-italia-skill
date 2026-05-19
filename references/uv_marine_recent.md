@@ -23,27 +23,61 @@ L'indice UV misura l'intensità della radiazione ultravioletta solare.
 
 ---
 
-## 🌊 Stato del Mare — Scala Beaufort
+## 🌊 Stato del Mare — Scala Douglas (Wind Sea)
 
-Utilizzata per correlare la velocità del vento allo stato del mare e alla sicurezza nautica.
+La Scala Douglas è lo standard nautico per descrivere lo **Stato del Mare** in base all'altezza significativa delle onde (Step 3F, `wave_height`).
 
-| Grado | Vento (km/h) | Stato del Mare | Effetti al suolo / mare |
+| Grado | Descrizione | Altezza Onda (m) | Note Operative |
 |---|---|---|---|
-| 0 | <1 | Calmo | Specchio d'acqua |
-| 1 | 1–5 | Quasi calmo | Piccole increspature |
-| 2 | 6–11 | Poco mosso | Piccole onde, non si rompono |
-| 3 | 12–19 | Mosso | Onde corte, iniziano a rompersi |
-| 4 | 20–28 | Molto mosso | Onde lunghe, frequenti pecorelle |
-| 5 | 29–38 | Agitato | Onde moderate, molte pecorelle |
-| 6 | 39–49 | Molto agitato | Grandi onde, spruzzi bianchi |
-| 7 | 50–61 | Forte | Il mare si gonfia, schiuma bianca |
-| 8 | 62–74 | Burrasca | Onde alte e lunghe, strisce di schiuma |
-| 9 | 75–88 | Burrasca forte | Onde altissime, visibilità ridotta |
+| 0 | Calmo (specchio) | 0 | Navigazione sicura |
+| 1 | Quasi calmo | 0 – 0.10 | Navigazione sicura |
+| 2 | Poco mosso | 0.10 – 0.50 | Navigazione sicura |
+| 3 | Mosso | 0.50 – 1.25 | Cautela piccola nautica |
+| 4 | Molto mosso | 1.25 – 2.50 | Sconsigliato piccola nautica |
+| 5 | Agitato | 2.50 – 4.00 | Pericolo per balneazione e nautica |
+| 6 | Molto agitato | 4.00 – 6.00 | Navigazione difficile |
+| 7 | Grosso | 6.00 – 9.00 | Solo grandi navi |
+| 8 | Molto grosso | 9.00 – 14.00 | Emergenza |
+| 9 | Tempestoso | > 14.00 | Condizioni eccezionali |
+
+## 🌊 Mare Morto / Lungo — Scala Douglas (Swell)
+
+Il "Mare Morto" (Swell) è il moto ondoso residuo o proveniente da zone lontane. Interpreta i dati `swell_wave_height` e `swell_wave_period`.
+
+| Altezza Swell | Classe | Descrizione |
+|---|---|---|
+| 0 – 2 m | Bassa | Onde lunghe e basse |
+| 2 – 4 m | Media | Onde lunghe e moderate |
+| > 4 m | Alta | Onde lunghe e alte |
+
+| Lunghezza Swell | Periodo (s) | Descrizione |
+|---|---|---|
+| < 6s | Corta | Onde frequenti |
+| 6 – 10s | Media | Onde regolari |
+| > 10s | Lunga | Onde distanziate (tipico post-burrasca) |
+
+---
+
+## 🌬️ Vento — Scala Beaufort
+
+Utilizzata per correlare la velocità del vento (Step 3A, `wind_speed_10m`) agli effetti visibili.
+
+| Grado | Vento (km/h) | Descrizione | Effetti al suolo / mare |
+|---|---|---|---|
+| 0 | <1 | Calma | Fumo sale verticale |
+| 1 | 1–5 | Bava di vento | Fumo inclinato |
+| 2 | 6–11 | Brezza leggera | Foglie muovono |
+| 3 | 12–19 | Brezza tesa | Bandiere spiegate |
+| 4 | 20–28 | Vento moderato | Solleva polvere |
+| 5 | 29–38 | Vento teso | Piccoli alberi oscillano |
+| 6 | 39–49 | Vento fresco | Grandi rami muovono |
+| 7 | 50–61 | Vento forte | Difficoltà con ombrelli |
+| 8 | 62–74 | Burrasca | Ramoscelli si spezzano |
+| 9 | 75–88 | Burrasca forte | Danni alle strutture |
 
 **Soglie Operative:**
 - **Bagno/Nuoto**: Sicuro fino a Beaufort 2; cautela con 3; sconsigliato ≥4.
 - **Piccola Nautica (<6m)**: Sicura fino a Beaufort 3; cautela con 4; sconsigliato ≥5.
-- **Traghetti/Grandi Navi**: Operativi solitamente fino a Beaufort 7-8.
 
 ### 🌡️ Temperatura Superficiale del Mare (SST)
 Indica il comfort termico per la balneazione nelle coste italiane.
@@ -69,6 +103,25 @@ Classificazione della visibilità orizzontale per trasporti e navigazione.
 | 1–4 km | Foschia | Visibilità ridotta, orizzonte non nitido |
 | 4–10 km | Discreta | Condizioni medie |
 | >10 km | Ottima | Tipica post-fronte, Foehn o Tramontana |
+
+---
+
+## 🌡️ Salute e Caldo Estremo — Soglie Ministero Salute / ARPA
+
+### 🌙 Notti Tropicali (Tropical Nights)
+Definita come una giornata in cui la **temperatura minima (`temperature_2m_min`) non scende mai sotto i 20°C**.
+- **Impatto**: Stress termico accumulato, difficoltà di recupero dell'organismo durante il sonno.
+- **Segnala sempre** se `temperature_2m_min >= 20°C`.
+
+### 🌡️ Heat Index (Indice di Calore / Afa)
+Usa la temperatura percepita (`apparent_temperature`) per valutare il disagio fisico.
+
+| Apparent T | Categoria | Pericolo |
+|---|---|---|
+| 27 – 32°C | Cautela | Possibile affaticamento con esposizione prolungata |
+| 32 – 41°C | Estrema cautela | Possibili crampi e colpi di calore |
+| 41 – 54°C | Pericolo | Colpo di calore probabile |
+| > 54°C | Pericolo estremo | Colpo di calore imminente |
 
 ---
 
