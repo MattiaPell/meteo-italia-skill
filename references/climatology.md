@@ -286,6 +286,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 15.5°C | 9.7°C | 87mm | |
 | Dic | 11.2°C | 5.5°C | 71mm | |
 
+### Pescara (42.43°N, 14.18°E, 11m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 11.2°C | 1.8°C | 48mm | |
+| Feb | 11.9°C | 2.2°C | 52mm | |
+| Mar | 14.4°C | 3.9°C | 57mm | |
+| Apr | 17.7°C | 6.7°C | 57mm | |
+| Mag | 22.3°C | 11.0°C | 32mm | |
+| Giu | 26.3°C | 14.8°C | 46mm | |
+| Lug | 29.2°C | 17.2°C | 34mm | |
+| Ago | 29.0°C | 17.3°C | 55mm | |
+| Set | 25.6°C | 14.4°C | 61mm | |
+| Ott | 20.7°C | 10.5°C | 72mm | |
+| Nov | 15.5°C | 5.9°C | 80mm | |
+| Dic | 12.4°C | 3.2°C | 63mm | |
+
 ### Napoli (40.88°N, 14.28°E, 72m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -432,6 +448,89 @@ end_date:   {ANNO-1}-05-20
 ### Vento
 - **Bora più intensa registrata**: >200 km/h — Trieste, Nevera 2023
 - **Record vento Italia**: 220 km/h — Cima Paganella (TN), 1967
+
+---
+
+## Indici Derivati Utili
+
+### Heat Index (temperatura percepita con afa)
+Usa quando T >27°C e UR >40%:
+```
+HI ≈ -8.78 + 1.61*T + 2.34*UR - 0.146*T*UR + 0.013*T²*UR + 0.002*T*UR² - ...
+(formula NOAA semplificata — accurata ±1.5°C)
+```
+Soglie: <27°C (ok), 27-32°C (cautela), 32-41°C (attenzione), 41-54°C (pericolo), >54°C (emergenza)
+
+### Wind Chill (temperatura percepita con vento freddo)
+Usa quando T <10°C e vento >4.8 km/h:
+```
+WC = 13.12 + 0.6215*T - 11.37*V^0.16 + 0.3965*T*V^0.16
+(V in km/h, T in °C)
+```
+
+## Bilancio Idrologico (ET0 vs Precipitazioni)
+
+L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica lo stato idrico del suolo.
+
+| Condizione | Interpretazione | Impatto |
+|---|---|---|
+| Precip >> ET0 | Surplus idrico | Rischio alluvionamenti, suolo saturo |
+| Precip ≈ ET0 | Equilibrio | Condizioni ideali per vegetazione |
+| Precip < ET0 | Deficit idrico | Necessaria irrigazione, stress idrico |
+| ET0 > 5mm/giorno | Elevata evaporazione | Tipico di giornate calde/ventose, rapido disseccamento |
+
+**Soglie Umidità del Suolo (soil_moisture_0_to_1cm):**
+- **<0.15 m³/m³**: Suolo molto secco (punto di appassimento)
+- **0.15–0.30 m³/m³**: Umidità moderata
+- **>0.35 m³/m³**: Suolo molto umido / saturo
+
+### Probabilità gelata
+T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)
+T min prevista <0°C → gelata quasi certa in zone aperte e pianura
+T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)
+
+---
+
+## Focus Agrometeorologico — Soglie di Germinazione
+
+Riferimento per l'uso della variabile `soil_temperature_6cm` (Step 3A). Soglie ARPAE/ARPAV per le principali colture italiane.
+
+| Coltura | T suolo Min. | T suolo Ottimale | Note |
+|---|---|---|---|
+| **Mais** | 10°C | 12°C (stabile) | Sotto i 10°C la germinazione si arresta |
+| **Pomodoro** | 12°C | 15–18°C | Sensibile ai ritorni di freddo |
+| **Barbabietola** | 5–6°C | 10–12°C | Semina precoce possibile |
+| **Girasole** | 8°C | 10–12°C | |
+
+**Nota Operativa**: Utilizzare la temperatura del suolo media giornaliera a 6cm per valutare la finestra di semina.
+
+---
+
+## Focus Apistico — Soglie di Attività
+
+Riferimento per lo use case Apicoltura (Bee Flight & Nectar). Soglie basate su standard CREA-AA e ARPA regionali.
+
+### Attività di Volo (Bottinatura)
+| Parametro | Soglia | Interpretazione |
+|---|---|---|
+| **Temperatura Aria** | < 10°C | Volo assente (api nel glomere) |
+| **Temperatura Aria** | 10–15°C | Attività limitata (voli di purificazione/acqua) |
+| **Temperatura Aria** | 16–25°C | **Attività ottimale** di bottinatura |
+| **Temperatura Aria** | > 35°C | Attività ridotta (ventilazione alveare) |
+| **Vento** | > 25 km/h | Difficoltà di volo, rientro forzato |
+| **Pioggia** | Qualsiasi | Stop attività di volo |
+
+### Secrezione Nettarifera (Bloom Context)
+Il nettare richiede un bilancio tra umidità e calore.
+- **Acacia (Robinia)**: Richiede notti miti (**T min > 12-14°C**) e UR elevata (> 60%). Il vento secco (Foehn/Garbino) "brucia" il nettare.
+- **Castagno**: Favorito da clima caldo-umido (UR > 70%), soffre la siccità prolungata.
+- **Agrumi**: Sensibili a sbalzi termici e venti forti che causano la caduta dei fiori.
+
+### Rischio Gelate Tardive (Aprile-Maggio)
+- **T < 0°C**: Danno irreversibile ai fiori di Acacia e Agrumi (perdita raccolto anno).
+- **T < -2°C**: Danno ai germogli di Castagno.
+
+---
 
 ## Anomalie di Temperatura Percepita (Apparent T)
 

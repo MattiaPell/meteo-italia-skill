@@ -123,6 +123,19 @@ Usa la temperatura percepita (`apparent_temperature`) per valutare il disagio fi
 | 41 – 54°C | Pericolo | Colpo di calore probabile |
 | > 54°C | Pericolo estremo | Colpo di calore imminente |
 
+### 🌡️ Temperatura a Bulbo Umido (Wet Bulb Temperature - WBT)
+La variabile `wet_bulb_temperature_2m` (Step 3A) è il limite fisico del raffreddamento per evaporazione (sudore).
+
+| WBT (°C) | Livello di Rischio | Impatto sulla Salute |
+|---|---|---|
+| **< 26°C** | **Basso** | Condizioni gestibili con idratazione |
+| **26 – 29°C** | **Moderato** | Stress termico significativo per lavori pesanti |
+| **30 – 31°C** | **Alto** | Limite di adattabilità per attività fisica intensa |
+| **32 – 34°C** | **Molto Alto** | Pericolo di colpo di calore anche a riposo |
+| **≥ 35°C** | **Estremo** | Limite teorico di sopravvivenza umana (6h) |
+
+*Nota: Soglie basate su PSU HEAT Project e standard fisiologici WMO.*
+
 ---
 
 ## 📅 Storico Recente (Ultimi 7 Giorni)

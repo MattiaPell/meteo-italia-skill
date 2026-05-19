@@ -10,6 +10,7 @@ description: >
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
   "maestrale", "garbino", "ponentino", "cuscino freddo", "inversione termica",
   "gelicidio", "pioggia congelantesi",
+  "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
   "analisi meteo [città italiana]", "weekend meteo", "settimana meteo".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
@@ -59,8 +60,10 @@ GET https://api.open-meteo.com/v1/forecast
   &models={MODEL1,MODEL2,...}
   &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
           precipitation_probability,wind_speed_10m,wind_direction_10m,
-          wind_gusts_10m,cloud_cover,visibility,weather_code,
-          relative_humidity_2m,cape,lifted_index,freezing_level_height,
+          wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,
+          cloud_cover_high,visibility,weather_code,
+          relative_humidity_2m,cape,lifted_index,convective_inhibition,
+          freezing_level_height,boundary_layer_height,wet_bulb_temperature_2m,
           snowfall,snow_depth,
           temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
           relative_humidity_925hPa,geopotential_height_925hPa,
@@ -321,6 +324,14 @@ vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target
 **Mountain Intelligence**: Includi sempre il **Pericolo Valanghe (Scala AINEVA 1-5)** e la **Qualità della Neve** (Farinosa, Crostosa, Pesante, Marcia) se applicabile. (Vedi `references/mountain.md`).
 Aggiungi: `elevation={quota_target}` nella chiamata API.
 **UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV (Vedi `references/uv_marine_recent.md`).
+**Valanghe**: Consulta sempre il bollettino ufficiale **AINEVA** (valanghe.aineva.it) in presenza di neve fresca >30cm o forte vento.
+
+### 🐝 Apicoltura / Impollinazione
+Trigger: "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione"
+Focus: Finestre di volo (T > 10°C, vento < 25 km/h), secrezione nettarifero (T notturna > 12°C e UR > 60%),
+rischio gelate tardive su fioriture (Acacia, Castagno, Agrumi), rischio grandine e piogge battenti.
+**Storico recente obbligatorio**: giorni di volo nell'ultima settimana e piogge pregresse per stato vegetativo.
+Vedi soglie specifiche in `references/climatology.md`.
 
 ### ⚽ Evento sportivo / All'aperto
 Trigger: "partita", "evento", "concerto", "gara", "sagra", orario specifico citato

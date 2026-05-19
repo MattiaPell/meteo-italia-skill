@@ -274,7 +274,8 @@ Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
 - Vento <5 km/h
 - T prossima al punto di rugiada (T - Tdew <2°C)
 - **Inversione termica bassa**: T(2m) < T(925hPa) → indica ristagno d'aria e nebbia al suolo
-- `cloud_cover` <10% (cielo sereno → irraggiamento notturno)
+- **Cloud cover low**: >75% (presenza di strati o nebbia persistente)
+- `cloud_cover` <10% (cielo sereno → irraggiamento notturno in formazione)
 - Stagione: ottobre-febbraio
 - Pianura alluvionale (quota <50m)
 
@@ -307,8 +308,9 @@ Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raff
 
 ### Segnali nei dati (flag se ≥2)
 - CAPE >800 J/kg (significativo), >1500 J/kg (alto), >2500 J/kg (molto alto)
+- **CIN (Convective Inhibition)**: < 50 J/kg (assenza di "tappo" che impedisce la convezione)
 - `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
-- Wind shear in quota (differenza vento 850hPa vs 500hPa >15 m/s → MCS organizzato)
+- Wind shear in quota (differenza vento 850hPa vs 500hPa >55 km/h → MCS organizzato)
 - `weather_code` 95-99 previsto
 - Zone: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
 
@@ -392,7 +394,8 @@ Liguria (soprattutto centro-levante: Genova, Chiavari, Spezia), Toscana (costa e
 - **Convergenza al suolo** marcata (es. Tramontana fredda vs Scirocco caldo/umido nel Golfo di Genova)
 - **Moisture Flux** (flusso di umidità) elevato e persistente nei bassi strati verso la linea di convergenza
 - **CAPE** >1000-1500 J/kg persistente nell'area di alimentazione
-- **Vento a 500hPa** forte (>40-50 nodi) che "stira" l'incudine del temporale creando la forma a V
+- **CIN**: < 50 J/kg (facilità di innesco dei nuclei temporaleschi)
+- **Vento a 500hPa** forte (>75-90 km/h) che "stira" l'incudine del temporale creando la forma a V
 - **Stazionarietà**: linea di convergenza che non si sposta per 3+ ore
 - **Precipitazioni concentrate**: modelli ad alta risoluzione (ICON D2, AROME) che prevedono >100mm in 3-6h su una fascia stretta
 
@@ -422,6 +425,7 @@ Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), 
 - **Stagione**: Inverno (novembre–febbraio)
 - **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
 - **Umidità elevata**: UR(2m) >85% con nebbia o nubi basse (Galaverna)
+- **Mixing Layer**: `boundary_layer_height` < 300m (aria intrappolata e scarsa ventilazione verticale)
 - **Pressione elevata**: regime anticiclonico invernale persistente (`pressure_msl` > 1020 hPa)
 - **Zona**: Macroaree Nord-Ovest, Nord-Est, Centro-Nord (pianura)
 - **Contesto**: flusso di aria mite in quota (T850hPa >0°C) mentre al suolo persiste il gelo
@@ -510,7 +514,7 @@ Liguria (settore centro-occidentale), occasionalmente Toscana costiera e Versili
 - **UR(2m) > 85-90%** sulla costa
 - **Vento da S/SE/SW**: Bassa intensità (<15-20 km/h)
 - **Stagione**: Primavera e Autunno
-- **Cloud cover**: >80% (nubi basse) mentre nell'entroterra/Pianura Padana è sereno
+- **Cloud cover low**: >75% (nubi basse/nebbia) mentre nell'entroterra è sereno
 - **Escursione termica**: Molto ridotta tra giorno e notte
 
 ### Come riportarlo
@@ -620,6 +624,38 @@ Segnali: Instabilità atmosferica marcata | Vento da: {DIR}
 Impatti: Repentino innalzamento/abbassamento del livello nei porti e foci fluviali (Mazara).
 ```
 *Fonte: ARPA Sicilia / ISPRA (Meteotsunami nel Mediterraneo)*
+
+---
+
+## ACQUA ALTA (Venezia / Alto Adriatico)
+
+### Cos'è
+Fenomeno di sovralzo del livello del mare nell'Adriatico Settentrionale che causa l'allagamento di Venezia, Chioggia e altre località costiere. È causato dalla combinazione di marea astronomica (ciclica) e contributo meteorologico (storm surge). L'effetto è amplificato dalla forma a "catino" dell'Adriatico e dal fenomeno della **Sessa** (oscillazione libera del bacino).
+
+### Stagione: Settembre–Aprile (picco Novembre–Dicembre)
+
+### Segnali nei dati (flag se presenti ≥2 di questi)
+- **Bassa Pressione**: `pressure_msl` < 1000-1005 hPa sul Nord Adriatico. Ogni hPa in meno rispetto alla media (1013 hPa) comporta un innalzamento teorico del livello marino di ~1 cm (effetto barometrico inverso).
+- **Scirocco persistente**: Vento da SE (`wind_direction_10m` 120-160°) con velocità sostenuta > 30-40 km/h lungo tutto l'asse Adriatico per 12+ ore.
+- **Bora locale**: Vento da NE nel Golfo di Venezia che può ostacolare il deflusso delle acque dalle lagune (effetto accumulo locale).
+- **Sessa**: Presenza di un forte gradiente di pressione N-S tra l'Adriatico Settentrionale e Meridionale nei giorni precedenti.
+
+### Soglie di Marea (Rif. Zero Mareografico Punta della Salute - ZMPS)
+| Livello | Soglia | Impatto a Venezia | Azione |
+|---|---|---|---|
+| **Sostenuta** | 80–109 cm | Allagamento aree più basse (Piazza San Marco) | Info popolazione |
+| **Molto Sostenuta** | 110–139 cm | Allagamento significativo (>12% città) | **Attivazione MOSE** |
+| **Eccezionale** | ≥ 140 cm | Allagamento esteso (>59% città) | Emergenza |
+
+### Come riportarlo
+```
+🌊 RISCHIO ACQUA ALTA — Venezia / Laguna / Alto Adriatico
+Contributo Meteorologico: {Stimato} cm | Pressione: {X} hPa
+Vento: {DIR} (Scirocco) a {Y} km/h | Persistenza: {H} ore
+Scenario: {Marea Sostenuta / Molto Sostenuta / Eccezionale}
+Nota: Dal 2020 il sistema MOSE protegge la città per maree ≥ 110 cm. Seguire bollettino CPSM Venezia.
+```
+*Fonte: CPSM Venezia / ISPRA (Previsione maree e contributi meteorologici)*
 
 ---
 

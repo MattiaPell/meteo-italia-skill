@@ -35,3 +35,7 @@ Action: Always include the 925hPa level (T, RH, Geo) in the fetch for Northern m
 ## 2025-05-22 — [Accuracy] Soil Temperature and Climatology Data Limits
 **Learning:** High-accuracy detection of winter ground-level phenomena (Gelicidio, Galaverna, Brina) requires 'soil_temperature_0cm' and 'soil_temperature_6cm' to distinguish surface freezing from air temperature. Additionally, the Open-Meteo Archive API has a 10,000-line limit per request; fetching 30 years of daily data (~10,950 lines) requires splitting the request into chunks.
 **Action:** Add soil temperature variables to primary fetches. When fetching multi-decade daily climatology, split requests into 15-year chunks to avoid '400 Bad Request' and implement exponential backoff for '429 Too Many Requests'.
+
+## 2025-05-23 — [Accuracy] Vertical Cloud Decomposition and Atmospheric Stability
+**Learning:** Total cloud cover is insufficient for Italian phenomena like 'Maccaja' and Po Valley fog. Adding 'cloud_cover_low' allows for precise detection of low-level saturation. Additionally, 'convective_inhibition' (CIN) is critical to evaluate if high CAPE can actually trigger 'V-Shaped' storms, while 'boundary_layer_height' sharpening 'Cuscino Freddo' and air quality accumulation risk analysis.
+**Action:** Always fetch vertical cloud layers (low/mid/high) and stability indices (CIN) for complex terrain. Use boundary layer height to define mixing volume for pollutants.

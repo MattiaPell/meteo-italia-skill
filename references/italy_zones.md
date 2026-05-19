@@ -44,7 +44,7 @@ geosphere_seamless, ecmwf_ifs, gfs_seamless
 | `icon_seamless` | 1.0 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, cuscino freddo, alluvioni Mestre/Venezia.
+**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, cuscino freddo, [Acqua Alta](local_phenomena.md#acqua-alta-venezia--alto-adriatico) (Venezia), alluvioni Mestre/Venezia.
 
 **Note:** La Bora è il fenomeno più caratteristico e pericoloso. Segnalarla sempre quando: vento da ENE >40 km/h a Trieste + pressione in calo. ARPAE ICON 2I è il modello nazionale e ha risoluzione 2.2km — priorità assoluta per eventi intensi in questa zona.
 
@@ -178,7 +178,7 @@ ecmwf_ifs, gfs_seamless
 | `icon_seamless` | 1.0 |
 | `gfs_seamless` | 0.8 |
 
-**Fenomeni locali prioritari:** Bora (versante nord), grecale (versante sud), temporali adriatici da convergenza (autunno), Acqua Alta a Venezia (Bora + Scirocco + luna piena).
+**Fenomeni locali prioritari:** Bora (versante nord), grecale (versante sud), temporali adriatici da convergenza (autunno), [Acqua Alta](local_phenomena.md#acqua-alta-venezia--alto-adriatico) a Venezia (Bora + Scirocco + Sessa).
 
 ---
 
