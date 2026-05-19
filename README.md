@@ -62,6 +62,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [ensemble_spread.md](references/ensemble_spread.md) | Spread ensemble — incertezza probabilistica |
 | [event_reliability.md](references/event_reliability.md) | Affidabilità forecast per evento e orizzonte |
 | [local_phenomena.md](references/local_phenomena.md) | Flag automatici per fenomeni italiani |
+| [mountain.md](references/mountain.md) | Montagna, Neve e Valanghe (AINEVA) e Agro-meteo |
 | [air_quality.md](references/air_quality.md) | Qualità dell'aria — CAMS + Open-Meteo AQ API |
 | [italian_portals.md](references/italian_portals.md) | Portali meteo italiani di fallback |
 | [nowcasting_radar.md](references/nowcasting_radar.md) | Nowcasting radar — precipitazioni in tempo reale |

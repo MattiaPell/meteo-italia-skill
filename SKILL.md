@@ -321,8 +321,9 @@ Riconosci automaticamente il contesto dall'input e adatta il report:
 Trigger: "montagna", "escursione", "trekking", "sci", "alpinismo", "rifugio"
 Focus: quota neve (`freezing_level_height`), visibilità, temporali pomeridiani (orario picco 14-17),
 vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target, rischio valanghe (neve fresca + vento).
+**Mountain Intelligence**: Includi sempre il **Pericolo Valanghe (Scala AINEVA 1-5)** e la **Qualità della Neve** (Farinosa, Crostosa, Pesante, Marcia) se applicabile. (Vedi `references/mountain.md`).
 Aggiungi: `elevation={quota_target}` nella chiamata API.
-**UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV.
+**UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV (Vedi `references/uv_marine_recent.md`).
 **Valanghe**: Consulta sempre il bollettino ufficiale **AINEVA** (valanghe.aineva.it) in presenza di neve fresca >30cm o forte vento.
 
 ### 🐝 Apicoltura / Impollinazione

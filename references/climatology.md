@@ -30,8 +30,6 @@ end_date:   {ANNO-1}-05-20
 - `precip_media_giornaliera`: mm/giorno medi
 - `precip_sigma`: variabilità precipitazioni
 
----
-
 ## Classificazione Anomalie
 
 | Scarto dalla media | Classificazione | Come riportarlo |
@@ -43,8 +41,6 @@ end_date:   {ANNO-1}-05-20
 | -1.5 a -2.5σ | Anomalia significativa | |
 | >+2.5σ | Evento estremo / eccezionale | "evento eccezionale — raro nel periodo" |
 | <-2.5σ | Evento estremo / eccezionale | |
-
----
 
 ## Valori Climatologici di Riferimento per Città Chiave
 
@@ -85,18 +81,18 @@ end_date:   {ANNO-1}-05-20
 ### Aosta (45.73°N, 7.31°E, 583m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
-| Gen | 4.8°C | -1.9°C | 100mm | |
-| Feb | 6.3°C | -1.5°C | 80mm | |
-| Mar | 9.5°C | 1.8°C | 89mm | |
-| Apr | 12.5°C | 5.5°C | 100mm | |
-| Mag | 17.2°C | 9.5°C | 117mm | |
-| Giu | 23.1°C | 14.2°C | 109mm | |
-| Lug | 26.0°C | 16.8°C | 94mm | |
-| Ago | 26.0°C | 16.9°C | 85mm | |
-| Set | 21.6°C | 12.9°C | 87mm | |
-| Ott | 16.5°C | 8.5°C | 99mm | |
-| Nov | 9.5°C | 2.6°C | 130mm | |
-| Dic | 5.3°C | -1.2°C | 107mm | |
+| Gen | 4.8°C | -1.9°C | 40mm | |
+| Feb | 6.3°C | -1.5°C | 45mm | |
+| Mar | 9.5°C | 1.8°C | 50mm | |
+| Apr | 12.5°C | 5.5°C | 55mm | |
+| Mag | 17.2°C | 9.5°C | 60mm | |
+| Giu | 23.1°C | 14.2°C | 65mm | |
+| Lug | 26.0°C | 16.8°C | 55mm | |
+| Ago | 26.0°C | 16.9°C | 55mm | |
+| Set | 21.6°C | 12.9°C | 55mm | |
+| Ott | 16.5°C | 8.5°C | 65mm | |
+| Nov | 9.5°C | 2.6°C | 70mm | |
+| Dic | 5.3°C | -1.2°C | 50mm | |
 
 ### Genova (44.40°N, 8.94°E, 20m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -434,24 +430,6 @@ end_date:   {ANNO-1}-05-20
 | Nov | 18.0°C | 11.9°C | 62mm | |
 | Dic | 14.7°C | 8.8°C | 53mm | |
 
-### Sassari (40.72°N, 8.56°E, 225m)
-| Mese | T max media | T min media | Precip. media | Note |
-|------|-------------|-------------|---------------|------|
-| Gen | 12.2°C | 5.2°C | 64mm | |
-| Feb | 13.0°C | 5.0°C | 64mm | |
-| Mar | 15.1°C | 6.2°C | 50mm | |
-| Apr | 18.2°C | 8.1°C | 45mm | |
-| Mag | 22.5°C | 11.2°C | 30mm | |
-| Giu | 27.1°C | 15.3°C | 10mm | |
-| Lug | 31.0°C | 18.2°C | 2mm | |
-| Ago | 31.2°C | 18.5°C | 5mm | |
-| Set | 27.5°C | 16.1°C | 40mm | |
-| Ott | 22.3°C | 13.0°C | 70mm | |
-| Nov | 16.5°C | 9.2°C | 100mm | |
-| Dic | 13.1°C | 6.2°C | 80mm | |
-
----
-
 ## Record Storici Notevoli per Zona (contesto per eventi estremi)
 
 ### Temperature
@@ -564,3 +542,8 @@ Confronta `apparent_temperature` (forecast) con `apparent_temperature` (archive)
 | > +3.0σ | Caldo estremo eccezionale | Pericolo imminente di colpo di calore |
 | -1.0 a -3.0σ | Freddo ventoso intenso | Elevato rischio ipotermia/congelamento |
 | < -3.0σ | Burian / Gelo eccezionale | Emergenza freddo |
+
+### Probabilità gelata
+T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)
+T min prevista <0°C → gelata quasi certa in zone aperte e pianura
+T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)
