@@ -50,7 +50,7 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
 ### 3. Fetch in parallelo (esegui tutto insieme)
 
-Esegui simultaneamente i passi A–L:
+Esegui simultaneamente i passi A–M:
 
 #### A — Previsioni numeriche (Open-Meteo)
 Vedi `references/models.md` per il set corretto per macroarea.
@@ -310,6 +310,34 @@ Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare q
 
 Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, integrazione con radar, e alternative API.
 
+#### M — Dati Idrologici (Rischio Alluvioni)
+
+**Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico, precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm da Step C, use case agricoltura/cantieri/viabilità. **Altrimenti:** disattiva.
+
+**Fetch catalogo stazioni (floods.it — open data, no auth):**
+```http
+GET https://www.floods.it/api/v1/monitoring/index.json
+```
+Filtra le stazioni entro 50km dal punto target usando le coordinate `geometry.coordinates`.
+
+**Fetch dati stazione:**
+```http
+GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
+```
+
+**Interpretazione:**
+1. **Livello attuale vs soglie**: confronta `value` con `thresholds.green/yellow/red`. Verde = normale, Giallo = attenzione, Rosso = allerta
+2. **Trend (ultime 3-6 ore)**: in salita/discesa/stabile. Trend +0.5m in 6h = livello in rapida salita
+3. **Combinato con Step A (precipitazioni)**: se previsti >30mm/24h E livello > soglia gialla → scenario peggiorativo
+4. **Combinato con Step A (soil_moisture)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido
+5. **Combinato con Step C (storico recente)**: piogge cumulate 7gg >100mm → bacino già carico
+
+**Per zone fuori Trentino:** "Dati idrometrici real-time limitati al Trentino. Per altre regioni: monitorare precipitazioni ARPA (Step D) + allerta PC (Step E) + EFAS previsionale come contesto."
+
+**Nota:** floods.it API open data, no auth. Copertura: solo Trentino-Alto Adige. Aggiornamento ogni 15 min.
+
+Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
+
 ### 4. Analisi Comparativa
 
 #### 4a. Consensus modelli numerici
@@ -412,12 +440,15 @@ Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), gran
 bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture),
 siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
 umidità fogliare (UR >90% = rischio funghi).
+**Rischio allagamento campi**: se livello fiumi > soglia gialla + pioggia prevista >20mm/24h.
+**Ristagno idrico**: se soil_moisture >0.35 + livello falda in salita (dati idrologici Step M).
 **Storico recente obbligatorio**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case.
 
 ### 🏗️ Cantiere / Lavori all'aperto
 Trigger: "cantiere", "lavori", "operai", "gru", "ponteggio"
 Focus: vento >50 km/h (stop gru), pioggia cumulata (calcestruzzo), gelate notturne (ghiaccio su superfici), visibilità.
 **METAR per visibilità**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità orizzontale — utile per lavoro in quota (gru, ponteggi).
+**Rischio allagamento scavi**: se livello falda in salita (Step M) + precipitazioni previste >20mm/24h.
 **UV se estate**: rischio colpo di calore per i lavoratori.
 
 ### 🚗 Viabilità / Trasporti
@@ -425,6 +456,7 @@ Trigger: "viaggio", "autostrada", "strada", "guida", "treno", "volo"
 Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), gelicidio (black ice),
 acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
 **METAR per nebbia aeroportuale**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità RVR e ceiling — indicatore precoce di nebbia in pianura.
+**Rischio allagamento strade**: se livello fiume > soglia rossa per ponte/guado sul percorso, o pioggia >50mm/24h + dati ISPRA dissesto → rischio interruzione.
 
 ### 🏖️ Mare / Spiaggia / Nautica
 Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"
