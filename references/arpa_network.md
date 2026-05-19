@@ -160,6 +160,23 @@ Mappa regione → ente ARPA → endpoint dati osservativi.
 
 ---
 
+## Autorità Nazionali e Montagna
+
+### Aeronautica Militare (MeteoAM)
+- **Ruolo:** Servizio Meteorologico Nazionale ufficiale dell'Italia. Riferimento per l'aviazione e la navigazione aerea.
+- **URL:** https://www.meteoam.it
+- **Dati:** Osservazioni (SYNOP/METAR), bollettini testuali, previsioni a breve/medio termine.
+- **Riferimento:** Rete di stazioni aeronautiche storiche (Roma Fiumicino, Milano Linate, ecc.).
+
+### AINEVA (Neve e Valanghe)
+- **Ruolo:** Associazione delle Regioni e Province Autonome dell'arco alpino e appenninico per il coordinamento della prevenzione del rischio valanghe.
+- **URL:** https://www.aineva.it
+- **Bollettino Valanghe:** https://valanghe.aineva.it (Standard EAWS)
+- **Dati:** Altezza neve, stabilità del manto nevoso, pericolo valanghe (scala 1-5).
+- **Rilevanza:** Indispensabile per lo Use Case Montagna/Sci.
+
+---
+
 ## Protezione Civile — Allerte
 
 ### Endpoint allerte ufficiali

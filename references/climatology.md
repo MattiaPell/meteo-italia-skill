@@ -30,8 +30,6 @@ end_date:   {ANNO-1}-05-20
 - `precip_media_giornaliera`: mm/giorno medi
 - `precip_sigma`: variabilità precipitazioni
 
----
-
 ## Classificazione Anomalie
 
 | Scarto dalla media | Classificazione | Come riportarlo |
@@ -43,8 +41,6 @@ end_date:   {ANNO-1}-05-20
 | -1.5 a -2.5σ | Anomalia significativa | |
 | >+2.5σ | Evento estremo / eccezionale | "evento eccezionale — raro nel periodo" |
 | <-2.5σ | Evento estremo / eccezionale | |
-
----
 
 ## Valori Climatologici di Riferimento per Città Chiave
 
@@ -85,18 +81,18 @@ end_date:   {ANNO-1}-05-20
 ### Aosta (45.73°N, 7.31°E, 583m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
-| Gen | 4.8°C | -1.9°C | 100mm | |
-| Feb | 6.3°C | -1.5°C | 80mm | |
-| Mar | 9.5°C | 1.8°C | 89mm | |
-| Apr | 12.5°C | 5.5°C | 100mm | |
-| Mag | 17.2°C | 9.5°C | 117mm | |
-| Giu | 23.1°C | 14.2°C | 109mm | |
-| Lug | 26.0°C | 16.8°C | 94mm | |
-| Ago | 26.0°C | 16.9°C | 85mm | |
-| Set | 21.6°C | 12.9°C | 87mm | |
-| Ott | 16.5°C | 8.5°C | 99mm | |
-| Nov | 9.5°C | 2.6°C | 130mm | |
-| Dic | 5.3°C | -1.2°C | 107mm | |
+| Gen | 4.8°C | -1.9°C | 40mm | |
+| Feb | 6.3°C | -1.5°C | 45mm | |
+| Mar | 9.5°C | 1.8°C | 50mm | |
+| Apr | 12.5°C | 5.5°C | 55mm | |
+| Mag | 17.2°C | 9.5°C | 60mm | |
+| Giu | 23.1°C | 14.2°C | 65mm | |
+| Lug | 26.0°C | 16.8°C | 55mm | |
+| Ago | 26.0°C | 16.9°C | 55mm | |
+| Set | 21.6°C | 12.9°C | 55mm | |
+| Ott | 16.5°C | 8.5°C | 65mm | |
+| Nov | 9.5°C | 2.6°C | 70mm | |
+| Dic | 5.3°C | -1.2°C | 50mm | |
 
 ### Genova (44.40°N, 8.94°E, 20m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -418,8 +414,6 @@ end_date:   {ANNO-1}-05-20
 | Nov | 18.0°C | 11.9°C | 62mm | |
 | Dic | 14.7°C | 8.8°C | 53mm | |
 
----
-
 ## Record Storici Notevoli per Zona (contesto per eventi estremi)
 
 ### Temperature
@@ -439,63 +433,6 @@ end_date:   {ANNO-1}-05-20
 - **Bora più intensa registrata**: >200 km/h — Trieste, Nevera 2023
 - **Record vento Italia**: 220 km/h — Cima Paganella (TN), 1967
 
----
-
-## Indici Derivati Utili
-
-### Heat Index (temperatura percepita con afa)
-Usa quando T >27°C e UR >40%:
-```
-HI ≈ -8.78 + 1.61*T + 2.34*UR - 0.146*T*UR + 0.013*T²*UR + 0.002*T*UR² - ...
-(formula NOAA semplificata — accurata ±1.5°C)
-```
-Soglie: <27°C (ok), 27-32°C (cautela), 32-41°C (attenzione), 41-54°C (pericolo), >54°C (emergenza)
-
-### Wind Chill (temperatura percepita con vento freddo)
-Usa quando T <10°C e vento >4.8 km/h:
-```
-WC = 13.12 + 0.6215*T - 11.37*V^0.16 + 0.3965*T*V^0.16
-(V in km/h, T in °C)
-```
-
-## Bilancio Idrologico (ET0 vs Precipitazioni)
-
-L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica lo stato idrico del suolo.
-
-| Condizione | Interpretazione | Impatto |
-|---|---|---|
-| Precip >> ET0 | Surplus idrico | Rischio alluvionamenti, suolo saturo |
-| Precip ≈ ET0 | Equilibrio | Condizioni ideali per vegetazione |
-| Precip < ET0 | Deficit idrico | Necessaria irrigazione, stress idrico |
-| ET0 > 5mm/giorno | Elevata evaporazione | Tipico di giornate calde/ventose, rapido disseccamento |
-
-**Soglie Umidità del Suolo (soil_moisture_0_to_1cm):**
-- **<0.15 m³/m³**: Suolo molto secco (punto di appassimento)
-- **0.15–0.30 m³/m³**: Umidità moderata
-- **>0.35 m³/m³**: Suolo molto umido / saturo
-
-### Probabilità gelata
-T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)
-T min prevista <0°C → gelata quasi certa in zone aperte e pianura
-T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)
-
----
-
-## Focus Agrometeorologico — Soglie di Germinazione
-
-Riferimento per l'uso della variabile `soil_temperature_6cm` (Step 3A). Soglie ARPAE/ARPAV per le principali colture italiane.
-
-| Coltura | T suolo Min. | T suolo Ottimale | Note |
-|---|---|---|---|
-| **Mais** | 10°C | 12°C (stabile) | Sotto i 10°C la germinazione si arresta |
-| **Pomodoro** | 12°C | 15–18°C | Sensibile ai ritorni di freddo |
-| **Barbabietola** | 5–6°C | 10–12°C | Semina precoce possibile |
-| **Girasole** | 8°C | 10–12°C | |
-
-**Nota Operativa**: Utilizzare la temperatura del suolo media giornaliera a 6cm per valutare la finestra di semina.
-
----
-
 ## Anomalie di Temperatura Percepita (Apparent T)
 
 Confronta `apparent_temperature` (forecast) con `apparent_temperature` (archive) per valutare lo stress termico reale (Afa/Wind Chill) rispetto al passato.
@@ -506,3 +443,8 @@ Confronta `apparent_temperature` (forecast) con `apparent_temperature` (archive)
 | > +3.0σ | Caldo estremo eccezionale | Pericolo imminente di colpo di calore |
 | -1.0 a -3.0σ | Freddo ventoso intenso | Elevato rischio ipotermia/congelamento |
 | < -3.0σ | Burian / Gelo eccezionale | Emergenza freddo |
+
+### Probabilità gelata
+T min prevista <2°C → segnala rischio gelata (vegetazione, ghiaccio su strade)
+T min prevista <0°C → gelata quasi certa in zone aperte e pianura
+T min prevista <-3°C → gelata intensa (danni a coltivazioni sensibili)

@@ -150,3 +150,48 @@ Contestualizza il forecast basandosi su quanto piovuto o quanto caldo ha fatto n
 - **Spiaggia**: Se UVI >6 AND Mare ≥3 (Mosso) → segnalare "Protezione solare alta + Cautela per la balneazione".
 - **Agricoltura**: Se Storico 7gg = 0mm AND Vento previsto >20 km/h → segnalare "Elevata evaporazione, irrigazione necessaria".
 - **Cantiere**: Se Mare ≥6 (Molto agitato) → segnalare possibili ritardi nei trasporti marittimi di materiali (isole).
+
+
+---
+
+## 🏔️ Montagna, Neve e Valanghe
+
+### Scala Pericolo Valanghe (EAWS/AINEVA)
+
+| Grado | Pericolo | Stabilità del Manto | Probabilità Distacchi |
+|---|---|---|---|
+| 1 | 🟢 Debole | Ben consolidato e stabile | Solo con forte sovraccarico su pendii ripidi |
+| 2 | 🟡 Moderato | Moderatamente stabile | Possibili con forte sovraccarico su pendii ripidi |
+| 3 | 🟠 Marcato | Da moderata a debole | Possibili anche con debole sovraccarico |
+| 4 | 🔴 Forte | Debolmente consolidato | Molte valanghe spontanee anche di grandi dimensioni |
+| 5 | ⬛ Molto Forte | Instabile | Valanghe catastrofiche molto grandi spontanee |
+
+### Qualità della Neve (Snow Quality)
+
+| Tipo | Condizioni | Descrizione |
+|---|---|---|
+| **Farinosa** | T < -2°C, vento < 15 km/h | Neve fresca, leggera, ideale per sci fuori pista |
+| **Crostosa** | Ciclo gelo/disgelo o vento forte | Crosta superficiale che regge o meno lo sci |
+| **Pesante** | T ≈ 0°C, umidità alta | Neve bagnata, faticosa da sciare, rischio valanghe a debole coesione |
+| **Marcia** | T > 5°C per ore (pomeriggio) | Neve satura d'acqua, pappa, tipica primaverile |
+
+### Regole Empiriche Quota Neve
+- **Zero Termico**: Quota (m slm) dove la temperatura è 0°C.
+- **Quota Neve**: In presenza di precipitazioni, la neve solitamente scende 300-400m sotto lo zero termico.
+- **Neve da Omotermia**: In valli strette e chiuse (es. valli alpine), la neve può scendere fino a 600-800m sotto lo zero termico per l'effetto del raffreddamento da fusione.
+
+### Terminologia Quote
+- **Collinare**: 200 – 600 m slm
+- **Bassa Montagna**: 600 – 1200 m slm
+- **Media Montagna**: 1200 – 2000 m slm
+- **Alta Montagna**: > 2000 m slm
+
+
+|---|---|---|
+
+
+---
+
+
+
+|---|---|---|
