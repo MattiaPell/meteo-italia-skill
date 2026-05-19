@@ -761,3 +761,107 @@ Meccanismo: {Descrizione fisica breve}
 T aria: {X}°C | T superficie: {Y}°C | Visibilità: {Z}m
 Impatti: Scenari suggestivi ("paesaggio bianco"), ghiaccio su rami e cavi, strade scivolose (brina).
 ```
+
+---
+
+## TROMBA MARINA (Waterspout)
+
+### Cos'è
+Colonna d'aria in rotazione (vortice) che si forma sopra il mare e si estende dalla superficie marina alla base della nube cumuliforme. Può essere di due tipi:
+- **Tromba marina tornadica**: associata a temporali severi (supercelle), più pericolosa e distruttiva
+- **Tromba marina fair-weather**: si forma in condizioni di bel tempo, meno intensa ma comunque pericolosa per la nautica
+
+### Dove colpisce
+- **Adriatico centro-meridionale**: Ancona-Pescara-Bari (più frequente in Italia, settembre-ottobre)
+- **Tirreno centro-meridionale**: Golfo di Gaeta, Napoli, Salerno
+- **Stretto di Messina**: condizioni favorevoli per convergenza venti
+- **Laghi prealpini**: Garda, Maggiore, Como (trombe lacustri, meno frequenti)
+
+### Segnali nei dati — Tipo Tornadico (flag se ≥4 di questi)
+- **CAPE**: >1000 J/kg (instabilità convettiva significativa)
+- **Lifted Index**: < -6 (instabilità elevata)
+- **Wind shear 0-3km**: differenza vento 850hPa vs 10m >40 km/h (stima da `wind_speed_850hPa` e `wind_speed_10m`)
+- **SST (Sea Surface Temperature)**: >20°C (mare caldo, energia per convezione)
+- **T aria - SST**: differenza <3°C (aria più fredda sopra mare caldo → forte instabilità superficiale)
+- **UR bassa quota**: `relative_humidity_2m` >80% (umidità per alimentazione convettiva)
+- **Fulmini (Step L)**: attività elettrica in area costiera/marina
+- **Radar VIL (Step I)**: >15 kg/m² (cella convettiva organizzata)
+
+### Segnali nei dati — Tipo Fair-Weather (flag se ≥3 di questi)
+- **CAPE**: <500 J/kg (instabilità moderata)
+- **SST**: >22°C (mare molto caldo)
+- **T aria - SST**: differenza 2-5°C
+- **Vento debole**: `wind_speed_10m` <15 km/h (condizioni di bel tempo)
+- **Nuvole**: `cloud_cover` 30-60% (cumuli isolati, non temporali organizzati)
+- **Stagione**: agosto-ottobre (periodo più favorevole)
+
+### Soglie di intensità
+| Categoria | Velocità vento stimata | Diametro | Durata | Impatti |
+|-----------|----------------------|----------|--------|---------|
+| Debole | 50-80 km/h | 10-30m | 2-5 min | Ondeggiamento barche, spruzzi |
+| Moderata | 80-120 km/h | 30-50m | 5-15 min | Danni a imbarcazioni, ribaltamento |
+| Forte | 120-180 km/h | 50-100m | 15-30 min | Distruzione imbarcazioni, danni costieri |
+| Violenta (tornadica) | >180 km/h | >100m | >30 min | Distruzione costiera, pericolo vite umane |
+
+### Come riportarlo
+```
+🌪️ RISCHIO TROMBA MARINA — {ZONA}
+Tipo: {Tornadica / Fair-weather} | Probabilità: {Bassa/Moderata/Elevata}
+CAPE: {X} J/kg | SST: {Y}°C | Shear: {Z} km/h
+Condizioni favorevoli: {lista segnali presenti}
+Impatti: Pericolo per navigazione, barche a vela, attività balneari.
+Raccomandazione: Rientro immediato in porto, evitare la costa.
+```
+
+---
+
+## TROMBA D'ARIA (Tornado)
+
+### Cos'è
+Colonna d'aria in rotazione violenta che si estende dalla base di un cumulonembo al suolo. Si forma in condizioni di forte instabilità atmosferica combinata con wind shear significativo. In Italia, i tornado sono generalmente meno intensi che negli USA (EF0-EF2), ma possono comunque causare danni significativi.
+
+### Dove colpisce
+- **Pianura Padana orientale**: Veneto, Friuli (più frequente, soprattutto autunno)
+- **Lazio costiero**: Roma-Fiumicino, litorale laziale
+- **Campania**: Napoli, casertano
+- **Puglia**: Tavoliere, Salento
+- **Sicilia orientale**: Catania, Messinese
+
+### Segnali nei dati (flag se ≥5 di questi)
+- **CAPE**: >1500 J/kg (forte instabilità)
+- **Lifted Index**: < -8 (instabilità estrema)
+- **Wind shear 0-3km**: differenza vento 850hPa vs 10m >55 km/h
+- **Wind shear 0-6km**: differenza vento 500hPa vs 10m >70 km/h (stima da `wind_speed_500hPa` e `wind_speed_10m`)
+- **Convective Inhibition (CIN)**: <50 J/kg (poca energia da superare per innesco)
+- **UR bassa quota**: `relative_humidity_2m` >70% (umidità per alimentazione)
+- **Temperatura 850hPa**: >10°C (aria calda in quota, capping inversion debole)
+- **Fulmini (Step L)**: >10/15min in area → attività convettiva intensa
+- **Radar VIL (Step I)**: >25 kg/m² → grandine probabile, cella severa
+
+### Scala EF (Enhanced Fujita) — Stima dai dati
+| Classe EF | Vento stimato | Danni tipici | Probabilità in Italia |
+|-----------|--------------|--------------|----------------------|
+| EF0 | 105-137 km/h | Rami rotti, danni lievi | Alta |
+| EF1 | 138-177 km/h | Tetti danneggiati, alberi abbattuti | Media |
+| EF2 | 178-217 km/h | Tetti asportati, veicoli ribaltati | Bassa |
+| EF3 | 218-266 km/h | Distruzione edifici, treni deragliati | Molto bassa |
+| EF4-EF5 | >267 km/h | Distruzione totale | Eccezionale (mai registrato) |
+
+### Come riportarlo
+```
+🌪️ RISCHIO TROMBA D'ARIA — {ZONA}
+Probabilità: {Bassa/Moderata/Elevata} | Scala EF stimata: EF{0-3}
+CAPE: {X} J/kg | LI: {Y} | Shear 0-3km: {Z} km/h | Shear 0-6km: {W} km/h
+Condizioni favorevoli: {lista segnali presenti}
+Impatti: Danni a strutture, alberi, veicoli. Pericolo per persone all'aperto.
+Raccomandazione: Riparo in edificio solido, lontano da finestre. Non restare in auto.
+```
+
+### Integrazione con Lightning Detection (Step L)
+Se fulmini + CAPE >1500 + shear >55 km/h → probabilità tornado elevata. I fulmini precedono il tornado di 10-30 minuti nel 70% dei casi. L'attività elettrica intensa (specialmente CG - cloud-to-ground) è un precursore affidabile.
+
+### Integrazione con Satellite (Step N)
+Pattern satellitari pre-tornado:
+- **Overshooting top**: protuberanza sopra l'incudine → sviluppo verticale estremo
+- **Cold-U**: forma a U rovesciata in IR10.8 (top molto freddi ai lati, più caldi al centro)
+- **Enhanced-V**: V molto freddo e definito → grandine e possibile tornado
