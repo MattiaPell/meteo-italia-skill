@@ -35,6 +35,7 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 | **METAR/TAF** | Validazione forecast con dati aeroportuali osservati (CheckWX API) |
 | **Lightning Detection** | Nowcasting temporali con fulmini in tempo reale (DMI API) |
 | **Dati Idrologici** | Monitoraggio fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
+| **Immagini Satellite** | Validazione visiva nowcasting con Meteosat (EUMETSAT) |
 
 ## Modelli Supportati
 
@@ -73,6 +74,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [metar_taf.md](references/metar_taf.md) | METAR/TAF aeroporti italiani — validazione forecast (CheckWX API) |
 | [lightning.md](references/lightning.md) | Lightning detection — nowcasting temporali (DMI Open Data API) |
 | [hydro_italia.md](references/hydro_italia.md) | Dati idrologici — fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
+| [satellite.md](references/satellite.md) | Immagini satellite Meteosat — validazione visiva (EUMETSAT) |
 
 ## Trigger
 
