@@ -50,7 +50,7 @@ Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
 ### 3. Fetch in parallelo (esegui tutto insieme)
 
-Esegui simultaneamente i passi A–J:
+Esegui simultaneamente i passi A–K:
 
 #### A — Previsioni numeriche (Open-Meteo)
 Vedi `references/models.md` per il set corretto per macroarea.
@@ -244,6 +244,41 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble
 Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
 Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
 
+#### K — Osservazioni METAR/TAF (condizionale)
+
+**Attiva sempre per:** use case aviazione/droni, città con aeroporto ICAO nella lista (`references/metar_taf.md`). **Attiva se:** l'utente chiede validazione forecast, oppure stazioni ARPA non disponibili per la zona, oppure divergenza >2°C tra NWP e ARPA.
+
+**Fetch primario (CheckWX — JSON decoded):**
+```http
+GET https://api.checkwx.com/v2/metar/{ICAO1},{ICAO2},{ICAO3}/decoded
+Headers: X-API-KEY: {YOUR_API_KEY}
+```
+Esempio: `GET https://api.checkwx.com/v2/metar/LIRF,LIMC,LIPE/decoded`
+
+**Fetch TAF (previsioni aeroportuali):**
+```http
+GET https://api.checkwx.com/v2/taf/{ICAO}/decoded
+Headers: X-API-KEY: {YOUR_API_KEY}
+```
+
+**Fallback (aviationweather.gov — raw, no auth):**
+```http
+GET https://aviationweather.gov/api/data/metar?ids=LIRF,LIMC,LIPE&format=json
+```
+
+**Interpretazione — confronto forecast vs osservato:**
+1. **Temperatura**: METAR T osservata vs NWP T prevista. Scarto >2°C → modello sovrastima/sottostima. Scarto >4°C → modello inaffidabile per questa zona/giornata
+2. **Vento**: METAR vento osservato vs NWP previsto. Scarto velocità >10kt → modello sottostima il vento. Raffiche osservate >20kt ma non previste → attenzione per strutture temporanee
+3. **Visibilità/Nebbia**: METAR visibilità <2000m ma NWP >5000m → nebbia non risolta dal modello. Critico per use case viabilità
+4. **Copertura nuvolosa**: METAR OVC ma NWP weather_code ≤2 → modello sottostima nuvolosità
+5. **Pressione**: METAR QNH (altimeter.hpa) vs NWP pressure_msl — verifica coerenza sinottica
+
+**Gerarchia validazione:** TAF > NWP per orizzonte 0-6h su aeroporti. TAF è specifico per il punto, NWP è grigliato. Per zone senza aeroporto → usa stazioni ARPA (Step D).
+
+**Nota:** CheckWX free tier: 3.000 req/giorno. Per uso intensivo, ruota su aviationweather.gov (formato raw, decodifica manuale).
+
+Vedi `references/metar_taf.md` per lista completa ICAO, guida interpretazione campi decoded, e soglie di validazione.
+
 ### 4. Analisi Comparativa
 
 #### 4a. Consensus modelli numerici
@@ -349,12 +384,14 @@ umidità fogliare (UR >90% = rischio funghi).
 ### 🏗️ Cantiere / Lavori all'aperto
 Trigger: "cantiere", "lavori", "operai", "gru", "ponteggio"
 Focus: vento >50 km/h (stop gru), pioggia cumulata (calcestruzzo), gelate notturne (ghiaccio su superfici), visibilità.
+**METAR per visibilità**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità orizzontale — utile per lavoro in quota (gru, ponteggi).
 **UV se estate**: rischio colpo di calore per i lavoratori.
 
 ### 🚗 Viabilità / Trasporti
 Trigger: "viaggio", "autostrada", "strada", "guida", "treno", "volo"
 Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), gelicidio (black ice),
 acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
+**METAR per nebbia aeroportuale**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità RVR e ceiling — indicatore precoce di nebbia in pianura.
 
 ### 🏖️ Mare / Spiaggia / Nautica
 Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"

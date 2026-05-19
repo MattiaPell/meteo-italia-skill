@@ -32,6 +32,7 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 | **Qualità aria** | Dati CAMS via Open-Meteo AQ API |
 | **Matrice affidabilità** | Affidabilità forecast per tipo di evento × orizzonte temporale |
 | **Bias noti** | Calibrazione per macroarea italiana con bias documentati per modello e stagione |
+| **METAR/TAF** | Validazione forecast con dati aeroportuali osservati (CheckWX API) |
 
 ## Modelli Supportati
 
@@ -67,6 +68,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [italian_portals.md](references/italian_portals.md) | Portali meteo italiani di fallback |
 | [nowcasting_radar.md](references/nowcasting_radar.md) | Nowcasting radar — precipitazioni in tempo reale |
 | [uv_marine_recent.md](references/uv_marine_recent.md) | UV index e condizioni marine recenti |
+| [metar_taf.md](references/metar_taf.md) | METAR/TAF aeroporti italiani — validazione forecast (CheckWX API) |
 
 ## Trigger
 
