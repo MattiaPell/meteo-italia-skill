@@ -10,8 +10,8 @@ description: >
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
   "maestrale", "bora", "scirocco", "tramontana", "libeccio", "levante", "ostro",
   "ponente", "grecale", "garbino", "ponentino", "maccaja", "caligo", "lupa di mare",
-  "breva", "tivano", "cuscino freddo", "inversione termica",
-  "gelicidio", "pioggia congelantesi",
+  "breva", "tivano", "tornado", "tromba d'aria", "tromba marina", "cuscino freddo", 
+  "inversione termica", "gelicidio", "pioggia congelantesi",
   "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
   "ciclismo", "bici", "bicicletta", "uscita in bici",
   "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
@@ -80,10 +80,10 @@ GET https://api.open-meteo.com/v1/forecast
 ```
 
 **Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth`
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,soil_temperature_0cm,soil_moisture_0_to_1cm,temperature_925hPa`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
-- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_moisture_0_to_1cm,soil_temperature_0cm,et0_fao_evapotranspiration`
-- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `cape,lifted_index,convective_inhibition,wet_bulb_temperature_2m,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
+- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,et0_fao_evapotranspiration`
+- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `convective_inhibition,wet_bulb_temperature_2m,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
 
 **Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media. Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, o ondata calore/freddo in corso.
 
