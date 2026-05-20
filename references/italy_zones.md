@@ -19,7 +19,7 @@ ecmwf_ifs, arome_france, gfs_seamless
 | `arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera), Maccaja (costa ligure), Breva e Tivano (Lago di Como).
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera), Maccaja (costa ligure), Breva e Tivano (Lago di Como), Ora e Peler (Lago di Garda).
 
 **Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `arome_france` per la fascia costiera.
 
@@ -44,7 +44,7 @@ geosphere_seamless, ecmwf_ifs, gfs_seamless
 | `icon_seamless` | 1.0 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, cuscino freddo, [Acqua Alta](local_phenomena.md#acqua-alta-venezia--alto-adriatico) (Venezia), alluvioni Mestre/Venezia.
+**Fenomeni locali prioritari:** Bora (Trieste, Gorizia, Udine — raffiche >100 km/h), foehn (valli alpine), nebbia padana (Veneto pianura, Rovigo, Ferrara), temporali adriatici (Venezia, costa), neve in pianura, cuscino freddo, [Acqua Alta](local_phenomena.md#acqua-alta-venezia--alto-adriatico) (Venezia), alluvioni Mestre/Venezia, Ora e Peler (Lago di Garda).
 
 **Note:** La Bora è il fenomeno più caratteristico e pericoloso. Segnalarla sempre quando: vento da ENE >40 km/h a Trieste + pressione in calo. ARPAE ICON 2I è il modello nazionale e ha risoluzione 2.2km — priorità assoluta per eventi intensi in questa zona.
 
@@ -200,7 +200,7 @@ italia_meteo_arpae_icon_2i, ecmwf_ifs, icon_seamless
 | `italia_meteo_arpae_icon_2i` | 1.1 |
 | `icon_seamless` | 0.9 |
 
-**Fenomeni locali prioritari:** Foehn (Val d'Aosta, Alto Adige), stau alpino (piogge intense versante S in flusso da S/SW), temporali convettivi estivi (pericolosi in quota), valanghe (segnala se neve fresca >30cm + vento), quota neve variabile.
+**Fenomeni locali prioritari:** Foehn (Val d'Aosta, Alto Adige), stau alpino (piogge intense versante S in flusso da S/SW), temporali convettivi estivi (pericolosi in quota), valanghe (segnala se neve fresca >30cm + vento), quota neve variabile, Ora e Peler (Lago di Garda), Breva e Tivano (Lago di Como).
 
 **Nota:** Per quote >2000m usa sempre `elevation={quota}` nella chiamata API per avere dati corretti. La temperatura scende di ~6.5°C ogni 1000m.
 

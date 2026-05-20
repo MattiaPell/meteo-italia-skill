@@ -55,7 +55,7 @@ end_date:   {ANNO-1}-05-20
 | **Valle d'Aosta** | Aosta |
 | **Liguria** | Genova |
 | **Veneto** | Venezia, Rovigo, Verona, Padova |
-| **Emilia-Romagna** | Bologna, Ferrara, Parma |
+| **Emilia-Romagna** | Bologna, Ferrara, Parma, Rimini |
 | **Toscana** | Firenze, Livorno |
 | **Alto Adige** | Bolzano |
 | **Trentino** | Trento |
@@ -551,6 +551,22 @@ end_date:   {ANNO-1}-05-20
 | Ott | 18.7°C | 11.5°C | 96mm | |
 | Nov | 11.9°C | 6.6°C | 84mm | |
 | Dic | 7.3°C | 2.0°C | 63mm | |
+
+### Rimini (44.06°N, 12.56°E, 6m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 9.5°C | 3.1°C | 61mm | |
+| Feb | 10.4°C | 3.7°C | 102mm | |
+| Mar | 13.6°C | 6.0°C | 81mm | |
+| Apr | 17.5°C | 9.6°C | 63mm | |
+| Mag | 21.1°C | 13.2°C | 87mm | |
+| Giu | 26.3°C | 17.9°C | 45mm | |
+| Lug | 28.9°C | 20.6°C | 45mm | |
+| Ago | 28.8°C | 20.6°C | 47mm | |
+| Set | 24.5°C | 17.1°C | 92mm | |
+| Ott | 19.5°C | 12.9°C | 91mm | |
+| Nov | 14.6°C | 8.9°C | 95mm | |
+| Dic | 10.6°C | 4.2°C | 60mm | |
 
 ### Livorno (43.55°N, 10.31°E, 3m)
 | Mese | T max media | T min media | Precip. media | Note |

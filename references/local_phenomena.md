@@ -374,6 +374,53 @@ Impatti: Lago calmo o poco mosso, aria fresca e limpida al mattino.
 
 ---
 
+## ORA (Brezza di Lago di Garda - Sud)
+
+### Cos'è
+Vento termico periodico che soffia da Sud verso Nord sul Lago di Garda. È il vento pomeridiano più noto del lago, fondamentale per la vela e il windsurf. Si origina per il forte riscaldamento delle pareti rocciose e delle valli a nord (Trentino), che richiama aria dalla Pianura Padana.
+
+### Dove colpisce
+Tutto il lago, con massima intensità nel settore settentrionale (da Malcesine a Riva del Garda/Torbole).
+
+### Segnali nei dati
+- **Vento da S / SSW** (170°–210°)
+- **Orario**: dalle 12:00-13:00 fino al tramonto (18:00-19:00)
+- **Intensità**: tipicamente 15-30 km/h (può superare i 40-50 km/h nell'alto lago per effetto imbuto)
+- **Stagione**: Primavera ed Estate (richiede forte irraggiamento solare)
+- **Cielo**: Sereno o poco nuvoloso
+
+### Come riportarlo
+```
+🌬️ ORA ATTIVA — Lago di Garda (Settore Nord)
+Vento: {X} km/h da Sud | Orario previsto: 13:00 - 19:00
+Impatti: Moto ondoso in aumento nell'alto lago, condizioni ideali per sport velici.
+```
+
+---
+
+## PELER (Brezza di Lago di Garda - Nord)
+
+### Cos'è
+Vento termico periodico (brezza di monte) che soffia da Nord verso Sud sul Lago di Garda durante la notte e il primo mattino. È spesso un vento teso e costante, che può generare onde significative.
+
+### Dove colpisce
+Tutto il lago, particolarmente intenso nel medio lago (Torri del Benaco, Toscolano).
+
+### Segnali nei dati
+- **Vento da N / NNE** (0°–30°)
+- **Orario**: dalle 00:00 fino alle 09:00-10:00 del mattino
+- **Intensità**: tipicamente 15-35 km/h (più forte dell'Ora nelle prime ore del mattino)
+- **Stagione**: Tutto l'anno, più forte e regolare in estate con bel tempo
+
+### Come riportarlo
+```
+🌬️ PELER ATTIVO — Lago di Garda
+Vento: {X} km/h da Nord | Orario previsto: 00:00 - 10:00
+Impatti: Aria fresca, lago mosso nel settore centrale e meridionale al mattino.
+```
+
+---
+
 ## NEBBIA PADANA
 
 ### Cos'è
