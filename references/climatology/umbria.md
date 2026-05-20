@@ -16,5 +16,18 @@
 | Nov | 12.1°C | 4.8°C | 105mm | |
 | Dic | 8.0°C | 0.9°C | 83mm | |
 
-## TODO: Capoluoghi mancanti
-- [ ] Terni
+### Terni (42.56°N, 12.64°E, 130m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 10.2°C | 2.1°C | 72mm | |
+| Feb | 12.1°C | 2.5°C | 65mm | |
+| Mar | 16.0°C | 4.8°C | 60mm | |
+| Apr | 19.5°C | 7.8°C | 75mm | |
+| Mag | 24.2°C | 11.8°C | 65mm | |
+| Giu | 29.1°C | 15.8°C | 48mm | |
+| Lug | 32.5°C | 18.5°C | 32mm | |
+| Ago | 32.5°C | 18.8°C | 42mm | |
+| Set | 27.2°C | 15.2°C | 75mm | |
+| Ott | 21.2°C | 11.5°C | 95mm | |
+| Nov | 15.1°C | 6.8°C | 115mm | |
+| Dic | 10.5°C | 3.2°C | 88mm | |

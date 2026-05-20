@@ -80,8 +80,50 @@
 | Nov | 17.8°C | 11.5°C | 85mm | |
 | Dic | 14.2°C | 8.0°C | 75mm | |
 
-## TODO: Capoluoghi mancanti
-- [ ] Andria
-- [ ] Barletta
-- [x] Brindisi
-- [ ] Trani
+### Andria (41.23°N, 16.30°E, 151m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 11.5°C | 4.5°C | 58mm | |
+| Feb | 12.2°C | 4.2°C | 52mm | |
+| Mar | 14.8°C | 6.2°C | 55mm | |
+| Apr | 18.2°C | 8.8°C | 50mm | |
+| Mag | 23.2°C | 13.2°C | 38mm | |
+| Giu | 28.2°C | 17.5°C | 25mm | |
+| Lug | 31.5°C | 20.5°C | 15mm | |
+| Ago | 31.8°C | 20.8°C | 22mm | |
+| Set | 27.5°C | 17.5°C | 52mm | |
+| Ott | 21.8°C | 13.8°C | 65mm | |
+| Nov | 16.8°C | 9.5°C | 75mm | |
+| Dic | 12.5°C | 6.2°C | 68mm | |
+
+### Barletta (41.32°N, 16.28°E, 15m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 12.2°C | 5.8°C | 52mm | |
+| Feb | 12.8°C | 5.5°C | 48mm | |
+| Mar | 15.2°C | 7.5°C | 50mm | |
+| Apr | 18.5°C | 10.2°C | 45mm | |
+| Mag | 23.0°C | 14.5°C | 32mm | |
+| Giu | 27.5°C | 18.8°C | 20mm | |
+| Lug | 30.2°C | 21.5°C | 10mm | |
+| Ago | 30.5°C | 21.8°C | 18mm | |
+| Set | 26.8°C | 18.5°C | 48mm | |
+| Ott | 22.0°C | 14.8°C | 62mm | |
+| Nov | 17.2°C | 10.5°C | 72mm | |
+| Dic | 13.2°C | 7.2°C | 62mm | |
+
+### Trani (41.27°N, 16.42°E, 7m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 12.2°C | 6.2°C | 55mm | |
+| Feb | 12.8°C | 6.0°C | 50mm | |
+| Mar | 15.2°C | 7.8°C | 52mm | |
+| Apr | 18.5°C | 10.5°C | 48mm | |
+| Mag | 23.0°C | 14.8°C | 35mm | |
+| Giu | 27.5°C | 19.2°C | 22mm | |
+| Lug | 30.2°C | 21.8°C | 12mm | |
+| Ago | 30.5°C | 22.2°C | 20mm | |
+| Set | 26.8°C | 18.8°C | 50mm | |
+| Ott | 22.0°C | 15.2°C | 65mm | |
+| Nov | 17.2°C | 10.8°C | 75mm | |
+| Dic | 13.2°C | 7.5°C | 65mm | |

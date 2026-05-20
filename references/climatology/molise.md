@@ -16,5 +16,18 @@
 | Nov | 12.8°C | 5.6°C | 87mm | |
 | Dic | 8.5°C | 1.7°C | 83mm | |
 
-## TODO: Capoluoghi mancanti
-- [ ] Isernia
+### Isernia (41.59°N, 14.23°E, 423m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 8.8°C | 1.5°C | 105mm | |
+| Feb | 9.8°C | 1.5°C | 95mm | |
+| Mar | 13.2°C | 3.8°C | 85mm | |
+| Apr | 16.5°C | 6.5°C | 80mm | |
+| Mag | 21.2°C | 10.5°C | 62mm | |
+| Giu | 26.2°C | 14.5°C | 42mm | |
+| Lug | 29.5°C | 17.2°C | 25mm | |
+| Ago | 29.8°C | 17.5°C | 35mm | |
+| Set | 25.5°C | 14.2°C | 72mm | |
+| Ott | 20.2°C | 10.8°C | 105mm | |
+| Nov | 14.5°C | 6.5°C | 135mm | |
+| Dic | 9.8°C | 3.2°C | 125mm | |

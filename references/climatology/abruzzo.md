@@ -32,6 +32,34 @@
 | Nov | 15.5°C | 5.9°C | 80mm | |
 | Dic | 12.4°C | 3.2°C | 63mm | |
 
-## TODO: Capoluoghi mancanti
-- [ ] Chieti
-- [ ] Teramo
+### Chieti (42.35°N, 14.16°E, 330m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 9.5°C | 3.2°C | 65mm | |
+| Feb | 10.2°C | 3.2°C | 62mm | |
+| Mar | 13.5°C | 5.2°C | 68mm | |
+| Apr | 17.2°C | 8.5°C | 65mm | |
+| Mag | 22.0°C | 12.8°C | 48mm | |
+| Giu | 26.5°C | 16.8°C | 42mm | |
+| Lug | 29.8°C | 19.8°C | 35mm | |
+| Ago | 29.8°C | 20.0°C | 45mm | |
+| Set | 25.2°C | 16.5°C | 65mm | |
+| Ott | 19.8°C | 12.5°C | 82mm | |
+| Nov | 14.5°C | 8.2°C | 92mm | |
+| Dic | 10.5°C | 4.8°C | 78mm | |
+
+### Teramo (42.66°N, 13.70°E, 265m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 9.8°C | 2.5°C | 72mm | |
+| Feb | 10.8°C | 2.8°C | 68mm | |
+| Mar | 14.2°C | 4.8°C | 70mm | |
+| Apr | 18.0°C | 8.0°C | 75mm | |
+| Mag | 22.8°C | 12.2°C | 60mm | |
+| Giu | 27.5°C | 16.2°C | 52mm | |
+| Lug | 30.5°C | 19.0°C | 40mm | |
+| Ago | 30.5°C | 19.2°C | 50mm | |
+| Set | 25.8°C | 15.8°C | 72mm | |
+| Ott | 20.2°C | 11.5°C | 88mm | |
+| Nov | 14.8°C | 7.2°C | 105mm | |
+| Dic | 10.8°C | 3.8°C | 85mm | |
