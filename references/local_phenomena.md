@@ -327,6 +327,53 @@ Impatti: refrigerio serale, aumento UR, moto ondoso leggero
 
 ---
 
+## BREVA (Brezza di Lago di Como - Sud)
+
+### Cos'è
+Vento termico periodico (brezza di valle) che soffia da Sud verso Nord sul Lago di Como. Si origina a causa del riscaldamento diurno delle montagne a nord del lago, che richiama aria più fresca dalla pianura.
+
+### Dove colpisce
+Intero bacino del Lago di Como, con maggiore intensità nel ramo di Lecco e nell'alto lago (Colico).
+
+### Segnali nei dati
+- **Vento da S / SSW** (170°–210°)
+- **Orario**: dalle 10:00-11:00 fino al tramonto (18:00-19:00)
+- **Intensità**: tipicamente 15-25 km/h (può raggiungere i 40 km/h nell'alto lago)
+- **Stagione**: più forte in primavera ed estate
+- **Cielo**: sereno o poco nuvoloso (necessita di irraggiamento solare)
+
+### Come riportarlo
+```
+🌬️ BREVA ATTIVA — Lago di Como
+Vento: {X} km/h da Sud | Orario previsto: 11:00 - 19:00
+Impatti: Moto ondoso in aumento nell'alto lago, ideale per sport velici (windsurf, vela).
+```
+
+---
+
+## TIVANO (Brezza di Lago di Como - Nord)
+
+### Cos'è
+Vento termico periodico (brezza di monte) che soffia da Nord verso Sud sul Lago di Como durante la notte e le prime ore del mattino. È un vento regolare e costante.
+
+### Dove colpisce
+Tutto il lago, particolarmente avvertibile nel bacino di Lecco e nel centro lago.
+
+### Segnali nei dati
+- **Vento da N / NNE** (0°–30°)
+- **Orario**: dalle 00:00 fino alle 08:00-09:00 del mattino
+- **Intensità**: tipicamente 15-20 km/h
+- **Stagione**: presente tutto l'anno, più regolare se il tempo è stabile
+
+### Come riportarlo
+```
+🌬️ TIVANO ATTIVA — Lago di Como
+Vento: {X} km/h da Nord | Orario previsto: 00:00 - 09:00
+Impatti: Lago calmo o poco mosso, aria fresca e limpida al mattino.
+```
+
+---
+
 ## NEBBIA PADANA
 
 ### Cos'è
