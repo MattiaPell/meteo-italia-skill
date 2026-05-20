@@ -86,7 +86,7 @@ GET https://api.open-meteo.com/v1/forecast
 - **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,et0_fao_evapotranspiration`
 - **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `convective_inhibition,wet_bulb_temperature_2m,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
 
-**Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media. Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, o ondata calore/freddo in corso.
+**Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
 
 #### B — Climatologia di riferimento (ERA5)
 Per confrontare il forecast con la norma storica del periodo.
@@ -303,31 +303,35 @@ Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare q
 
 Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, integrazione con radar, e alternative API.
 
-#### L — Dati Idrologici (Rischio Alluvioni)
+#### L — Dati Idrologici (Bacino del Po e Grandi Fiumi)
 
-**Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico (Step D), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in A), use case agricoltura/cantieri/viabilità. **Altrimenti:** disattiva.
+**Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico/idraulico (Step D), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in A), use case agricoltura/cantieri/viabilità/nautica. **Altrimenti:** disattiva.
 
 **Fetch catalogo stazioni (floods.it — open data, no auth):**
 ```http
 GET https://www.floods.it/api/v1/monitoring/index.json
 ```
-Filtra le stazioni entro 50km dal punto target usando le coordinate `geometry.coordinates`.
+Filtra le stazioni entro 50km dal punto target. **Copertura API:** Trentino-Alto Adige.
 
-**Fetch dati stazione:**
+**Fetch dati stazione (se stazione trovata):**
 ```http
 GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 ```
 
-**Interpretazione:**
-1. **Livello attuale vs soglie**: confronta `value` con `thresholds.green/yellow/red`. Verde = normale, Giallo = attenzione, Rosso = allerta
-2. **Trend (ultime 3-6 ore)**: in salita/discesa/stabile. Trend +0.5m in 6h = livello in rapida salita
-3. **Combinato con Step A (precipitazioni)**: se previsti >30mm/24h E livello > soglia gialla → scenario peggiorativo
-4. **Combinato con Step A (soil_moisture)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido
-5. **Combinato con lo storico recente in A**: piogge cumulate 7gg >100mm → bacino già carico
+**Interpretazione e Dati Manuali (Po, Arno, Tevere):**
+Consulta `references/hydro_italia.md` per le soglie critiche di:
+1.  **Fiume Po**: Stazioni di Piacenza, Cremona, Casalmaggiore, Boretto, Borgoforte, Pontelagoscuro.
+2.  **Fiume Arno**: Firenze (Nave di Rovezzano, Uffizi) e Pisa.
+3.  **Fiume Tevere**: Roma (Ripetta, Isola Tiberina).
 
-**Per zone fuori Trentino:** "Dati idrometrici real-time limitati al Trentino. Per altre regioni: monitorare precipitazioni ARPA (Step C) + allerta PC (Step D) + EFAS previsionale come contesto."
+**Logica di Analisi:**
+1. **Livello attuale vs soglie**: confronta `value` con soglie Gialla/Arancione/Rossa (AIPO/CFR).
+2. **Trend (ultime 3-6 ore)**: in salita/discesa/stabile.
+3. **Combinato con Step A (precipitazioni)**: se previsti >30mm/24h E livello > soglia gialla → scenario peggiorativo (Rischio Idraulico Nimbus).
+4. **Combinato con Step A (soil_moisture)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
+5. **Combinato con lo storico recente in A**: piogge cumulate 7gg >100mm → bacino già carico.
 
-**Nota:** floods.it API open data, no auth. Copertura: solo Trentino-Alto Adige. Aggiornamento ogni 15 min.
+**Nota:** floods.it è l'unica API real-time strutturata. Per gli altri bacini, integrare con osservazioni ARPA (Step C) e portali AIPO/CFR citati in references.
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 
@@ -572,6 +576,7 @@ Modelli: {N} | Macroarea: {ZONA} | Concordanza: Alta/Media/Bassa
 
 ### 📅 Ultimi 7 giorni (Step A)
 Precipitazioni cumulate: {X}mm (norma: {Y}mm → {±Z}%)
+**Bilancio Idrico Nimbus**: {±X}mm ({Surplus/Equilibrio/Deficit/Stress})
 Giorni senza pioggia: {N} consecutivi | T media anomalia: {±X}°C
 Contesto: {frase — es. "suoli saturi" / "siccità in corso" / "nella norma"}
 
@@ -620,6 +625,7 @@ Scenario p90 (pessimistico): {descrizione breve}
 ### 💨 Qualità dell'Aria (Step G)
 AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
+{se Bacino Padano: Protocollo Aria: {Verde/Arancio/Rosso} (Misure temporanee)}
 {se dust: Polvere sahariana: {X} µg/m³ ⚠️ evento naturale}
 {se pollini: {Tipo} pollen: {livello}}
 Condizioni: {accumulo/dispersione/neutro}
@@ -641,12 +647,14 @@ Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontan
 {se fulmini + VIL>25: ⚠️ grandine probabile (>70%)}
 {se dry lightning: ⚠️ rischio incendi — fulmini senza pioggia}
 
-### 🌊 Dati Idrologici (Step L)
-Fiume: {NOME} a {LOCALITÀ} | Livello: {X}m (soglia {verde/giallo/rossa}: {Y}m)
+### 🌊 Rischio Idraulico — Po e Grandi Fiumi (Step L)
+Fiume: {NOME} a {LOCALITÀ} | Livello: {X}m
+Soglie: {Gialla: X | Arancione: Y | Rossa: Z}
+Stato: {🟢 Basso / 🟡 Medio / 🟠 Alto / 🔴 Estremo} (Rischio Idraulico Nimbus)
 Trend 6h: {in salita / stabile / in discesa} ({±X}m)
 {se livello > soglia gialla + pioggia prevista: ⚠️ scenario peggiorativo}
-{se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo}
-{se fuori Trentino: "Dati real-time limitati al Trentino. Monitorare ARPA + allerte PC."}
+{se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo / esondazione}
+{se fuori Trentino: "Dati real-time via API limitati al Trentino. Altri bacini: Analisi via soglie AIPO/CFR/PC."}
 
 ### 🛰️ Satellite (Step M)
 Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}

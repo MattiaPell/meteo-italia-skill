@@ -166,18 +166,27 @@ La variabile `boundary_layer_height` (Step 3A) indica lo spessore dell'atmosfera
 
 ---
 
+## 🌫️ Protocollo Aria Bacino Padano (Misure Temporanee)
+
+Nelle regioni del Bacino Padano (Lombardia, Piemonte, Veneto, Emilia-Romagna), vige un accordo per l'adozione di misure temporanee al superamento continuativo del limite di PM10.
+
+| Livello Allerta | Trigger (PM10) | Misure Tipiche |
+|---|---|---|
+| **Livello 0 (Verde)** | < 50 µg/m³ | Nessuna restrizione temporanea |
+| **Livello 1 (Arancio)** | **> 50 µg/m³** per **2gg** cons. | Blocchi traffico (Euro 4/5 diesel), stop riscaldamento legna, divieto abbruciamenti |
+| **Livello 2 (Rosso)** | **> 75 µg/m³** per **2gg** cons. | Restrizioni estese a veicoli commerciali, stop riscaldamento legna (<4 stelle) |
+
+**Verifica Operativa**: Se il forecast CAMS mostra PM10 persistentemente alto (Step G) E le condizioni meteo favoriscono l'accumulo (Step 3A), segnalare lo stato del protocollo.
+
+---
+
 ## Zone Critiche Italia per Qualità dell'Aria
 
 ### 🔴 Pianura Padana (tutto l'anno, peggio in inverno)
-Province sistematicamente oltre i limiti OMS:
-Milano, Torino, Bergamo, Brescia, Cremona, Lodi, Mantova, Pavia,
-Alessandria, Venezia, Treviso, Vicenza, Padova, Rovigo, Ferrara, Bologna, Modena
+Province soggette al Protocollo: Milano, Torino, Bergamo, Brescia, Cremona, Lodi, Mantova, Pavia, Alessandria, Venezia, Treviso, Vicenza, Padova, Rovigo, Ferrara, Bologna, Modena.
 
-**Perché**: conformazione geografica a catino (Alpi a N/O/E, Appennino a S),
-alta densità industriale/traffico/agricoltura, inversioni termiche frequenti.
-
-**In inverno**: PM2.5 tra i più alti d'Europa (oltre 50 µg/m³ nelle giornate peggiori)
-**In estate**: O3 elevato (fotossidazione degli NOx da traffico)
+**In inverno**: PM2.5 tra i più alti d'Europa (oltre 50 µg/m³ nelle giornate peggiori).
+**In estate**: O3 elevato (fotossidazione degli NOx da traffico).
 
 ### 🟠 Grandi città (traffico)
 Roma, Napoli, Palermo, Catania: NO2 elevato nelle ore di punta.

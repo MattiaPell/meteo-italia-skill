@@ -6,60 +6,76 @@ Monitoraggio idrometrico in tempo reale e fonti di contesto per valutazione risc
 
 ## Panoramica
 
-La copertura di dati idrologici in tempo reale in Italia è frammentata per regione. Il Trentino-Alto Adige dispone di un'API open data completa e strutturata. Per il resto d'Italia, i dati sono disponibili tramite portali regionali (varia per regione) o fonti previsionali europee (EFAS).
+La copertura di dati idrologici in tempo reale in Italia è frammentata per regione. Il Trentino-Alto Adige dispone di un'API open data completa e strutturata. Per il resto d'Italia, i dati sono disponibili tramite portali regionali (AIPO per il Po, ARPA regionali, Centri Funzionali) o fonti previsionali europee (EFAS).
 
 ---
 
-## Fonte Primaria: floods.it (Trentino-Alto Adige)
+## 🌊 Fiume Po (Bacino Padano)
 
-**Ente**: Provincia Autonoma di Trento
-**Copertura**: bacini Adige, Brenta, Sarca, Chiese (Trentino-Alto Adige)
-**Aggiornamento**: 15 minuti (real-time)
-**Autenticazione**: nessuna (open data)
-**Licenza**: CC BY 4.0
+Il Po è il principale fiume italiano. Il monitoraggio è gestito da **AIPO** (Agenzia Interregionale per il fiume Po) in collaborazione con le ARPA regionali (Piemonte, Lombardia, Emilia-Romagna, Veneto).
 
-### API Endpoints
+### Soglie Idrometriche di Riferimento (AIPO/Arpae)
+Le soglie si riferiscono allo zero idrometrico locale.
+
+| Stazione | Provincia | Zero Idr. (m slm) | Soglia 1 (Gialla) | Soglia 2 (Arancione) | Soglia 3 (Rossa) |
+|----------|-----------|-------------------|-------------------|-------------------|-------------------|
+| **Piacenza** | PC | 42.41 | 5.00 m | 6.00 m | 7.00 m |
+| **Cremona** | CR | 34.40 | 2.20 m | 3.20 m | 4.20 m |
+| **Casalmaggiore** | CR | 24.31 | 3.80 m | 5.00 m | 6.20 m |
+| **Boretto** | RE | 21.64 | 4.50 m | 5.50 m | 6.50 m |
+| **Borgoforte** | MN | 14.15 | 5.00 m | 6.00 m | 7.00 m |
+| **Pontelagoscuro** | FE | 8.38 | 0.50 m | 1.30 m | 2.50 m |
+
+**Note operative:**
+- **Navigazione**: Con livelli > Soglia 1 la navigazione commerciale può essere sospesa.
+- **Piene**: Il tempo di corrivazione tra Piacenza e Pontelagoscuro è di circa 2-4 giorni a seconda dell'intensità della piena.
+
+---
+
+## 🌊 Fiume Arno (Firenze)
+
+Monitoraggio a cura del **Centro Funzionale Regione Toscana (CFR)**.
+
+| Stazione | Località | Soglia 1 (Gialla) | Soglia 2 (Rossa) | Note |
+|----------|----------|-------------------|-------------------|------|
+| **Nave di Rovezzano** | Firenze Est | 3.00 m | 4.50 m | Ingresso in città |
+| **Firenze Uffizi** | Centro Storico | 3.00 m | 5.50 m | Punto critico monumentale |
+| **Ponte a Signa** | Firenze Ovest | 5.50 m | 8.50 m | Uscita area metropolitana |
+| **S. Giovanni alla Vena** | Pisa | 4.50 m | 7.10 m | Pre-foce |
+
+---
+
+## 🌊 Fiume Tevere (Roma)
+
+Monitoraggio a cura del **Centro Funzionale Regione Lazio**.
+
+| Stazione | Località | Livello di Attenzione | Livello di Pre-Allarme | Note |
+|----------|----------|-----------------------|------------------------|------|
+| **Roma Ripetta** | Centro Storico | 7.00 m | 10.00 m | Chiusura banchine a 7m |
+| **Isola Tiberina** | Centro Storico | 6.50 m | 9.00 m | |
+
+**Soglie Roma Ripetta:**
+- **> 7.00 m**: Allagamento banchine basse (divieto accesso pedonale).
+- **> 10.00 m**: Livello di attenzione per le strutture fluviali.
+- **> 12.50 m**: Allagamento banchine alte (piena straordinaria, rif. 2008: 12.55m).
+
+---
+
+## 📡 API Real-time: floods.it (Trentino-Alto Adige)
+
+**Copertura**: bacini Adige, Brenta, Sarca, Chiese.
+
+### Endpoint API
 
 ```bash
 # Catalogo stazioni (GeoJSON)
 GET https://www.floods.it/api/v1/monitoring/index.json
 
-# Catalogo stazioni (CSV)
-GET https://www.floods.it/api/v1/monitoring/index.csv
-
-# Dati singola stazione (JSON)
-GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
-
-# Dati singola stazione (CSV)
+# Dati singola stazione (JSON) — Fetch obbligatorio per analisi
 GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 ```
 
-### Esempio Risposta (Catalogo GeoJSON)
-
-```json
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [11.1217, 46.0679]
-      },
-      "properties": {
-        "id": "ADIGE_TRENTO",
-        "name": "Adige a Trento",
-        "parameter": "livello_idrometrico",
-        "unit": "m",
-        "basin": "Adige",
-        "last_update": "2026-05-19T10:00:00Z"
-      }
-    }
-  ]
-}
-```
-
-### Esempio Risposta (Dati Stazione JSON)
+### Esempio Risposta Dati Stazione
 
 ```json
 {
@@ -68,24 +84,14 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
   "parameter": "livello_idrometrico",
   "unit": "m",
   "data": [
-    {
-      "timestamp": "2026-05-19T10:00:00Z",
-      "value": 2.45
-    },
-    {
-      "timestamp": "2026-05-19T09:45:00Z",
-      "value": 2.42
-    }
+    { "timestamp": "2026-05-19T10:00:00Z", "value": 2.45 },
+    { "timestamp": "2026-05-19T09:45:00Z", "value": 2.42 }
   ],
-  "thresholds": {
-    "green": 2.00,
-    "yellow": 3.00,
-    "red": 4.00
-  }
+  "thresholds": { "green": 2.00, "yellow": 3.00, "red": 4.00 }
 }
 ```
 
-### Stazioni Principali
+### Stazioni Principali Trentino
 
 | ID | Fiume | Località | Bacino | Soglia Gialla (m) | Soglia Rossa (m) |
 |----|-------|----------|--------|-------------------|------------------|
@@ -93,137 +99,53 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 | ADIGE_ROVERETO | Adige | Rovereto | Adige | 2.80 | 3.80 |
 | BRENTA_BASSANO | Brenta | Bassano del Grappa | Brenta | 3.50 | 4.50 |
 | SARCA_ARCO | Sarca | Arco | Sarca | 2.00 | 3.00 |
-| CHIESE_LAGO | Chiese | Lago di Ledro | Chiese | 1.50 | 2.50 |
 
 ---
 
-## Fonte Secondaria: ISPRA Nazionale
+## Fonte Previsionale: EFAS (Copernicus)
 
-**Ente**: Istituto Superiore per la Protezione e la Ricerca Ambientale
-**Copertura**: nazionale
-**Tipo dati**: storico e aggregato (non real-time)
-
-### Portale IdroGEO
-
-- **URL**: https://idrogeo.isprambiente.it/
-- **API**: https://idrogeo.isprambiente.it/api/
-- **Dati disponibili**: frane, alluvioni storiche, dissesto idrogeologico
-- **Formato**: JSON/GeoJSON
-- **Utilizzo**: contesto storico del rischio idrogeologico, non osservazioni in tempo reale
-
-### Annuario Dati Idrologici
-
-- **URL**: https://www.isprambiente.gov.it/it/pubblicazioni/annuari
-- **Dati disponibili**: serie storiche di precipitazioni, portate, livelli idrometrici
-- **Utilizzo**: benchmark e climatologia idrologica
-
-### Limitazioni ISPRA
-
-ISPRA non fornisce un'API real-time per i livelli idrometrici. I dati sono:
-- Storici (annuari, pubblicazioni)
-- Aggregati (statistiche regionali)
-- Non adatti per nowcasting alluvioni
-
-Per dati real-time fuori Trentino, usare le fonti regionali o EFAS (vedi sotto).
+Utilizzare per **contesto probabilistico** a 3-10 giorni.
+- **Soglia EFAS > 5 anni**: Piena significativa.
+- **Soglia EFAS > 20 anni**: Piena eccezionale.
 
 ---
 
-## Fonte Terziaria: EFAS (European Flood Awareness System)
-
-**Ente**: Copernicus Emergency Management Service / ECMWF
-**Copertura**: Europa (Italia inclusa)
-**Tipo dati**: previsioni probabilistiche di piena (non osservazioni)
-**Aggiornamento**: 2 volte al giorno
-**Autenticazione**: registrazione gratuita (Copernicus Data Space)
-
-### Accesso
-
-- **Portale**: https://www.efas.eu/
-- **API**: https://efas-api.ecmwf.int/ (richiede autenticazione ECMWF)
-- **Dati disponibili**:
-  - Short-range ensemble forecast (SREF) — 10 giorni
-  - Medium-range ensemble forecast (MREF) — 30 giorni
-  - Flood maps probabilistici
-
-### Utilizzo nella Skill
-
-EFAS è utile come **contesto previsionale** per il rischio alluvioni:
-- Se EFAS indica probabilità >50% di piena per un bacino → allerta preventiva
-- Combinare con precipitazioni previste (Step A) per scenario peggiorativo
-- Non usare come sostituto di osservazioni real-time (non lo sono)
-
----
-
-## Guida Interpretazione
-
-### Soglie di Livello Idrometrico
-
-Ogni stazione ha soglie specifiche (verde/giallo/rosso). In generale:
-
-| Livello | Significato | Azione |
-|---------|-------------|--------|
-| **Verde** (< soglia verde) | Normale | Nessun allarme |
-| **Giallo** (tra verde e giallo) | Attenzione | Monitorare trend |
-| **Arancione** (tra giallo e rosso) | Pre-allerta | Preparazione |
-| **Rosso** (> soglia rossa) | Allerta | Pericolo immediato |
+## Guida Interpretazione Nimbus
 
 ### Combinazione con Dati Meteo
 
 #### Scenario 1: Pioggia Prevista + Livello Alto
 ```
-Livello attuale: 2.8m (soglia gialla: 3.0m)
-Precipitazioni previste (Step A): >30mm/24h
-→ Scenario peggiorativo: livello supererà soglia gialla
+Livello attuale (es. Po a Piacenza): 4.8m (Soglia 1: 5.0m)
+Precipitazioni previste (Step A): >40mm/24h nel bacino a monte (Piemonte)
+→ Scenario: Superamento Soglia 1 previsto nelle prossime 12-24h.
 ```
 
-#### Scenario 2: Suolo Saturo + Pioggia
+#### Scenario 2: Suolo Saturo + Pioggia Intensa
 ```
-Soil moisture (Step A): >0.35 m³/m³ (suolo saturo)
-Precipitazioni previste: >50mm/24h
-→ Rischio elevato: deflusso superficiale rapido, possibile piena lampo
-```
-
-#### Scenario 3: Trend in Salita
-```
-Livello 6h fa: 2.2m
-Livello 3h fa: 2.5m
-Livello attuale: 2.8m
-→ Trend: +0.6m in 6h → livello in rapida salita
+Soil moisture (Step A): >0.35 m³/m³
+Precipitazioni: >80mm/24h (Allerta Arancione/Rossa PC)
+→ Rischio: Piena lampo (Flash Flood) su reticolo minore e fiumi appenninici.
 ```
 
-### Classificazione Rischio Alluvione
+### Classificazione Rischio Idraulico Nimbus
 
-| Condizioni | Classificazione |
-|------------|-----------------|
-| Livello < verde + pioggia prevista <10mm/24h | Basso |
-| Livello verde-giallo + pioggia 10-30mm/24h | Moderato |
-| Livello giallo + pioggia >30mm/24h | Elevato |
-| Livello rosso + pioggia >50mm/24h + suolo saturo | Critico |
-| EFAS probabilità piena >50% + condizioni sopra | Emergenza |
+| Livello | Descrizione | Trigger |
+|---------|-------------|---------|
+| **BASSO** 🟢 | Nessuna criticità | Livelli < Soglia 1, pioggia debole |
+| **MEDIO** 🟡 | Attenzione idraulica | Superamento Soglia 1 O pioggia intensa su suolo saturo |
+| **ALTO** 🟠 | Criticità elevata | Superamento Soglia 2 O piena prevista in transito da monte |
+| **ESTREMO** 🔴 | Pericolo alluvione | Superamento Soglia 3 O alluvione lampo in corso |
 
 ---
 
-## Fonti Regionali Alternative
+## Portali per Consultazione Manuale (Real-time)
 
-Per regioni fuori Trentino, consultare i portali regionali:
+| Bacino | Ente | URL |
+|--------|------|-----|
+| **Po (Intero)** | AIPO | [agenziapo.it](https://www.agenziapo.it/content/monitoraggio-idrografico-0) |
+| **Emilia-Romagna** | ARPAE | [allertameteo.regione.emilia-romagna.it](https://allertameteo.regione.emilia-romagna.it/livello-idrometrico) |
+| **Toscana** | CFR | [cfr.toscana.it](https://www.cfr.toscana.it/monitoraggio/stazioni.php?type=idro) |
+| **Lazio** | CFR | [regione.lazio.it](https://www.regione.lazio.it/protezione-civile) |
 
-| Regione | Ente | URL Dati |
-|---------|------|----------|
-| Veneto | ARPAV | https://www.arpa.veneto.it/dati-ambientali/dati-in-tempo-reale/idro |
-| Lombardia | ARPA Lombardia | https://www.dati.lombardia.it (CKAN) |
-| Emilia-Romagna | ARPAE | https://dati.arpaee.it/ |
-| Toscana | SIR (Sistema Idrologico Regionale) | https://www.sir.toscana.it/ |
-| Lazio | Regione Lazio | https://www.regione.lazio.it/ambiente/acqua |
-| Piemonte | ARPA Piemonte | https://www.arpa.piemonte.it/opendata |
-
-**Nota**: questi portali non hanno API REST standardizzate. Spesso richiedono scraping o accesso a dati CSV/Excel.
-
----
-
-## Limitazioni e Note
-
-- **Copertura real-time limitata**: solo Trentino-Alto Adige ha un'API open data completa e strutturata
-- **Per il resto d'Italia**: usare precipitazioni ARPA (Step D) + allerta PC (Step E) + EFAS previsionale come proxy
-- **Soglie variabili**: ogni stazione ha soglie diverse — non usare valori assoluti, sempre confrontare con le soglie specifiche della stazione
-- **Aggiornamento**: floods.it aggiorna ogni 15 minuti. Non è istantaneo
-- **Storico**: per analisi storiche del rischio idrogeologico, usare ISPRA IdroGEO
+**Nota**: Per i fiumi non coperti da API (Po, Arno, Tevere), l'agente deve indicare lo scenario basandosi sull'ultimo dato disponibile manualmente o sulle allerte della Protezione Civile.

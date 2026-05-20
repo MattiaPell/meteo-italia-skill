@@ -96,16 +96,20 @@ WC = 13.12 + 0.6215*T - 11.37*V^0.16 + 0.3965*T*V^0.16
 (V in km/h, T in °C)
 ```
 
-## Bilancio Idrologico (ET0 vs Precipitazioni)
+## Bilancio Idrologico Nimbus (Rain vs ET0)
 
-L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica lo stato idrico del suolo.
+L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica lo stato idrico reale. Nimbus utilizza il **Bilancio Idrico a 7 giorni** per valutare lo stress delle colture.
 
-| Condizione | Interpretazione | Impatto |
+**Formula**: `Bilancio = Precipitazioni_7gg (mm) - ET0_7gg (mm)`
+
+| Bilancio (7gg) | Stato Nimbus | Impatto Operativo |
 |---|---|---|
-| Precip >> ET0 | Surplus idrico | Rischio alluvionamenti, suolo saturo |
-| Precip ≈ ET0 | Equilibrio | Condizioni ideali per vegetazione |
-| Precip < ET0 | Deficit idrico | Necessaria irrigazione, stress idrico |
-| ET0 > 5mm/giorno | Elevata evaporazione | Tipico di giornate calde/ventose, rapido disseccamento |
+| **> +20 mm** | **Surplus Idrico** 🌊 | Terreno saturo, rischio ristagni, stop irrigazione |
+| **-10 a +20 mm** | **Equilibrio** ✅ | Condizioni ottimali per la maggior parte delle colture |
+| **-30 a -10 mm** | **Deficit Moderato** ⚠️ | Inizio stress idrico per orticole e prati |
+| **< -30 mm** | **Stress Idrico Severo** 🔥 | Irrigazione di soccorso necessaria, rapido disseccamento |
+
+**Nota Operativa**: Se `ET0 > 5mm/giorno` (tipico di giornate calde/ventose), il bilancio peggiora rapidamente.
 
 **Soglie Umidità del Suolo (soil_moisture_0_to_1cm):**
 - **<0.15 m³/m³**: Suolo molto secco (punto di appassimento)
