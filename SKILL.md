@@ -86,7 +86,7 @@ GET https://api.open-meteo.com/v1/forecast
 - **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,et0_fao_evapotranspiration`
 - **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `convective_inhibition,wet_bulb_temperature_2m,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
 
-**Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media. Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, o ondata calore/freddo in corso.
+**Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
 
 #### B — Climatologia di riferimento (ERA5)
 Per confrontare il forecast con la norma storica del periodo.
@@ -576,6 +576,7 @@ Modelli: {N} | Macroarea: {ZONA} | Concordanza: Alta/Media/Bassa
 
 ### 📅 Ultimi 7 giorni (Step A)
 Precipitazioni cumulate: {X}mm (norma: {Y}mm → {±Z}%)
+**Bilancio Idrico Nimbus**: {±X}mm ({Surplus/Equilibrio/Deficit/Stress})
 Giorni senza pioggia: {N} consecutivi | T media anomalia: {±X}°C
 Contesto: {frase — es. "suoli saturi" / "siccità in corso" / "nella norma"}
 
@@ -624,6 +625,7 @@ Scenario p90 (pessimistico): {descrizione breve}
 ### 💨 Qualità dell'Aria (Step G)
 AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
+{se Bacino Padano: Protocollo Aria: {Verde/Arancio/Rosso} (Misure temporanee)}
 {se dust: Polvere sahariana: {X} µg/m³ ⚠️ evento naturale}
 {se pollini: {Tipo} pollen: {livello}}
 Condizioni: {accumulo/dispersione/neutro}
