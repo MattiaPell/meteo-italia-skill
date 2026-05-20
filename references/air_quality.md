@@ -70,6 +70,13 @@ Open-Meteo restituisce direttamente `european_aqi` (0–500+):
 - **Flag Pianura Padana**: PM10 >50 µg/m³ → "blocco traffico attivo" probabile nei capoluoghi
 - **PM10 da polvere sahariana**: segnala separatamente (vedi `dust`) — non è smog locale
 
+### PM10 da Incendi (Wildfires)
+Variabile: `pm10_wildfires` (Step G)
+- **Descrizione**: quota di PM10 trasportata da fumi di incendi boschivi, spesso rilevabile anche a centinaia di km dall'origine.
+- **Soglia di attenzione**: > 10 µg/m³ imputabili a fumo.
+- **Impatto**: il fumo di incendio contiene composti organici complessi più irritanti del PM urbano standard.
+- **Strategia Nimbus**: Se `pm10_wildfires` > 20% del `pm10` totale, flaggare come "Evento da fumo/incendio" per differenziarlo dal traffico.
+
 ### NO2 (Biossido di azoto)
 - **Sorgente primaria**: traffico veicolare, in particolare diesel
 - **Picchi**: ore di punta 07-09 e 17-19, lunedì peggiore
@@ -102,26 +109,32 @@ Open-Meteo restituisce direttamente `european_aqi` (0–500+):
   valutazioni di conformità ai limiti UE — menzionalo se PM10 alto + dust alto
 
 ### Pollini (solo Europa, stagione pollinica)
-Disponibili: `alder_pollen`, `birch_pollen`, `grass_pollen`,
-`mugwort_pollen`, `olive_pollen`, `ragweed_pollen`
+Disponibili via API: `alder_pollen`, `birch_pollen`, `grass_pollen`,
+`mugwort_pollen`, `olive_pollen`, `ragweed_pollen`.
 
-**Calendario pollinico Italia (approssimativo):**
+**Soglie AIA (Associazione Italiana Aerobiologia) — grani/m³:**
+Queste soglie sono specifiche per il territorio italiano e più stringenti degli standard generici.
+
+| Polline | Bassa | Media | Alta |
+|---------|-------|-------|------|
+| **Graminacee** (`grass`) | 0.6 – 9.9 | 10 – 29.9 | > 30 |
+| **Betulle/Ontano** (`birch`/`alder`) | 0.6 – 15.9 | 16 – 49.9 | > 50 |
+| **Olivo** (`olive`) | 0.6 – 4.9 | 5 – 24.9 | > 25 |
+| **Ambrosia/Artemisia** (`ragweed`/`mugwort`) | 0.1 – 4.9 | 5 – 24.9 | > 25 |
+| **Parietaria** (Urticaceae)* | 2.0 – 19.9 | 20 – 69.9 | > 70 |
+| **Cipresso** (Cupressaceae)* | 4.0 – 29.9 | 30 – 89.9 | > 90 |
+
+*\*Nota: Parietaria e Cipresso non sono ancora disponibili come variabili numeriche individuali nell'API Open-Meteo, ma sono fondamentali per il contesto italiano.*
+
+**Calendario pollinico Italia (AIA):**
 | Polline | Nord Italia | Centro-Sud |
 |---------|-------------|------------|
-| Ontano (alder) | gen–mar | dic–feb |
-| Betulla (birch) | mar–apr | feb–mar |
-| Graminacee (grass) | apr–giu | mar–mag |
-| Olivo (olive) | mag–giu | apr–mag |
-| Artemisia (mugwort) | lug–set | lug–ago |
-| Ambrosia (ragweed) | ago–set | ago–set |
-
-**Soglie polline (grani/m³):**
-| Livello | Graminacee | Betulla | Ambrosia |
-|---------|-----------|---------|---------|
-| Basso | <10 | <50 | <10 |
-| Moderato | 10–50 | 50–500 | 10–50 |
-| Alto | 50–200 | 500–1000 | 50–200 |
-| Molto alto | >200 | >1000 | >200 |
+| Ontano (`alder`) | gen–mar | dic–feb |
+| Betulla (`birch`) | mar–apr | feb–mar |
+| Graminacee (`grass`) | apr–giu | mar–mag |
+| Olivo (`olive`) | mag–giu | apr–mag |
+| Artemisia (`mugwort`) | lug–set | lug–ago |
+| Ambrosia (`ragweed`) | ago–set | ago–set |
 
 ---
 
@@ -241,6 +254,7 @@ Sicilia (Etna, Vulcano), Campania (Campi Flegrei — monitorare H2S e SO2).
 {se polline: - Allergici a {tipo}: {livello esposizione}}
 
 Fonte: CAMS European Air Quality Forecast via Open-Meteo (CC BY 4.0)
+Soglie Pollini: AIA (Associazione Italiana Aerobiologia)
 Modelli: ensemble 11 modelli CAMS (incl. MINNI-ENEA Italia), risoluzione 11km
 ```
 
