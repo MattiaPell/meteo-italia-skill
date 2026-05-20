@@ -6,11 +6,11 @@ description: >
   confronto modelli, affidabilità forecast, analisi di fenomeni locali italiani
   (foehn, bora, scirocco, tramontana, libeccio, maestrale, levante, ostro, ponente,
   garbino, ponentino, cuscino freddo, gelicidio, grandine padana, neve appenninica,
-  temporali adriatici, adriatic sea effect, allerte Protezione Civile).
+  temporali adriatici, adriatic sea effect, acqua alta venezia, allerte Protezione Civile).
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
   "maestrale", "bora", "scirocco", "tramontana", "libeccio", "levante", "ostro",
   "ponente", "grecale", "garbino", "ponentino", "maccaja", "caligo", "lupa di mare",
-  "cuscino freddo", "inversione termica",
+  "cuscino freddo", "inversione termica", "acqua alta", "marea venezia", "mose",
   "gelicidio", "pioggia congelantesi",
   "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
   "ciclismo", "bici", "bicicletta", "uscita in bici",

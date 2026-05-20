@@ -234,4 +234,5 @@ meteofrance_seamless, gfs_seamless
 - Bias dei modelli per zona → `model_bias.md`
 - Affidabilità per tipo evento → `event_reliability.md`
 - Rete ARPA regionale → `arpa_network.md`
-- Valori climatologici di riferimento → `climatology.md`- Montagna e valanghe (AINEVA) → `mountain.md`
+- Valori climatologici di riferimento → `climatology.md`
+- Montagna e valanghe (AINEVA) → `mountain.md`
