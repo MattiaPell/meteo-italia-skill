@@ -27,6 +27,20 @@ Guida per l'analisi dei fenomeni d'alta quota e del rischio valanghe in Italia.
 | **Pesante** | T ≈ 0°C, umidità alta | Neve bagnata, faticosa da sciare, rischio valanghe a debole coesione |
 | **Marcia** | T > 5°C per ore (pomeriggio) | Neve satura d'acqua, "pappa", tipica primaverile |
 
+### 🛠️ Matrice di Rilevamento Snow Quality (Intelligence)
+
+Usa questa logica per determinare la qualità della neve dai dati API:
+
+| Qualità Neve | Precipitazione | T aria (2m) | Vento (10m) | UR (2m) |
+|--------------|----------------|-------------|-------------|---------|
+| **Farinosa** (Powder) | `snowfall` > 0 | < -3°C | < 15 km/h | < 70% |
+| **Crostosa** (Crust) | `snowfall` = 0 | Ciclo +/- 0°C | > 25 km/h | — |
+| **Pesante** (Wet) | `snowfall` > 0 | -1 a +1°C | — | > 85% |
+| **Marcia** (Spring) | — | > +4°C | — | — |
+| **Ghiacciata** (Ice) | — | < -5°C | — | — |
+
+**Nota**: Il passaggio da Farinosa a Crostosa è accelerato dal vento forte (wind-drifted snow).
+
 ---
 
 ## 🌡️ Indici Termici di Montagna

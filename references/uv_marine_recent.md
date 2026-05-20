@@ -155,8 +155,10 @@ Standard ufficiale italiano per la prevenzione degli effetti del caldo sulla sal
 | **Livello 3** | 🔴 Rosso | **Ondata di Calore**: condizioni ad elevato rischio che persistono per **3 o più giorni consecutivi**. Pericolo per tutta la popolazione. |
 
 ### 🏘️ Città Monitorate (HHWWS Italia)
-Il Ministero della Salute monitora 27 città chiave con sistemi di allarme specifici:
-Ancona, Bari, Bologna, Bolzano, Brescia, Cagliari, Campobasso, Catania, Civitavecchia, Firenze, Frosinone, Genova, Latina, Messina, Milano, Napoli, Palermo, Perugia, Pescara, Reggio Calabria, Rieti, Roma, Torino, Trieste, Venezia, Verona, Viterbo.
+Il Ministero della Salute monitora **27 città chiave** con sistemi di allarme specifici (Bollini calore). Attiva analisi prioritaria per:
+*   **Nord**: Bolzano, Brescia, Genova, Milano, Torino, Trieste, Venezia, Verona.
+*   **Centro**: Ancona, Bologna, Civitavecchia (RM), Firenze, Frosinone, Latina, Perugia, Pescara, Rieti, Roma, Viterbo.
+*   **Sud/Isole**: Bari, Cagliari, Campobasso, Catania, Messina, Napoli, Palermo, Reggio Calabria.
 
 ### 🌡️ Temperatura a Bulbo Umido (Wet Bulb Temperature - WBT)
 La variabile `wet_bulb_temperature_2m` (Step 3A) è il limite fisico del raffreddamento per evaporazione (sudore).
