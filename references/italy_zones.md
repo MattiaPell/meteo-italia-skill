@@ -19,7 +19,7 @@ ecmwf_ifs, arome_france, gfs_seamless
 | `arome_france` | 0.9 |
 | `gfs_seamless` | 0.7 |
 
-**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera), Maccaja (costa ligure).
+**Fenomeni locali prioritari:** Foehn (versante alpino S), stau Alpi Marittime/Liguri, Levante (piogge costiere), temporali convettivi estivi, neve oltre 600m (inverno), cuscino freddo, gelicidio (Appennino Ligure/Piemontese), Caligo (costa ligure, primavera), Maccaja (costa ligure), Breva e Tivano (Lago di Como).
 
 **Note:** La Liguria ha dinamiche molto diverse da Piemonte — la costa ligure è esposta a libeccio e riceve precipitazioni intense dai sistemi atlantici. Usare `arome_france` per la fascia costiera.
 
