@@ -143,12 +143,12 @@ Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 ```http
 GET https://air-quality-api.open-meteo.com/v1/air-quality
   ?latitude={LAT}&longitude={LON}
-  &hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,sulphur_dioxide,
+  &hourly=pm10,pm2_5,pm10_wildfires,carbon_monoxide,nitrogen_dioxide,ozone,sulphur_dioxide,
           dust,ammonia,european_aqi,european_aqi_pm2_5,
           european_aqi_pm10,european_aqi_no2,european_aqi_o3,
           alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,
           olive_pollen,ragweed_pollen
-  &current=european_aqi,pm10,pm2_5,nitrogen_dioxide,ozone,dust
+  &current=european_aqi,pm10,pm2_5,pm10_wildfires,nitrogen_dioxide,ozone,dust
   &domains=cams_europe
   &timezone=Europe/Rome
   &forecast_days=5
@@ -627,7 +627,8 @@ AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
 {se Bacino Padano: Protocollo Aria: {Verde/Arancio/Rosso} (Misure temporanee)}
 {se dust: Polvere sahariana: {X} µg/m³ ⚠️ evento naturale}
-{se pollini: {Tipo} pollen: {livello}}
+{se wildfire: Fumo da incendi: {X} µg/m³ (PM10 wildfire) ⚠️}
+{se pollini: {Tipo} pollen: {livello (Basso/Medio/Alto — Soglie AIA)}}
 Condizioni: {accumulo/dispersione/neutro}
 Soggetti sensibili: {raccomandazione}
 
@@ -677,7 +678,7 @@ Tipo evento: {TIPO} | Affidabilità contestuale: {Alta/Media/Bassa}
 Fonte previsioni: Open-Meteo (CC BY 4.0) | Modelli: {lista}
 Osservazioni: {ARPA regionale} | METAR: CheckWX / aviationweather.gov
 Allerte: Protezione Civile Italiana | Radar: DPC (CC-BY-SA)
-Climatologia: ERA5 (media {N} anni) | Fulmini: DMI Open Data
+Climatologia: ERA5 (media {N} anni) | Pollini: AIA
 Idrologia: floods.it (Trentino) | Satellite: EUMETSAT
 ```
 
