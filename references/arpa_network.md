@@ -225,19 +225,19 @@ https://mappe.protezionecivile.gov.it/
 
 ## Stazioni di Riferimento per Città Chiave
 
-| Città | ARPA | Stazione principale |
-|-------|------|---------------------|
-| Milano | ARPA Lombardia | Milano Linate / Brera |
-| Torino | ARPA Piemonte | Torino Caselle |
-| Venezia | ARPAV | Venezia Tessera / Lido |
-| Rovigo | ARPAV | Rovigo città |
-| Verona | ARPAV | Verona Villafranca |
-| Bologna | ARPAE | Bologna Borgo Panigale |
-| Ancona | ARPA Marche | Falconara / Ancona |
-| Perugia | ARPA Umbria | Perugia Sant'Egidio |
-| Firenze | LAMMA | Firenze Peretola |
-| Roma | MeteoAM | Roma Ciampino / Fiumicino |
-| Napoli | ARPA Campania | Napoli Capodichino |
-| Palermo | SIAS | Palermo Punta Raisi |
-| Cagliari | ARPAS | Cagliari Elmas |
-| Trieste | ARPA FVG | Trieste Porto / Molo F.lli Bandiera |
+| Città | ARPA | Stazione principale | ICAO/WMO |
+|-------|------|---------------------|----------|
+| Milano | ARPA Lombardia | Milano Linate / Brera | LIML / 16080 |
+| Torino | ARPA Piemonte | Torino Caselle | LIMF / 16059 |
+| Venezia | ARPAV | Venezia Tessera / Lido | LIPZ / 16105 |
+| Rovigo | ARPAV | Rovigo città | — / 16116 |
+| Verona | ARPAV | Verona Villafranca | LIPX / 16090 |
+| Bologna | ARPAE | Bologna Borgo Panigale | LIPE / 16140 |
+| Ancona | ARPA Marche | Falconara / Ancona | LIPY / 16190 |
+| Perugia | ARPA Umbria | Perugia Sant'Egidio | LIRZ / 16181 |
+| Firenze | LAMMA | Firenze Peretola | LIRQ / 16170 |
+| Roma | MeteoAM | Roma Ciampino / Fiumicino | LIRA-LIRF / 16239-16242 |
+| Napoli | ARPA Campania | Napoli Capodichino | LIRN / 16289 |
+| Palermo | SIAS | Palermo Punta Raisi | LICJ / 16405 |
+| Cagliari | ARPAS | Cagliari Elmas | LIEE / 16560 |
+| Trieste | ARPA FVG | Trieste Porto / Molo F.lli Bandiera | — / 16110 |

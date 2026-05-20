@@ -342,7 +342,7 @@ Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
 - Vento <5 km/h
 - T prossima al punto di rugiada (T - Tdew <2°C)
 - **Inversione termica bassa**: T(2m) < T(925hPa) → indica ristagno d'aria e nebbia al suolo
-- **Cloud cover low**: >75% (presenza di strati o nebbia persistente)
+- **Cloud cover low**: `cloud_cover_low` >75% (presenza di strati o nebbia persistente)
 - `cloud_cover` <10% (cielo sereno → irraggiamento notturno in formazione)
 - Stagione: ottobre-febbraio
 - Pianura alluvionale (quota <50m)
@@ -582,7 +582,7 @@ Liguria (settore centro-occidentale), occasionalmente Toscana costiera e Versili
 - **UR(2m) > 85-90%** sulla costa
 - **Vento da S/SE/SW**: Bassa intensità (<15-20 km/h)
 - **Stagione**: Primavera e Autunno
-- **Cloud cover low**: >75% (nubi basse/nebbia) mentre nell'entroterra è sereno
+- **Cloud cover low**: `cloud_cover_low` >75% (nubi basse/nebbia) mentre nell'entroterra è sereno
 - **Escursione termica**: Molto ridotta tra giorno e notte
 
 ### Come riportarlo
@@ -656,7 +656,8 @@ Tutte le coste italiane esposte; in particolare Liguria (Libeccio), Sardegna (Ma
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
 - **Douglas Sea State ≥ 5**: Altezza significativa onde (`wave_height`) > 2.5m.
-- **Vento sostenuto > 40-50 km/h** perpendicolare alla costa (Step 3A).
+- **Vento sostenuto > 40-50 km/h** (Step 3A).
+- **Traversia**: Vento/Mare perpendicolare alla costa (vedi `references/uv_marine_recent.md` per direzioni critiche).
 - **Fetch lungo**: Vento costante sulla stessa direzione per 12+ ore.
 - **Bassa Pressione**: `pressure_msl` < 1005 hPa (sovra-elevazione del livello marino).
 
