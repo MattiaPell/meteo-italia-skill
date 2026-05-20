@@ -73,20 +73,20 @@ end_date:   {ANNO-1}-05-20
 | **Sardegna** | Cagliari, Sassari |
 
 ### Milano (45.47°N, 9.19°E, 122m)
-| Mese | T max media | T min media | Precip. media | Giorni pioggia |
-|------|-------------|-------------|---------------|----------------|
-| Gen | 4.5°C | -1.2°C | 55mm | 8 |
-| Feb | 7.2°C | 0.8°C | 51mm | 7 |
-| Mar | 12.8°C | 4.5°C | 72mm | 9 |
-| Apr | 17.4°C | 8.6°C | 85mm | 11 |
-| Mag | 22.5°C | 13.2°C | 92mm | 12 |
-| Giu | 26.8°C | 17.1°C | 78mm | 9 |
-| Lug | 29.5°C | 19.8°C | 62mm | 7 |
-| Ago | 28.7°C | 19.2°C | 75mm | 8 |
-| Set | 23.8°C | 15.1°C | 68mm | 8 |
-| Ott | 17.2°C | 9.8°C | 88mm | 10 |
-| Nov | 9.8°C | 3.5°C | 91mm | 10 |
-| Dic | 5.1°C | -0.2°C | 62mm | 8 |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 4.5°C | -1.2°C | 55mm | |
+| Feb | 7.2°C | 0.8°C | 51mm | |
+| Mar | 12.8°C | 4.5°C | 72mm | |
+| Apr | 17.4°C | 8.6°C | 85mm | |
+| Mag | 22.5°C | 13.2°C | 92mm | |
+| Giu | 26.8°C | 17.1°C | 78mm | |
+| Lug | 29.5°C | 19.8°C | 62mm | |
+| Ago | 28.7°C | 19.2°C | 75mm | |
+| Set | 23.8°C | 15.1°C | 68mm | |
+| Ott | 17.2°C | 9.8°C | 88mm | |
+| Nov | 9.8°C | 3.5°C | 91mm | |
+| Dic | 5.1°C | -0.2°C | 62mm | |
 
 ### Bergamo (45.69°N, 9.67°E, 249m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -233,20 +233,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 11.4°C | 2.8°C | 88mm | |
 
 ### Bolzano (46.50°N, 11.35°E, 262m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 6.7°C | -2.6°C | 50mm |
-| Feb | 8.6°C | -0.7°C | 51mm |
-| Mar | 12.8°C | 3.6°C | 72mm |
-| Apr | 16.6°C | 6.9°C | 96mm |
-| Mag | 21.1°C | 11.4°C | 107mm |
-| Giu | 24.9°C | 15.0°C | 94mm |
-| Lug | 27.0°C | 16.8°C | 88mm |
-| Ago | 26.7°C | 16.8°C | 93mm |
-| Set | 22.3°C | 13.2°C | 95mm |
-| Ott | 17.5°C | 9.2°C | 126mm |
-| Nov | 11.5°C | 4.3°C | 126mm |
-| Dic | 7.3°C | -1.0°C | 68mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.7°C | -2.6°C | 50mm | |
+| Feb | 8.6°C | -0.7°C | 51mm | |
+| Mar | 12.8°C | 3.6°C | 72mm | |
+| Apr | 16.6°C | 6.9°C | 96mm | |
+| Mag | 21.1°C | 11.4°C | 107mm | |
+| Giu | 24.9°C | 15.0°C | 94mm | |
+| Lug | 27.0°C | 16.8°C | 88mm | |
+| Ago | 26.7°C | 16.8°C | 93mm | |
+| Set | 22.3°C | 13.2°C | 95mm | |
+| Ott | 17.5°C | 9.2°C | 126mm | |
+| Nov | 11.5°C | 4.3°C | 126mm | |
+| Dic | 7.3°C | -1.0°C | 68mm | |
 
 ### Trento (46.06°N, 11.12°E, 194m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -281,20 +281,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 8.3°C | 2.4°C | 128mm | |
 
 ### L'Aquila (42.35°N, 13.40°E, 714m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 6.7°C | -0.4°C | 71mm |
-| Feb | 7.5°C | -0.5°C | 71mm |
-| Mar | 10.9°C | 2.1°C | 89mm |
-| Apr | 14.6°C | 5.3°C | 91mm |
-| Mag | 19.0°C | 9.6°C | 80mm |
-| Giu | 23.5°C | 13.8°C | 58mm |
-| Lug | 26.5°C | 16.6°C | 44mm |
-| Ago | 27.1°C | 17.2°C | 38mm |
-| Set | 21.7°C | 12.9°C | 72mm |
-| Ott | 17.5°C | 9.3°C | 80mm |
-| Nov | 12.1°C | 4.9°C | 104mm |
-| Dic | 7.6°C | 0.9°C | 96mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.7°C | -0.4°C | 71mm | |
+| Feb | 7.5°C | -0.5°C | 71mm | |
+| Mar | 10.9°C | 2.1°C | 89mm | |
+| Apr | 14.6°C | 5.3°C | 91mm | |
+| Mag | 19.0°C | 9.6°C | 80mm | |
+| Giu | 23.5°C | 13.8°C | 58mm | |
+| Lug | 26.5°C | 16.6°C | 44mm | |
+| Ago | 27.1°C | 17.2°C | 38mm | |
+| Set | 21.7°C | 12.9°C | 72mm | |
+| Ott | 17.5°C | 9.3°C | 80mm | |
+| Nov | 12.1°C | 4.9°C | 104mm | |
+| Dic | 7.6°C | 0.9°C | 96mm | |
 
 ### Perugia (43.11°N, 12.39°E, 493m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -377,20 +377,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 12.6°C | 6.7°C | 133mm | |
 
 ### Potenza (40.64°N, 15.80°E, 819m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 8.0°C | 0.9°C | 65mm |
-| Feb | 8.6°C | 0.7°C | 62mm |
-| Mar | 11.7°C | 2.9°C | 76mm |
-| Apr | 15.1°C | 5.5°C | 73mm |
-| Mag | 19.7°C | 9.7°C | 56mm |
-| Giu | 24.6°C | 13.7°C | 40mm |
-| Lug | 27.6°C | 16.2°C | 28mm |
-| Ago | 28.0°C | 16.9°C | 26mm |
-| Set | 22.7°C | 13.3°C | 51mm |
-| Ott | 18.6°C | 10.0°C | 61mm |
-| Nov | 13.4°C | 5.8°C | 70mm |
-| Dic | 9.0°C | 2.3°C | 74mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 8.0°C | 0.9°C | 65mm | |
+| Feb | 8.6°C | 0.7°C | 62mm | |
+| Mar | 11.7°C | 2.9°C | 76mm | |
+| Apr | 15.1°C | 5.5°C | 73mm | |
+| Mag | 19.7°C | 9.7°C | 56mm | |
+| Giu | 24.6°C | 13.7°C | 40mm | |
+| Lug | 27.6°C | 16.2°C | 28mm | |
+| Ago | 28.0°C | 16.9°C | 26mm | |
+| Set | 22.7°C | 13.3°C | 51mm | |
+| Ott | 18.6°C | 10.0°C | 61mm | |
+| Nov | 13.4°C | 5.8°C | 70mm | |
+| Dic | 9.0°C | 2.3°C | 74mm | |
 
 ### Campobasso (41.56°N, 14.65°E, 701m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -441,20 +441,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 13.3°C | 6.9°C | 102mm | |
 
 ### Reggio Calabria (38.11°N, 15.66°E, 31m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 13.0°C | 7.8°C | 151mm |
-| Feb | 13.9°C | 8.1°C | 119mm |
-| Mar | 15.0°C | 8.7°C | 171mm |
-| Apr | 18.1°C | 11.2°C | 84mm |
-| Mag | 21.8°C | 14.6°C | 85mm |
-| Giu | 26.8°C | 19.0°C | 64mm |
-| Lug | 30.1°C | 22.0°C | 39mm |
-| Ago | 29.8°C | 22.4°C | 53mm |
-| Set | 26.3°C | 19.7°C | 89mm |
-| Ott | 22.4°C | 16.5°C | 126mm |
-| Nov | 18.5°C | 13.2°C | 131mm |
-| Dic | 14.9°C | 9.9°C | 140mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 13.0°C | 7.8°C | 151mm | |
+| Feb | 13.9°C | 8.1°C | 119mm | |
+| Mar | 15.0°C | 8.7°C | 171mm | |
+| Apr | 18.1°C | 11.2°C | 84mm | |
+| Mag | 21.8°C | 14.6°C | 85mm | |
+| Giu | 26.8°C | 19.0°C | 64mm | |
+| Lug | 30.1°C | 22.0°C | 39mm | |
+| Ago | 29.8°C | 22.4°C | 53mm | |
+| Set | 26.3°C | 19.7°C | 89mm | |
+| Ott | 22.4°C | 16.5°C | 126mm | |
+| Nov | 18.5°C | 13.2°C | 131mm | |
+| Dic | 14.9°C | 9.9°C | 140mm | |
 
 ### Palermo (38.12°N, 13.36°E, 14m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -808,6 +808,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 11.9°C | 6.6°C | 84mm | |
 | Dic | 7.3°C | 2.0°C | 63mm | |
 
+### Rimini (44.06°N, 12.56°E, 6m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 9.5°C | 3.1°C | 61mm | |
+| Feb | 10.4°C | 3.7°C | 102mm | |
+| Mar | 13.6°C | 6.0°C | 81mm | |
+| Apr | 17.5°C | 9.6°C | 63mm | |
+| Mag | 21.1°C | 13.2°C | 87mm | |
+| Giu | 26.3°C | 17.9°C | 45mm | |
+| Lug | 28.9°C | 20.6°C | 45mm | |
+| Ago | 28.8°C | 20.6°C | 47mm | |
+| Set | 24.5°C | 17.1°C | 92mm | |
+| Ott | 19.5°C | 12.9°C | 91mm | |
+| Nov | 14.6°C | 8.9°C | 95mm | |
+| Dic | 10.6°C | 4.2°C | 60mm | |
+
 ### Piacenza (45.05°N, 9.69°E, 61m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -855,22 +871,6 @@ end_date:   {ANNO-1}-05-20
 | Ott | 20.0°C | 11.0°C | 85mm | |
 | Nov | 13.0°C | 5.0°C | 95mm | |
 | Dic | 8.0°C | 0.0°C | 70mm | |
-
-### Rimini (44.06°N, 12.56°E, 5m)
-| Mese | T max media | T min media | Precip. media | Note |
-|------|-------------|-------------|---------------|------|
-| Gen | 7.0°C | 0.0°C | 48mm | |
-| Feb | 9.0°C | 1.0°C | 48mm | |
-| Mar | 13.0°C | 4.0°C | 57mm | |
-| Apr | 17.0°C | 7.0°C | 53mm | |
-| Mag | 21.0°C | 11.0°C | 50mm | |
-| Giu | 25.0°C | 15.0°C | 51mm | |
-| Lug | 28.0°C | 17.0°C | 54mm | |
-| Ago | 27.0°C | 17.0°C | 67mm | |
-| Set | 24.0°C | 15.0°C | 68mm | |
-| Ott | 19.0°C | 10.0°C | 77mm | |
-| Nov | 13.0°C | 5.0°C | 73mm | |
-| Dic | 9.0°C | 1.0°C | 57mm | |
 
 ### Livorno (43.55°N, 10.31°E, 3m)
 | Mese | T max media | T min media | Precip. media | Note |
