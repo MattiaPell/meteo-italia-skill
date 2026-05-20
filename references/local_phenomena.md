@@ -21,7 +21,8 @@ Alto Adige (valle dell'Adige), Veneto alpino (Belluno)
 - UR <25% (spesso <15%)
 - Pressione in calo a nord delle Alpi, in aumento a sud
 - `weather_code` = 0 (cielo sereno) sul versante padano mentre piove sulle Alpi
-- Quota isoipsa 850hPa alta (>1500m geopotenziale)
+- **Gradiente di Geopotenziale**: differenza `geopotential_height_850hPa` Nord vs Sud Alpi > 30-50m
+- **Synoptic Check**: calo `geopotential_height_500hPa` a Nord (ingresso saccatura) e aumento a Sud
 
 ### Come riportarlo
 ```
@@ -556,7 +557,7 @@ Liguria (soprattutto centro-levante: Genova, Chiavari, Spezia), Toscana (costa e
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
 - **Convergenza al suolo** marcata (es. Tramontana fredda vs Scirocco caldo/umido nel Golfo di Genova)
-- **Moisture Flux** (flusso di umidità) elevato e persistente nei bassi strati verso la linea di convergenza
+- **Moisture Flux Proxy**: prodotto `relative_humidity_925hPa` × `wind_speed_925hPa` > 2000 (indica alimentazione umida intensa e veloce)
 - **CAPE** >1000-1500 J/kg persistente nell'area di alimentazione
 - **CIN**: < 50 J/kg (facilità di innesco dei nuclei temporaleschi)
 - **Vento a 500hPa** forte (>75-90 km/h) che "stira" l'incudine del temporale creando la forma a V
@@ -586,6 +587,7 @@ Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
 - **Inversione termica**: T(2m) < T(925hPa) o T(2m) < T(850hPa)
 - **Intensità inversione**: Delta T (T925hPa - T2m) > 5°C → **Inversione forte/persistente**
+- **Profilo di Geopotenziale**: `geopotential_height_1000hPa` > quota stazione + `geopotential_height_925hPa` basso (indica compressione dell'aria fredda nei primi 500-800m)
 - **Sotto-raffreddamento al suolo**: `soil_temperature_0cm` < `temperature_2m`
 - **Stagione**: Inverno (novembre–febbraio)
 - **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
