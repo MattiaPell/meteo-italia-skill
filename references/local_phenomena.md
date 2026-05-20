@@ -342,6 +342,7 @@ Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
 - Vento <5 km/h
 - T prossima al punto di rugiada (T - Tdew <2°C)
 - **Inversione termica bassa**: T(2m) < T(925hPa) → indica ristagno d'aria e nebbia al suolo
+- **Umidità al suolo**: `soil_moisture_0_to_1cm` > 0.30 (suolo bagnato favorisce nebbia)
 - **Cloud cover low**: `cloud_cover_low` >75% (presenza di strati o nebbia persistente)
 - `cloud_cover` <10% (cielo sereno → irraggiamento notturno in formazione)
 - Stagione: ottobre-febbraio
@@ -378,6 +379,7 @@ Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raff
 - CAPE >800 J/kg (significativo), >1500 J/kg (alto), >2500 J/kg (molto alto)
 - **CIN (Convective Inhibition)**: < 50 J/kg (assenza di "tappo" che impedisce la convezione)
 - `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
+- **Wind shear Verticale**: differenza vento 10m vs 500hPa > 70 km/h (stima da `wind_speed_500hPa`)
 - Wind shear in quota (differenza vento 850hPa vs 500hPa >55 km/h → MCS organizzato)
 - `weather_code` 95-99 previsto
 - Zone: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
@@ -490,6 +492,7 @@ Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
 - **Inversione termica**: T(2m) < T(925hPa) o T(2m) < T(850hPa)
 - **Intensità inversione**: Delta T (T925hPa - T2m) > 5°C → **Inversione forte/persistente**
+- **Sotto-raffreddamento al suolo**: `soil_temperature_0cm` < `temperature_2m`
 - **Stagione**: Inverno (novembre–febbraio)
 - **Vento calmo**: velocità <5 km/h nei bassi strati (Pianura Padana)
 - **Umidità elevata**: UR(2m) >85% con nebbia o nubi basse (Galaverna)
@@ -524,7 +527,8 @@ Appennino settentrionale (versante padano), valli appenniniche, Pianura Padana (
 - **Weather code / Precipitazione**: `weather_code` 66 (Slight freezing rain / debole) o 67 (Heavy freezing rain / forte)
 - **T superficie**: `soil_temperature_0cm` < 0°C (fondamentale per il congelamento istantaneo)
 - **T aria**: `temperature_2m` < 0°C (solitamente tra -1°C e -5°C)
-- **T quota / Sovrascorrimento caldo**: `temperature_850hPa` > 0°C (strato di fusione); vento da S/SW (`wind_direction_850hPa` 150–250°) in quota
+- **T quota / Sovrascorrimento caldo**: `temperature_850hPa` > 0°C (strato di fusione) o quota zero termico > 1500m
+- **Wind shear**: vento da S/SW (`wind_direction_850hPa` 150–250°) in quota sopra cuscino freddo
 - **Precipitazioni**: pioggia prevista dai modelli numerici
 - **Macroarea**: Nord-Ovest, Nord-Est, Centro-Nord
 
@@ -781,6 +785,8 @@ Colonna d'aria in rotazione (vortice) che si forma sopra il mare e si estende da
 ### Segnali nei dati — Tipo Tornadico (flag se ≥4 di questi)
 - **CAPE**: >1000 J/kg (instabilità convettiva significativa)
 - **Lifted Index**: < -6 (instabilità elevata)
+- **Low-level Shear**: differenza vento 925hPa vs 10m > 30 km/h
+- **Deep-layer Shear**: differenza vento 500hPa vs 10m > 60 km/h
 - **Wind shear 0-3km**: differenza vento 850hPa vs 10m >40 km/h (stima da `wind_speed_850hPa` e `wind_speed_10m`)
 - **SST (Sea Surface Temperature)**: >20°C (mare caldo, energia per convezione)
 - **T aria - SST**: differenza <3°C (aria più fredda sopra mare caldo → forte instabilità superficiale)
@@ -831,6 +837,7 @@ Colonna d'aria in rotazione violenta che si estende dalla base di un cumulonembo
 ### Segnali nei dati (flag se ≥5 di questi)
 - **CAPE**: >1500 J/kg (forte instabilità)
 - **Lifted Index**: < -8 (instabilità estrema)
+- **Low-level Shear (0-1km)**: differenza vento 925hPa vs 10m > 40 km/h
 - **Wind shear 0-3km**: differenza vento 850hPa vs 10m >55 km/h
 - **Wind shear 0-6km**: differenza vento 500hPa vs 10m >70 km/h (stima da `wind_speed_500hPa` e `wind_speed_10m`)
 - **Convective Inhibition (CIN)**: <50 J/kg (poca energia da superare per innesco)

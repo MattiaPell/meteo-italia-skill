@@ -39,3 +39,9 @@ Action: Always include the 925hPa level (T, RH, Geo) in the fetch for Northern m
 ## 2025-05-23 — [Accuracy] Vertical Cloud Decomposition and Atmospheric Stability
 **Learning:** Total cloud cover is insufficient for Italian phenomena like 'Maccaja' and Po Valley fog. Adding 'cloud_cover_low' allows for precise detection of low-level saturation. Additionally, 'convective_inhibition' (CIN) is critical to evaluate if high CAPE can actually trigger 'V-Shaped' storms, while 'boundary_layer_height' sharpening 'Cuscino Freddo' and air quality accumulation risk analysis.
 **Action:** Always fetch vertical cloud layers (low/mid/high) and stability indices (CIN) for complex terrain. Use boundary layer height to define mixing volume for pollutants.
+
+## 2025-05-24 — [Accuracy] Promotion of Safety and Convective Variables
+
+**Learning:** Convective indicators (CAPE, LI) and ground-level safety variables (soil_temperature_0cm, soil_moisture) are often needed for automated nowcasting triggers (Lightning, Gelicidio, Fog) before the conditional logic of specialized groups is evaluated. Moving them to the base fetch ensures detection is always available. Additionally, 925hPa wind data is essential for low-level shear analysis required for Tornado and Waterspout risk assessment in Italy.
+
+**Action:** Promoted CAPE, LI, soil_temperature_0cm, soil_moisture_0_to_1cm, and 925hPa level variables to the base hourly fetch in SKILL.md. Added triggers and shear-based logic for Tornado and Waterspout detection in references/local_phenomena.md.
