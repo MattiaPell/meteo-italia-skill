@@ -50,6 +50,10 @@ Il "Mare Morto" (Swell) è il moto ondoso residuo o proveniente da zone lontane.
 | 2 – 4 m | Media | Onde lunghe e moderate |
 | > 4 m | Alta | Onde lunghe e alte |
 
+### 🌊 Interpretazione Periodo Onde (Swell vs. Wind Sea)
+
+Il periodo dell'onda (`wave_period`, `swell_wave_period`) è fondamentale per distinguere il tipo di mare e la sua energia.
+
 | Lunghezza Swell | Periodo (s) | Descrizione |
 |---|---|---|
 | < 6s | Corta | Onde frequenti |
@@ -89,6 +93,22 @@ Indica il comfort termico per la balneazione nelle coste italiane.
 | 22–24°C | Ideale | Perfetta per la maggior parte dei bagnanti |
 | 25–27°C | Calda | Tipica del pieno agosto nel Mediterraneo |
 | >28°C | Molto calda | Possibile proliferazione algale / stress ecosistema |
+
+### 🌊 Traversia (Rischio Mareggiata Onshore)
+
+La "Traversia" è la direzione del vento e del mare che colpisce perpendicolarmente la costa, causando il massimo impatto (mareggiata).
+
+| Costa / Regione | Traversia (Dir. Critica) | Vento Principale |
+|---|---|---|
+| **Liguria (Centro-Levante)** | SW / S (200°–240°) | Libeccio |
+| **Liguria (Ponente)** | S / SE (150°–200°) | Scirocco |
+| **Toscana / Lazio** | WSW / SW (220°–260°) | Libeccio |
+| **Sardegna Occidentale** | NW / W (270°–320°) | Maestrale |
+| **Sicilia Meridionale** | S / SW (180°–230°) | Libeccio / Scirocco |
+| **Sicilia Orientale / Ionio** | E / SE (90°–140°) | Levante / Scirocco |
+| **Puglia Adriatica** | NE / E (40°–90°) | Bora / Grecale |
+| **Alto Adriatico (Venezia)** | SE / ESE (120°–160°) | Scirocco (Acqua Alta) |
+| **Marche / Abruzzo** | NE (30°–60°) | Bora / Adriatic Sea Effect |
 
 ---
 
@@ -133,6 +153,10 @@ Standard ufficiale italiano per la prevenzione degli effetti del caldo sulla sal
 | **Livello 1** | 🟡 Giallo | **Pre-allerta**: condizioni che possono precedere un'ondata di calore. |
 | **Livello 2** | 🟠 Arancione | **Rischio**: temperature elevate ed effetti negativi su anziani, bambini e soggetti fragili. |
 | **Livello 3** | 🔴 Rosso | **Ondata di Calore**: condizioni ad elevato rischio che persistono per **3 o più giorni consecutivi**. Pericolo per tutta la popolazione. |
+
+### 🏘️ Città Monitorate (HHWWS Italia)
+Il Ministero della Salute monitora 27 città chiave con sistemi di allarme specifici:
+Ancona, Bari, Bologna, Bolzano, Brescia, Cagliari, Campobasso, Catania, Civitavecchia, Firenze, Frosinone, Genova, Latina, Messina, Milano, Napoli, Palermo, Perugia, Pescara, Reggio Calabria, Rieti, Roma, Torino, Trieste, Venezia, Verona, Viterbo.
 
 ### 🌡️ Temperatura a Bulbo Umido (Wet Bulb Temperature - WBT)
 La variabile `wet_bulb_temperature_2m` (Step 3A) è il limite fisico del raffreddamento per evaporazione (sudore).

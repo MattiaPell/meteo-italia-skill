@@ -64,9 +64,10 @@ GET https://api.open-meteo.com/v1/forecast
   &models={MODEL1,MODEL2,...}
   &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
           precipitation_probability,wind_speed_10m,wind_direction_10m,
-          wind_gusts_10m,cloud_cover,visibility,weather_code,
+          wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,
+          cloud_cover_high,visibility,weather_code,
           relative_humidity_2m,freezing_level_height,boundary_layer_height,
-          pressure_msl,uv_index,
+          pressure_msl,uv_index,snow_depth,
           {GRUPPO_ENERGY}, {GRUPPO_AGRO}, {GRUPPO_PRO}
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
@@ -79,7 +80,7 @@ GET https://api.open-meteo.com/v1/forecast
 ```
 
 **Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index`
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
 - **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_moisture_0_to_1cm,soil_temperature_0cm,et0_fao_evapotranspiration`
 - **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `cape,lifted_index,convective_inhibition,wet_bulb_temperature_2m,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
@@ -118,7 +119,8 @@ Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautic
 GET https://marine-api.open-meteo.com/v1/marine
   ?latitude={LAT}&longitude={LON}
   &hourly=wave_height,wave_direction,wave_period,
-          wind_wave_height,swell_wave_height,swell_wave_direction,
+          wind_wave_height,wind_wave_direction,wind_wave_period,
+          swell_wave_height,swell_wave_direction,
           swell_wave_period,
           sea_surface_temperature
   &daily=wave_height_max,wind_wave_height_max,swell_wave_height_max
