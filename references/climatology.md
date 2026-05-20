@@ -50,12 +50,12 @@ end_date:   {ANNO-1}-05-20
 
 | Regione | Città |
 |---------|-------|
-| **Lombardia** | Milano |
+| **Lombardia** | Milano, Bergamo, Brescia, Como, Cremona, Lecco, Lodi, Mantova, Monza, Pavia, Sondrio, Varese |
 | **Piemonte** | Torino |
 | **Valle d'Aosta** | Aosta |
 | **Liguria** | Genova |
-| **Veneto** | Venezia, Rovigo, Verona, Padova |
-| **Emilia-Romagna** | Bologna, Ferrara, Parma, Rimini |
+| **Veneto** | Venezia, Belluno, Padova, Rovigo, Treviso, Verona, Vicenza |
+| **Emilia-Romagna** | Bologna, Cesena, Ferrara, Forlì, Modena, Parma, Piacenza, Ravenna, Reggio Emilia, Rimini |
 | **Toscana** | Firenze, Livorno |
 | **Alto Adige** | Bolzano |
 | **Trentino** | Trento |
@@ -73,20 +73,36 @@ end_date:   {ANNO-1}-05-20
 | **Sardegna** | Cagliari, Sassari |
 
 ### Milano (45.47°N, 9.19°E, 122m)
-| Mese | T max media | T min media | Precip. media | Giorni pioggia |
-|------|-------------|-------------|---------------|----------------|
-| Gen | 4.5°C | -1.2°C | 55mm | 8 |
-| Feb | 7.2°C | 0.8°C | 51mm | 7 |
-| Mar | 12.8°C | 4.5°C | 72mm | 9 |
-| Apr | 17.4°C | 8.6°C | 85mm | 11 |
-| Mag | 22.5°C | 13.2°C | 92mm | 12 |
-| Giu | 26.8°C | 17.1°C | 78mm | 9 |
-| Lug | 29.5°C | 19.8°C | 62mm | 7 |
-| Ago | 28.7°C | 19.2°C | 75mm | 8 |
-| Set | 23.8°C | 15.1°C | 68mm | 8 |
-| Ott | 17.2°C | 9.8°C | 88mm | 10 |
-| Nov | 9.8°C | 3.5°C | 91mm | 10 |
-| Dic | 5.1°C | -0.2°C | 62mm | 8 |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 4.5°C | -1.2°C | 55mm | |
+| Feb | 7.2°C | 0.8°C | 51mm | |
+| Mar | 12.8°C | 4.5°C | 72mm | |
+| Apr | 17.4°C | 8.6°C | 85mm | |
+| Mag | 22.5°C | 13.2°C | 92mm | |
+| Giu | 26.8°C | 17.1°C | 78mm | |
+| Lug | 29.5°C | 19.8°C | 62mm | |
+| Ago | 28.7°C | 19.2°C | 75mm | |
+| Set | 23.8°C | 15.1°C | 68mm | |
+| Ott | 17.2°C | 9.8°C | 88mm | |
+| Nov | 9.8°C | 3.5°C | 91mm | |
+| Dic | 5.1°C | -0.2°C | 62mm | |
+
+### Bergamo (45.69°N, 9.67°E, 249m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -1.0°C | 65mm | |
+| Feb | 8.0°C | 0.0°C | 60mm | |
+| Mar | 13.0°C | 4.0°C | 75mm | |
+| Apr | 17.0°C | 8.0°C | 95mm | |
+| Mag | 22.0°C | 12.0°C | 105mm | |
+| Giu | 26.0°C | 16.0°C | 100mm | |
+| Lug | 29.0°C | 18.0°C | 85mm | |
+| Ago | 28.0°C | 18.0°C | 95mm | |
+| Set | 24.0°C | 14.0°C | 95mm | |
+| Ott | 18.0°C | 9.0°C | 115mm | |
+| Nov | 11.0°C | 4.0°C | 125mm | |
+| Dic | 7.0°C | 0.0°C | 75mm | |
 
 ### Torino (45.19°N, 7.65°E, 287m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -184,6 +200,22 @@ end_date:   {ANNO-1}-05-20
 | Nov | 13.2°C | 6.1°C | 93mm | |
 | Dic | 8.5°C | 1.4°C | 71mm | |
 
+### Cesena (44.14°N, 12.24°E, 44m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 9.0°C | 1.0°C | 55mm | |
+| Feb | 11.0°C | 2.0°C | 50mm | |
+| Mar | 15.0°C | 5.0°C | 60mm | |
+| Apr | 18.0°C | 8.0°C | 65mm | |
+| Mag | 23.0°C | 12.0°C | 60mm | |
+| Giu | 27.0°C | 16.0°C | 50mm | |
+| Lug | 30.0°C | 19.0°C | 40mm | |
+| Ago | 30.0°C | 19.0°C | 55mm | |
+| Set | 25.0°C | 15.0°C | 75mm | |
+| Ott | 20.0°C | 11.0°C | 85mm | |
+| Nov | 14.0°C | 6.0°C | 95mm | |
+| Dic | 10.0°C | 2.0°C | 70mm | |
+
 ### Firenze (43.80°N, 11.20°E, 40m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -201,20 +233,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 11.4°C | 2.8°C | 88mm | |
 
 ### Bolzano (46.50°N, 11.35°E, 262m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 6.7°C | -2.6°C | 50mm |
-| Feb | 8.6°C | -0.7°C | 51mm |
-| Mar | 12.8°C | 3.6°C | 72mm |
-| Apr | 16.6°C | 6.9°C | 96mm |
-| Mag | 21.1°C | 11.4°C | 107mm |
-| Giu | 24.9°C | 15.0°C | 94mm |
-| Lug | 27.0°C | 16.8°C | 88mm |
-| Ago | 26.7°C | 16.8°C | 93mm |
-| Set | 22.3°C | 13.2°C | 95mm |
-| Ott | 17.5°C | 9.2°C | 126mm |
-| Nov | 11.5°C | 4.3°C | 126mm |
-| Dic | 7.3°C | -1.0°C | 68mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.7°C | -2.6°C | 50mm | |
+| Feb | 8.6°C | -0.7°C | 51mm | |
+| Mar | 12.8°C | 3.6°C | 72mm | |
+| Apr | 16.6°C | 6.9°C | 96mm | |
+| Mag | 21.1°C | 11.4°C | 107mm | |
+| Giu | 24.9°C | 15.0°C | 94mm | |
+| Lug | 27.0°C | 16.8°C | 88mm | |
+| Ago | 26.7°C | 16.8°C | 93mm | |
+| Set | 22.3°C | 13.2°C | 95mm | |
+| Ott | 17.5°C | 9.2°C | 126mm | |
+| Nov | 11.5°C | 4.3°C | 126mm | |
+| Dic | 7.3°C | -1.0°C | 68mm | |
 
 ### Trento (46.06°N, 11.12°E, 194m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -249,20 +281,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 8.3°C | 2.4°C | 128mm | |
 
 ### L'Aquila (42.35°N, 13.40°E, 714m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 6.7°C | -0.4°C | 71mm |
-| Feb | 7.5°C | -0.5°C | 71mm |
-| Mar | 10.9°C | 2.1°C | 89mm |
-| Apr | 14.6°C | 5.3°C | 91mm |
-| Mag | 19.0°C | 9.6°C | 80mm |
-| Giu | 23.5°C | 13.8°C | 58mm |
-| Lug | 26.5°C | 16.6°C | 44mm |
-| Ago | 27.1°C | 17.2°C | 38mm |
-| Set | 21.7°C | 12.9°C | 72mm |
-| Ott | 17.5°C | 9.3°C | 80mm |
-| Nov | 12.1°C | 4.9°C | 104mm |
-| Dic | 7.6°C | 0.9°C | 96mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.7°C | -0.4°C | 71mm | |
+| Feb | 7.5°C | -0.5°C | 71mm | |
+| Mar | 10.9°C | 2.1°C | 89mm | |
+| Apr | 14.6°C | 5.3°C | 91mm | |
+| Mag | 19.0°C | 9.6°C | 80mm | |
+| Giu | 23.5°C | 13.8°C | 58mm | |
+| Lug | 26.5°C | 16.6°C | 44mm | |
+| Ago | 27.1°C | 17.2°C | 38mm | |
+| Set | 21.7°C | 12.9°C | 72mm | |
+| Ott | 17.5°C | 9.3°C | 80mm | |
+| Nov | 12.1°C | 4.9°C | 104mm | |
+| Dic | 7.6°C | 0.9°C | 96mm | |
 
 ### Perugia (43.11°N, 12.39°E, 493m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -345,20 +377,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 12.6°C | 6.7°C | 133mm | |
 
 ### Potenza (40.64°N, 15.80°E, 819m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 8.0°C | 0.9°C | 65mm |
-| Feb | 8.6°C | 0.7°C | 62mm |
-| Mar | 11.7°C | 2.9°C | 76mm |
-| Apr | 15.1°C | 5.5°C | 73mm |
-| Mag | 19.7°C | 9.7°C | 56mm |
-| Giu | 24.6°C | 13.7°C | 40mm |
-| Lug | 27.6°C | 16.2°C | 28mm |
-| Ago | 28.0°C | 16.9°C | 26mm |
-| Set | 22.7°C | 13.3°C | 51mm |
-| Ott | 18.6°C | 10.0°C | 61mm |
-| Nov | 13.4°C | 5.8°C | 70mm |
-| Dic | 9.0°C | 2.3°C | 74mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 8.0°C | 0.9°C | 65mm | |
+| Feb | 8.6°C | 0.7°C | 62mm | |
+| Mar | 11.7°C | 2.9°C | 76mm | |
+| Apr | 15.1°C | 5.5°C | 73mm | |
+| Mag | 19.7°C | 9.7°C | 56mm | |
+| Giu | 24.6°C | 13.7°C | 40mm | |
+| Lug | 27.6°C | 16.2°C | 28mm | |
+| Ago | 28.0°C | 16.9°C | 26mm | |
+| Set | 22.7°C | 13.3°C | 51mm | |
+| Ott | 18.6°C | 10.0°C | 61mm | |
+| Nov | 13.4°C | 5.8°C | 70mm | |
+| Dic | 9.0°C | 2.3°C | 74mm | |
 
 ### Campobasso (41.56°N, 14.65°E, 701m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -409,20 +441,20 @@ end_date:   {ANNO-1}-05-20
 | Dic | 13.3°C | 6.9°C | 102mm | |
 
 ### Reggio Calabria (38.11°N, 15.66°E, 31m)
-| Mese | T max media | T min media | Precip. media |
-|------|-------------|-------------|---------------|
-| Gen | 13.0°C | 7.8°C | 151mm |
-| Feb | 13.9°C | 8.1°C | 119mm |
-| Mar | 15.0°C | 8.7°C | 171mm |
-| Apr | 18.1°C | 11.2°C | 84mm |
-| Mag | 21.8°C | 14.6°C | 85mm |
-| Giu | 26.8°C | 19.0°C | 64mm |
-| Lug | 30.1°C | 22.0°C | 39mm |
-| Ago | 29.8°C | 22.4°C | 53mm |
-| Set | 26.3°C | 19.7°C | 89mm |
-| Ott | 22.4°C | 16.5°C | 126mm |
-| Nov | 18.5°C | 13.2°C | 131mm |
-| Dic | 14.9°C | 9.9°C | 140mm |
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 13.0°C | 7.8°C | 151mm | |
+| Feb | 13.9°C | 8.1°C | 119mm | |
+| Mar | 15.0°C | 8.7°C | 171mm | |
+| Apr | 18.1°C | 11.2°C | 84mm | |
+| Mag | 21.8°C | 14.6°C | 85mm | |
+| Giu | 26.8°C | 19.0°C | 64mm | |
+| Lug | 30.1°C | 22.0°C | 39mm | |
+| Ago | 29.8°C | 22.4°C | 53mm | |
+| Set | 26.3°C | 19.7°C | 89mm | |
+| Ott | 22.4°C | 16.5°C | 126mm | |
+| Nov | 18.5°C | 13.2°C | 131mm | |
+| Dic | 14.9°C | 9.9°C | 140mm | |
 
 ### Palermo (38.12°N, 13.36°E, 14m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -504,6 +536,54 @@ end_date:   {ANNO-1}-05-20
 | Nov | 11.5°C | 4.2°C | 75mm | Nebbia in aumento |
 | Dic | 7.0°C | 0.5°C | 50mm | Nebbia frequente |
 
+### Belluno (46.14°N, 12.22°E, 390m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 4.0°C | -4.0°C | 50mm | |
+| Feb | 7.0°C | -3.0°C | 55mm | |
+| Mar | 12.0°C | 1.0°C | 75mm | |
+| Apr | 16.0°C | 5.0°C | 110mm | |
+| Mag | 21.0°C | 10.0°C | 135mm | |
+| Giu | 25.0°C | 14.0°C | 130mm | |
+| Lug | 27.0°C | 16.0°C | 110mm | |
+| Ago | 27.0°C | 16.0°C | 115mm | |
+| Set | 22.0°C | 12.0°C | 110mm | |
+| Ott | 16.0°C | 7.0°C | 130mm | |
+| Nov | 9.0°C | 1.0°C | 150mm | |
+| Dic | 4.0°C | -3.0°C | 75mm | |
+
+### Treviso (45.66°N, 12.24°E, 15m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | -1.0°C | 65mm | |
+| Feb | 9.0°C | 0.0°C | 60mm | |
+| Mar | 14.0°C | 4.0°C | 75mm | |
+| Apr | 18.0°C | 8.0°C | 90mm | |
+| Mag | 23.0°C | 13.0°C | 100mm | |
+| Giu | 27.0°C | 17.0°C | 95mm | |
+| Lug | 30.0°C | 19.0°C | 75mm | |
+| Ago | 30.0°C | 19.0°C | 85mm | |
+| Set | 25.0°C | 15.0°C | 85mm | |
+| Ott | 19.0°C | 10.0°C | 105mm | |
+| Nov | 12.0°C | 5.0°C | 120mm | |
+| Dic | 8.0°C | 0.0°C | 75mm | |
+
+### Vicenza (45.55°N, 11.55°E, 39m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | -1.0°C | 60mm | |
+| Feb | 10.0°C | 0.0°C | 55mm | |
+| Mar | 15.0°C | 4.0°C | 70mm | |
+| Apr | 19.0°C | 8.0°C | 90mm | |
+| Mag | 24.0°C | 13.0°C | 100mm | |
+| Giu | 28.0°C | 17.0°C | 90mm | |
+| Lug | 31.0°C | 19.0°C | 70mm | |
+| Ago | 30.0°C | 19.0°C | 80mm | |
+| Set | 25.0°C | 15.0°C | 80mm | |
+| Ott | 19.0°C | 10.0°C | 100mm | |
+| Nov | 12.0°C | 4.0°C | 115mm | |
+| Dic | 7.0°C | 0.0°C | 70mm | |
+
 ### Brescia (45.54°N, 10.21°E, 149m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -520,6 +600,150 @@ end_date:   {ANNO-1}-05-20
 | Nov | 11.5°C | 3.5°C | 88mm | |
 | Dic | 7.0°C | -0.5°C | 58mm | |
 
+### Como (45.81°N, 9.08°E, 201m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | 0.0°C | 70mm | |
+| Feb | 9.0°C | 1.0°C | 65mm | |
+| Mar | 14.0°C | 4.0°C | 90mm | |
+| Apr | 18.0°C | 8.0°C | 130mm | |
+| Mag | 22.0°C | 12.0°C | 150mm | |
+| Giu | 26.0°C | 16.0°C | 130mm | |
+| Lug | 29.0°C | 18.0°C | 100mm | |
+| Ago | 28.0°C | 18.0°C | 115mm | |
+| Set | 24.0°C | 14.0°C | 125mm | |
+| Ott | 18.0°C | 10.0°C | 140mm | |
+| Nov | 12.0°C | 5.0°C | 145mm | |
+| Dic | 8.0°C | 1.0°C | 80mm | |
+
+### Cremona (45.13°N, 10.02°E, 47m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -1.0°C | 55mm | |
+| Feb | 9.0°C | 0.0°C | 50mm | |
+| Mar | 14.0°C | 4.0°C | 65mm | |
+| Apr | 18.0°C | 8.0°C | 80mm | |
+| Mag | 23.0°C | 13.0°C | 85mm | |
+| Giu | 27.0°C | 17.0°C | 70mm | |
+| Lug | 30.0°C | 19.0°C | 55mm | |
+| Ago | 29.0°C | 19.0°C | 65mm | |
+| Set | 25.0°C | 15.0°C | 75mm | |
+| Ott | 19.0°C | 10.0°C | 90mm | |
+| Nov | 12.0°C | 4.0°C | 95mm | |
+| Dic | 7.0°C | 0.0°C | 65mm | |
+
+### Lecco (45.85°N, 9.39°E, 214m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | 0.0°C | 75mm | |
+| Feb | 9.0°C | 1.0°C | 70mm | |
+| Mar | 14.0°C | 4.0°C | 100mm | |
+| Apr | 18.0°C | 8.0°C | 140mm | |
+| Mag | 22.0°C | 12.0°C | 160mm | |
+| Giu | 26.0°C | 16.0°C | 140mm | |
+| Lug | 29.0°C | 18.0°C | 110mm | |
+| Ago | 28.0°C | 18.0°C | 125mm | |
+| Set | 24.0°C | 14.0°C | 135mm | |
+| Ott | 18.0°C | 10.0°C | 150mm | |
+| Nov | 12.0°C | 5.0°C | 155mm | |
+| Dic | 8.0°C | 1.0°C | 85mm | |
+
+### Lodi (45.31°N, 9.50°E, 87m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -1.0°C | 60mm | |
+| Feb | 9.0°C | 0.0°C | 55mm | |
+| Mar | 14.0°C | 4.0°C | 70mm | |
+| Apr | 18.0°C | 8.0°C | 85mm | |
+| Mag | 23.0°C | 13.0°C | 90mm | |
+| Giu | 27.0°C | 17.0°C | 75mm | |
+| Lug | 30.0°C | 19.0°C | 60mm | |
+| Ago | 29.0°C | 19.0°C | 70mm | |
+| Set | 25.0°C | 15.0°C | 80mm | |
+| Ott | 19.0°C | 10.0°C | 95mm | |
+| Nov | 12.0°C | 4.0°C | 100mm | |
+| Dic | 7.0°C | 0.0°C | 70mm | |
+
+### Mantova (45.16°N, 10.79°E, 19m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -1.0°C | 45mm | |
+| Feb | 9.0°C | 0.0°C | 45mm | |
+| Mar | 14.0°C | 4.0°C | 55mm | |
+| Apr | 19.0°C | 8.0°C | 70mm | |
+| Mag | 24.0°C | 13.0°C | 75mm | |
+| Giu | 28.0°C | 17.0°C | 65mm | |
+| Lug | 31.0°C | 19.0°C | 45mm | |
+| Ago | 30.0°C | 19.0°C | 55mm | |
+| Set | 25.0°C | 15.0°C | 60mm | |
+| Ott | 19.0°C | 10.0°C | 75mm | |
+| Nov | 12.0°C | 4.0°C | 80mm | |
+| Dic | 7.0°C | 0.0°C | 55mm | |
+
+### Monza (45.58°N, 9.27°E, 162m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -1.0°C | 65mm | |
+| Feb | 8.0°C | 0.0°C | 60mm | |
+| Mar | 13.0°C | 4.0°C | 80mm | |
+| Apr | 17.0°C | 8.0°C | 95mm | |
+| Mag | 22.0°C | 12.0°C | 105mm | |
+| Giu | 26.0°C | 16.0°C | 95mm | |
+| Lug | 29.0°C | 18.0°C | 75mm | |
+| Ago | 28.0°C | 18.0°C | 85mm | |
+| Set | 24.0°C | 14.0°C | 85mm | |
+| Ott | 18.0°C | 9.0°C | 110mm | |
+| Nov | 11.0°C | 4.0°C | 115mm | |
+| Dic | 7.0°C | 0.0°C | 75mm | |
+
+### Pavia (45.19°N, 9.15°E, 77m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -1.0°C | 60mm | |
+| Feb | 9.0°C | 0.0°C | 55mm | |
+| Mar | 14.0°C | 4.0°C | 70mm | |
+| Apr | 18.0°C | 8.0°C | 85mm | |
+| Mag | 23.0°C | 13.0°C | 90mm | |
+| Giu | 27.0°C | 17.0°C | 75mm | |
+| Lug | 30.0°C | 19.0°C | 60mm | |
+| Ago | 29.0°C | 19.0°C | 70mm | |
+| Set | 25.0°C | 15.0°C | 80mm | |
+| Ott | 19.0°C | 10.0°C | 95mm | |
+| Nov | 12.0°C | 4.0°C | 100mm | |
+| Dic | 7.0°C | 0.0°C | 70mm | |
+
+### Sondrio (46.17°N, 9.87°E, 307m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 5.0°C | -3.0°C | 45mm | |
+| Feb | 8.0°C | -1.0°C | 40mm | |
+| Mar | 13.0°C | 3.0°C | 60mm | |
+| Apr | 17.0°C | 7.0°C | 90mm | |
+| Mag | 21.0°C | 11.0°C | 110mm | |
+| Giu | 25.0°C | 15.0°C | 105mm | |
+| Lug | 27.0°C | 17.0°C | 95mm | |
+| Ago | 27.0°C | 17.0°C | 100mm | |
+| Set | 22.0°C | 13.0°C | 95mm | |
+| Ott | 16.0°C | 8.0°C | 105mm | |
+| Nov | 10.0°C | 2.0°C | 110mm | |
+| Dic | 5.0°C | -2.0°C | 60mm | |
+
+### Varese (45.82°N, 8.82°E, 382m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | 0.0°C | 75mm | |
+| Feb | 9.0°C | 1.0°C | 70mm | |
+| Mar | 13.0°C | 4.0°C | 95mm | |
+| Apr | 17.0°C | 8.0°C | 140mm | |
+| Mag | 21.0°C | 12.0°C | 160mm | |
+| Giu | 25.0°C | 16.0°C | 140mm | |
+| Lug | 28.0°C | 18.0°C | 110mm | |
+| Ago | 27.0°C | 18.0°C | 125mm | |
+| Set | 23.0°C | 14.0°C | 135mm | |
+| Ott | 17.0°C | 10.0°C | 150mm | |
+| Nov | 11.0°C | 5.0°C | 160mm | |
+| Dic | 7.0°C | 1.0°C | 90mm | |
+
 ### Ferrara (44.84°N, 11.62°E, 9m)
 | Mese | T max media | T min media | Precip. media | Note |
 |------|-------------|-------------|---------------|------|
@@ -535,6 +759,38 @@ end_date:   {ANNO-1}-05-20
 | Ott | 19.0°C | 10.2°C | 82mm | |
 | Nov | 12.0°C | 4.5°C | 78mm | Nebbia in aumento |
 | Dic | 7.2°C | 0.5°C | 52mm | Nebbia frequente |
+
+### Forlì (44.22°N, 12.04°E, 34m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 8.0°C | 0.0°C | 50mm | |
+| Feb | 10.0°C | 1.0°C | 45mm | |
+| Mar | 14.0°C | 4.0°C | 60mm | |
+| Apr | 18.0°C | 8.0°C | 65mm | |
+| Mag | 23.0°C | 12.0°C | 60mm | |
+| Giu | 27.0°C | 16.0°C | 50mm | |
+| Lug | 30.0°C | 18.0°C | 40mm | |
+| Ago | 30.0°C | 18.0°C | 55mm | |
+| Set | 25.0°C | 15.0°C | 70mm | |
+| Ott | 20.0°C | 11.0°C | 80mm | |
+| Nov | 13.0°C | 5.0°C | 90mm | |
+| Dic | 9.0°C | 1.0°C | 65mm | |
+
+### Modena (44.65°N, 10.93°E, 34m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | -1.0°C | 50mm | |
+| Feb | 10.0°C | 0.0°C | 55mm | |
+| Mar | 15.0°C | 4.0°C | 60mm | |
+| Apr | 19.0°C | 8.0°C | 75mm | |
+| Mag | 24.0°C | 13.0°C | 75mm | |
+| Giu | 28.0°C | 17.0°C | 60mm | |
+| Lug | 31.0°C | 20.0°C | 45mm | |
+| Ago | 31.0°C | 20.0°C | 50mm | |
+| Set | 26.0°C | 16.0°C | 65mm | |
+| Ott | 20.0°C | 11.0°C | 85mm | |
+| Nov | 13.0°C | 5.0°C | 95mm | |
+| Dic | 8.0°C | 0.0°C | 75mm | |
 
 ### Parma (44.80°N, 10.32°E, 55m)
 | Mese | T max media | T min media | Precip. media | Note |
@@ -567,6 +823,54 @@ end_date:   {ANNO-1}-05-20
 | Ott | 19.5°C | 12.9°C | 91mm | |
 | Nov | 14.6°C | 8.9°C | 95mm | |
 | Dic | 10.6°C | 4.2°C | 60mm | |
+
+### Piacenza (45.05°N, 9.69°E, 61m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 6.0°C | -2.0°C | 65mm | |
+| Feb | 9.0°C | -1.0°C | 60mm | |
+| Mar | 14.0°C | 3.0°C | 65mm | |
+| Apr | 18.0°C | 7.0°C | 85mm | |
+| Mag | 23.0°C | 12.0°C | 80mm | |
+| Giu | 27.0°C | 16.0°C | 65mm | |
+| Lug | 30.0°C | 18.0°C | 45mm | |
+| Ago | 30.0°C | 18.0°C | 55mm | |
+| Set | 25.0°C | 14.0°C | 75mm | |
+| Ott | 19.0°C | 10.0°C | 100mm | |
+| Nov | 12.0°C | 4.0°C | 110mm | |
+| Dic | 7.0°C | -1.0°C | 75mm | |
+
+### Ravenna (44.42°N, 12.20°E, 4m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 8.0°C | 0.0°C | 45mm | |
+| Feb | 10.0°C | 1.0°C | 40mm | |
+| Mar | 14.0°C | 4.0°C | 50mm | |
+| Apr | 18.0°C | 8.0°C | 55mm | |
+| Mag | 23.0°C | 12.0°C | 55mm | |
+| Giu | 27.0°C | 16.0°C | 50mm | |
+| Lug | 30.0°C | 18.0°C | 40mm | |
+| Ago | 30.0°C | 18.0°C | 60mm | |
+| Set | 25.0°C | 15.0°C | 70mm | |
+| Ott | 20.0°C | 11.0°C | 75mm | |
+| Nov | 13.0°C | 5.0°C | 85mm | |
+| Dic | 9.0°C | 1.0°C | 60mm | |
+
+### Reggio Emilia (44.70°N, 10.63°E, 58m)
+| Mese | T max media | T min media | Precip. media | Note |
+|------|-------------|-------------|---------------|------|
+| Gen | 7.0°C | -1.0°C | 55mm | |
+| Feb | 10.0°C | 0.0°C | 55mm | |
+| Mar | 15.0°C | 4.0°C | 65mm | |
+| Apr | 19.0°C | 8.0°C | 80mm | |
+| Mag | 24.0°C | 13.0°C | 75mm | |
+| Giu | 28.0°C | 17.0°C | 60mm | |
+| Lug | 31.0°C | 20.0°C | 45mm | |
+| Ago | 31.0°C | 20.0°C | 50mm | |
+| Set | 26.0°C | 16.0°C | 65mm | |
+| Ott | 20.0°C | 11.0°C | 85mm | |
+| Nov | 13.0°C | 5.0°C | 95mm | |
+| Dic | 8.0°C | 0.0°C | 70mm | |
 
 ### Livorno (43.55°N, 10.31°E, 3m)
 | Mese | T max media | T min media | Precip. media | Note |

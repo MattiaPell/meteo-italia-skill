@@ -23,6 +23,7 @@ indipendente dalla sola distanza temporale.
 | **Neve in pianura** | Alta | Media | Bassa | Molto bassa | No |
 | **Grandine** | Media | Bassa | Molto bassa | No | No |
 | **Alluvione (eventi estremi)** | Alta | Buona | Media | Bassa | No |
+| **Acqua Alta (Venezia)** | Alta | Buona | Media | Bassa | No |
 | **Siccità / assenza pioggia** | Alta | Alta | Alta | Buona | Media |
 
 ---
