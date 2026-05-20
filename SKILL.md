@@ -10,7 +10,7 @@ description: >
   Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
   "maestrale", "bora", "scirocco", "tramontana", "libeccio", "levante", "ostro",
   "ponente", "grecale", "garbino", "ponentino", "maccaja", "caligo", "lupa di mare",
-  "cuscino freddo", "inversione termica",
+  "breva", "tivano", "cuscino freddo", "inversione termica",
   "gelicidio", "pioggia congelantesi",
   "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
   "ciclismo", "bici", "bicicletta", "uscita in bici",
@@ -596,7 +596,7 @@ Consensus: {media}°C ±{σ}°C | Anomalia: {+/-X}°C vs norma
 
 ### Vento
 Sostenuto: {X} km/h da {DIR} | Raffiche: {max} km/h
-{flag: FOEHN / BORA / TRAMONTANA / SCIROCCO / LIBECCIO / MAESTRALE / GARBINO / PONENTINO / GRECALE}
+{flag: FOEHN / BORA / TRAMONTANA / SCIROCCO / LIBECCIO / MAESTRALE / GARBINO / PONENTINO / GRECALE / BREVA / TIVANO}
 
 ### ☀️ UV Index (Step F)
 Picco: {X} ({Basso/Moderato/Alto/Molto alto/Estremo}) alle {HH}:00

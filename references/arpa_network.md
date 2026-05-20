@@ -228,6 +228,7 @@ https://mappe.protezionecivile.gov.it/
 | Città | ARPA | Stazione principale | ICAO/WMO |
 |-------|------|---------------------|----------|
 | Milano | ARPA Lombardia | Milano Linate / Brera | LIML / 16080 |
+| Lecco | ARPA Lombardia | Lecco (Via Amendola/Sora) | — / — |
 | Torino | ARPA Piemonte | Torino Caselle | LIMF / 16059 |
 | Venezia | ARPAV | Venezia Tessera / Lido | LIPZ / 16105 |
 | Rovigo | ARPAV | Rovigo città | — / 16116 |
