@@ -22,10 +22,10 @@ Guida per l'analisi dei fenomeni d'alta quota e del rischio valanghe in Italia.
 
 | Tipo | Condizioni | Descrizione |
 |---|---|---|
-| **Farinosa** | T < -2°C, vento < 15 km/h | Neve fresca, leggera, ideale per sci fuori pista |
-| **Crostosa** | Ciclo gelo/disgelo o vento forte | Crosta superficiale che regge o meno lo sci |
-| **Pesante** | T ≈ 0°C, umidità alta | Neve bagnata, faticosa da sciare, rischio valanghe a debole coesione |
-| **Marcia** | T > 5°C per ore (pomeriggio) | Neve satura d'acqua, "pappa", tipica primaverile |
+| **Farinosa** | `snowfall` > 0, T < -3°C, Vento < 15 km/h | Neve fresca, leggera, ideale per sci fuori pista |
+| **Crostosa** | Ciclo gelo/disgelo (+/-0°C) o Vento > 25 km/h | Crosta superficiale che regge o meno lo sci |
+| **Pesante** | T ≈ 0°C, UR > 80% (Umidità alta) | Neve bagnata, faticosa da sciare, rischio valanghe a debole coesione |
+| **Marcia** | T > 5°C per 3+ ore | Neve satura d'acqua, "pappa", tipica primaverile |
 
 ### 🛠️ Matrice di Rilevamento Snow Quality (Intelligence)
 
