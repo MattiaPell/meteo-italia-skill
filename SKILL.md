@@ -406,11 +406,16 @@ Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `
 
 Segnala sempre il tipo di evento riconosciuto e la sua affidabilità contestuale.
 
-#### 4c. Confronto con climatologia
+#### 4c. Confronto con climatologia e Raffinamenti (Accuracy+)
 Vedi `references/climatology.md` per valori di riferimento e classificazione anomalie.
 - "T max prevista: 28°C | media storica 15 maggio: 22°C → **+6°C anomalia positiva**"
 - "Precipitazioni attese: 25mm | media maggio: 65mm/mese → **evento sopra norma**"
 - Usa σ climatologica per classificare: dentro norma (±1σ), anomalo (1-2σ), estremo (>2σ)
+
+**Raffinamenti di Accuratezza obbligatori:**
+1.  **Quota Neve (Snow-Line)**: Non usare solo lo Zero Termico. Applica i correttivi per intensità e orografia (valli strette) definiti in `references/mountain.md#raffinamento-quota-neve`.
+2.  **Isola di Calore Urbana (UHI)**: Se il target è una grande città (MI, RM, NA, TO, BO, FI), correggi le temperature minime notturne in condizioni di cielo sereno e vento calmo (vedi `references/model_bias.md#uhi`).
+3.  **Rischio Mareggiata (Traversia)**: Se il target è costiero, verifica se vento/onde colpiscono perpendicolarmente la costa (Traversia) usando la matrice in `references/uv_marine_recent.md#traversia`.
 
 #### 4d. Confronto forecast vs osservato (se dati ARPA disponibili)
 - "Stazione di {NOME}: T attuale {X}°C, ICON D2 prevedeva {Y}°C → scarto {Z}°C"

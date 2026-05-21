@@ -84,6 +84,29 @@ Usa questa tabella per correggere/pesare i forecast quando un modello è outlier
 
 ---
 
+## 🏙️ Isola di Calore Urbana (Urban Heat Island - UHI)
+
+I modelli numerici (NWP) con risoluzione > 2km spesso non catturano l'effetto di accumulo termico delle aree urbane cementificate, specialmente durante la notte.
+
+### Matrice di Correzione UHI per Grandi Città
+
+| Città | Delta T Max (Giorno) | Delta T Min (Notte) | Note |
+| :--- | :--- | :--- | :--- |
+| **Milano** (Area Urbana) | +0.5°C | **+2.0°C / +3.0°C** | Massimo effetto in estate con calma di vento |
+| **Roma** (Centro Storico) | +1.0°C | **+1.5°C / +2.5°C** | Effetto mitigato dal Ponentino in periferia |
+| **Torino** | +0.5°C | **+2.0°C** | Ristagno termico in inverno e estate |
+| **Napoli** | +0.5°C | **+1.5°C** | Effetto mitigato dalla brezza di mare |
+| **Bologna** | +1.0°C | **+2.0°C** | Particolarmente intenso in estate |
+| **Firenze** | +1.0°C | **+2.5°C** | Effetto conca amplifica l'accumulo |
+
+### ⚠️ Logica di Applicazione Correzione Urbana
+1.  **Check Località**: Se il punto target è in area densamente urbanizzata (Capoluoghi di Provincia).
+2.  **Check Condizioni**: L'UHI è massimo con **Cielo Sereno** (`cloud_cover` < 20%) e **Vento Calmo** (< 5 km/h).
+3.  **Aggiunta Termica**: Se le condizioni (2) sono vere, aggiungi il **Delta T Min** alle previsioni di temperatura minima notturna del modello.
+4.  **Soglia Notti Tropicali**: Se `T_min_NWP = 18°C`, con correzione UHI (+2°C) diventa **20°C** (Notte Tropicale confermata).
+
+---
+
 ## Regole Generali per Interpretare gli Outlier
 
 1. **Un modello solo è outlier >1.5σ** → probabilmente rumore; peso ridotto ma non ignorare
