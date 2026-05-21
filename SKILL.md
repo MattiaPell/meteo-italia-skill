@@ -385,11 +385,12 @@ Vedi `references/satellite.md` per canali SEVIRI, guida interpretazione pattern,
 
 ### 4. Analisi Comparativa
 
-#### 4a. Consensus modelli numerici
-- Per ogni variabile e slot orario: media, min, max, σ tra i modelli
-- **Outlier**: modelli che scostano >1.5σ → segnala e applica bias noto (vedi `references/model_bias.md`)
-- **Scenari probabilistici**: "X/Y modelli prevedono precipitazioni >5mm"
-- Usa pesi ponderati da `references/italy_zones.md` e dettagli modelli da `references/models.md`
+#### 4a. Consensus modelli numerici (Massima Accuratezza)
+- Per ogni variabile e slot orario: media, min, max, σ tra i modelli.
+- **Dynamic Weighting**: Applica i correttivi di peso basati sullo scenario meteo (Temporali, Fronti, Nebbia, Venti) come definito in `references/italy_zones.md#pesatura-dinamica`.
+- **Outlier**: modelli che scostano >1.5σ → segnala e applica bias noto (vedi `references/model_bias.md`).
+- **Scenari probabilistici**: "X/Y modelli prevedono precipitazioni >5mm".
+- Usa pesi ponderati da `references/italy_zones.md` e dettagli modelli da `references/models.md`.
 
 #### 4b. Affidabilità contestuale per evento
 Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `references/event_reliability.md`:
@@ -430,12 +431,15 @@ Quando il fetch J è attivo:
    - Spread alto + divergenza → solo tendenze generali affidabili
 5. Includi sempre scenario p10, mediana e p90 nel report per eventi significativi
 
-#### 4g. Integrazione nowcasting + NWP
-Quando il nowcasting radar (Step I) o i fulmini (Step L) sono attivi, usa questa gerarchia per orizzonte:
-- **0-30 min**: usa esclusivamente radar (estrapolazione lineare)
-- **30-90 min**: radar primario + NWP come contesto
-- **90 min-6h**: NWP primario + radar per verifica situazione attuale
-- **>6h**: solo NWP
+#### 4g. Integrazione nowcasting + NWP (Blending Matrix)
+Quando il nowcasting radar (Step I) o i fulmini (Step L) sono attivi, segui rigorosamente la **Matrice di Transizione** in `references/nowcasting_radar.md#matrice-di-transizione-radar-nwp-blending`:
+- **0-15 min**: 100% Radar (Estrapolazione).
+- **15-45 min**: 80% Radar / 20% NWP.
+- **45-90 min**: 40% Radar / 60% NWP.
+- **90-150 min**: 10% Radar / 90% NWP.
+- **>150 min**: 100% NWP.
+
+Se radar e NWP divergono sullo scenario a 1-3h → applica la **Logica di correzione temporale** (delay/advance) descritta in `references/nowcasting_radar.md`.
 
 Se radar e NWP divergono sullo scenario a 1-3h → segnala esplicitamente l'incertezza.
 

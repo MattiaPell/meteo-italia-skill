@@ -214,6 +214,49 @@ https://mappe.protezionecivile.gov.it/
 
 ---
 
+## 📡 Automated Fetch & Bias Calculation
+
+Per un'analisi di massima accuratezza, l'agente può tentare di recuperare i dati osservati real-time via API per calcolare il bias locale (Osservato vs Previsto).
+
+### ARPAV (Veneto) — REST API
+```http
+# Ultimi dati orari di una stazione (es. Verona)
+GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=temperatura&periodo=ultimo-giorno
+```
+*ID comuni: Verona (135), Padova (113), Venezia (123).*
+
+### ARPA FVG (Friuli-Venezia Giulia) — JSON
+```http
+# Dati correnti di tutte le stazioni
+GET https://www.meteo.fvg.it/api/v1/stazioni/misure/latest.json
+```
+
+### Meteotrentino (Trento) — JSON
+```http
+# Lista stazioni e dati correnti
+GET https://www.meteotrentino.it/link/opendata/stazioni.json
+```
+
+### APPA Bolzano (Alto Adige) — REST
+```http
+# Dati correnti di una stazione (es. Bolzano ID 80)
+GET https://weather.provinz.bz.it/api/v1/HttpService/getWeatherStationMeasuredData?stationId={ID}
+```
+
+### ARPA Lombardia — Socrata/CKAN
+```http
+# Query su portale Open Data (es. Temperatura stazioni ultime 24h)
+GET https://www.dati.lombardia.it/resource/647i-s8de.json?$order=data%20desc&$limit=50
+```
+
+### ⚠️ Logica di Calcolo Bias
+1.  **Fetch**: Recupera `T_osservata` dell'ultima ora disponibile dalla stazione ARPA.
+2.  **Match**: Prendi `T_prevista` dallo Step A (Open-Meteo) per la stessa ora e coordinata.
+3.  **Bias**: `Delta = T_osservata - T_prevista`.
+4.  **Correzione**: Se `Delta` > 1.5°C persistente, applica lo scostamento alla previsione per le prossime 6 ore.
+
+---
+
 ## Strategia Fallback (se API non raggiungibile)
 
 1. Portali aggregatori italiani: 3bMeteo, iLMeteo, Meteo.it, Meteoblue, Ventusky

@@ -228,6 +228,32 @@ meteofrance_seamless, gfs_seamless
 
 ---
 
+## ⚖️ Pesatura Dinamica (Dynamic Weighting)
+
+Per ottenere la massima accuratezza, l'agente deve regolare i pesi base sopra elencati in base al fenomeno meteorologico predominante previsto.
+
+### 1. Scenario: Temporali e Convezione Estiva
+*Trigger: CAPE > 500 J/kg o weather_code 80-99.*
+*   **Aumenta peso (+0.3)**: `icon_d2`, `arome_france`, `italia_meteo_arpae_icon_2i`. Questi modelli risolvono meglio la convezione profonda.
+*   **Diminuisce peso (-0.2)**: `gfs_seamless`, `ecmwf_ifs` (solo per localizzazione esatta del temporale).
+
+### 2. Scenario: Fronti Atlantici e Piogge Cicloniche
+*Trigger: Vasta area di pioggia, calo pressione MSL, vento sinottico.*
+*   **Aumenta peso (+0.3)**: `ecmwf_ifs`, `arpege_europe`. Eccellono nella tempistica del passaggio del fronte.
+*   **Diminuisce peso (-0.1)**: Modelli a risoluzione troppo spinta (possono generare "rumore" locale).
+
+### 3. Scenario: Nebbia e Inversioni Termiche (Cuscino Freddo)
+*Trigger: Alta pressione invernale, vento < 5 km/h, UR > 90%.*
+*   **Aumenta peso (+0.4)**: `italia_meteo_arpae_icon_2i`. È il modello più calibrato per la microfisica della nebbia in Val Padana.
+*   **Diminuisce peso (-0.3)**: `gfs_seamless` (spesso dissipa la nebbia troppo presto).
+
+### 4. Scenario: Venti Locali e Orografia (Bora, Foehn, Tramontana)
+*Trigger: Forti gradienti pressori orografici.*
+*   **Aumenta peso (+0.3)**: `icon_d2`, `meteoswiss_icon_seamless` (Alpi), `italia_meteo_arpae_icon_2i`.
+*   **Diminuisce peso (-0.2)**: `ecmwf_ifs`, `gfs_seamless` (sottostimano le raffiche nelle valli strette).
+
+---
+
 ## Riferimenti Incrociati
 
 - Fenomeni locali dettagliati → `local_phenomena.md`
