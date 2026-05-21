@@ -100,10 +100,10 @@ GET https://api.open-meteo.com/v1/forecast
 ```
 
 **Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,soil_temperature_0cm,soil_moisture_0_to_1cm,temperature_925hPa`
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,soil_temperature_0cm,soil_moisture_0_to_1cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_500hPa`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
 - **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,et0_fao_evapotranspiration`
-- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `convective_inhibition,wet_bulb_temperature_2m,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_700hPa,geopotential_height_500hPa`
+- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `convective_inhibition,wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_700hPa`
 
 **Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
 
@@ -655,6 +655,7 @@ Concordanza ensemble–deterministico: {Alta/Media/Bassa}
 Scenario p10 (ottimistico): {descrizione breve}
 Scenario p90 (pessimistico): {descrizione breve}
 
+
 ### 💨 Qualità dell'Aria (Step H)
 AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
@@ -712,7 +713,7 @@ Fonte previsioni: Open-Meteo (CC BY 4.0) | Modelli: {lista}
 Osservazioni: {ARPA regionale} | METAR: CheckWX / aviationweather.gov
 Allerte: Protezione Civile Italiana | Radar: DPC (CC-BY-SA)
 Climatologia: ERA5 (media {N} anni) | Pollini: AIA
-Idrologia: floods.it (Trentino) | Satellite: EUMETSAT
+Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 ```
 
 ---

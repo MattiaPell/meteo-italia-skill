@@ -51,14 +51,14 @@ GET https://ensemble-api.open-meteo.com/v1/ensemble
 | `ecmwf_ifs025_ensemble_mean` | 51 | 15 | 25 km | ★★★★★ |
 | `ecmwf_aifs025_ensemble_mean` | 50 | 15 | 25 km | ★★★★ |
 | `icon_seamless_ensemble_mean` | 40 | 7.5 | 13 km | ★★★★★ |
-| `icon_eu_ensemble_mean` | 40 | 5 | 7 km | ★★★★★ |
+ | `icon_eu_ensemble_mean` | 40 | 5 | 7 km | ★★★★★ |
 | `gfs025_ensemble_mean` | 31 | 16 | 25 km | ★★★ |
 | `gem_global` | 21 | 16 | 25 km | ★★★ |
 | `bom_access_global_ensemble_mean` | 18 | 10 | 25 km | ★★ |
 
 **Set raccomandato per Italia** (bilanciamento qualità/velocità):
 ```
-ecmwf_ifs025_ensemble_mean, icon_eu_ensemble_mean, gfs025_ensemble_mean
+ecmwf_ifs025_ensemble_mean, icon_seamless_ensemble_mean, gfs025_ensemble_mean
 ```
 
 ---
@@ -300,7 +300,7 @@ Probabilità >70 km/h: {P}%
 **Scenario migliore (p10):** {descrizione}
 **Scenario più probabile (mediana):** {descrizione}
 
-Fonte: ECMWF ENS (51 membri) + ICON EPS EU (40 membri) + GFS ENS (31 membri)
+Fonte: ECMWF ENS (51 membri) + ICON Seamless ENS (40 membri) + GFS ENS (31 membri)
 ```
 
 ---

@@ -16,10 +16,10 @@ Valle d'Aosta, Piemonte nord (Torino, Cuneo), Lombardia nord (Lecco, Como, Vares
 Alto Adige (valle dell'Adige), Veneto alpino (Belluno)
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
-- Vento da N/NNE >30 km/h sulle stazioni alpine
-- T in aumento rapido (+5-10°C in poche ore) sul versante meridionale
-- UR <25% (spesso <15%)
-- Pressione in calo a nord delle Alpi, in aumento a sud
+- Vento da N/NNE >30 km/h sulle stazioni alpine (`wind_speed_10m`)
+- T in aumento rapido (+5-10°C in poche ore) sul versante meridionale (`temperature_2m`)
+- UR <25% (spesso <15%) (`relative_humidity_2m`)
+- Pressione in calo a nord delle Alpi, in aumento a sud (`pressure_msl`)
 - `weather_code` = 0 (cielo sereno) sul versante padano mentre piove sulle Alpi
 - **Gradiente di Geopotenziale**: differenza `geopotential_height_850hPa` Nord vs Sud Alpi > 30-50m
 - **Synoptic Check**: calo `geopotential_height_500hPa` a Nord (ingresso saccatura) e aumento a Sud
@@ -436,7 +436,7 @@ Forlì-Cesena (pianura), Foggia (Tavoliere), bassa veronese
 - UR >92% alle ore 21-06
 - Vento <5 km/h
 - T prossima al punto di rugiada (T - Tdew <2°C)
-- **Inversione termica bassa**: T(2m) < T(925hPa) → indica ristagno d'aria e nebbia al suolo
+- **Inversione termica bassa**: `temperature_2m` < `temperature_925hPa` → indica ristagno d'aria e nebbia al suolo
 - **Umidità al suolo**: `soil_moisture_0_to_1cm` > 0.30 (suolo bagnato favorisce nebbia)
 - **Cloud cover low**: `cloud_cover_low` >75% (presenza di strati o nebbia persistente)
 - `cloud_cover` <10% (cielo sereno → irraggiamento notturno in formazione)
@@ -474,8 +474,8 @@ Padana, tipicamente in estate. Può portare grandine grossa (>5cm), vento a raff
 - CAPE >800 J/kg (significativo), >1500 J/kg (alto), >2500 J/kg (molto alto)
 - **CIN (Convective Inhibition)**: < 50 J/kg (assenza di "tappo" che impedisce la convezione)
 - `lifted_index` < -3 (instabilità elevata), < -6 (estrema)
-- **Wind shear Verticale**: differenza vento 10m vs 500hPa > 70 km/h (stima da `wind_speed_500hPa`)
-- Wind shear in quota (differenza vento 850hPa vs 500hPa >55 km/h → MCS organizzato)
+- **Wind shear Verticale**: Delta `wind_speed_500hPa` vs `wind_speed_10m` > 70 km/h
+- Wind shear in quota (Delta `wind_speed_500hPa` vs `wind_speed_850hPa` > 55 km/h → MCS organizzato)
 - `weather_code` 95-99 previsto
 - Zone: Pianura Padana, Prealpi lombardo-venete, Emilia occidentale
 
@@ -558,9 +558,9 @@ Liguria (soprattutto centro-levante: Genova, Chiavari, Spezia), Toscana (costa e
 ### Segnali nei dati (flag se presenti ≥3 di questi)
 - **Convergenza al suolo** marcata (es. Tramontana fredda vs Scirocco caldo/umido nel Golfo di Genova)
 - **Moisture Flux Proxy**: prodotto `relative_humidity_925hPa` × `wind_speed_925hPa` > 2000 (indica alimentazione umida intensa e veloce)
-- **CAPE** >1000-1500 J/kg persistente nell'area di alimentazione
-- **CIN**: < 50 J/kg (facilità di innesco dei nuclei temporaleschi)
-- **Vento a 500hPa** forte (>75-90 km/h) che "stira" l'incudine del temporale creando la forma a V
+- **CAPE** >1000-1500 J/kg (`cape`) persistente nell'area di alimentazione
+- **CIN**: < 50 J/kg (`convective_inhibition`) (facilità di innesco dei nuclei temporaleschi)
+- **Vento a 500hPa** forte (`wind_speed_500hPa` >75-90 km/h) che "stira" l'incudine del temporale creando la forma a V
 - **Stazionarietà**: linea di convergenza che non si sposta per 3+ ore
 - **Precipitazioni concentrate**: modelli ad alta risoluzione (ICON D2, AROME) che prevedono >100mm in 3-6h su una fascia stretta
 
@@ -585,8 +585,8 @@ Strato di aria fredda e densa che ristagna nei bassi strati della Pianura Padana
 Intera Pianura Padana (specie Piemonte, Lombardia, Emilia occidentale, Veneto), conche di Toscana (Valdarno, piana di Lucca), Umbria (conca Ternana).
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
-- **Inversione termica**: T(2m) < T(925hPa) o T(2m) < T(850hPa)
-- **Intensità inversione**: Delta T (T925hPa - T2m) > 5°C → **Inversione forte/persistente**
+- **Inversione termica**: `temperature_2m` < `temperature_925hPa` o `temperature_2m` < `temperature_850hPa`
+- **Intensità inversione**: Delta T (`temperature_925hPa` - `temperature_2m`) > 5°C → **Inversione forte/persistente**
 - **Profilo di Geopotenziale**: `geopotential_height_1000hPa` > quota stazione + `geopotential_height_925hPa` basso (indica compressione dell'aria fredda nei primi 500-800m)
 - **Sotto-raffreddamento al suolo**: `soil_temperature_0cm` < `temperature_2m`
 - **Stagione**: Inverno (novembre–febbraio)
@@ -623,7 +623,7 @@ Appennino settentrionale (versante padano), valli appenniniche, Pianura Padana (
 - **Weather code / Precipitazione**: `weather_code` 66 (Slight freezing rain / debole) o 67 (Heavy freezing rain / forte)
 - **T superficie**: `soil_temperature_0cm` < 0°C (fondamentale per il congelamento istantaneo)
 - **T aria**: `temperature_2m` < 0°C (solitamente tra -1°C e -5°C)
-- **T quota / Sovrascorrimento caldo**: `temperature_850hPa` > 0°C (strato di fusione) o quota zero termico > 1500m
+- **T quota / Sovrascorrimento caldo**: `temperature_850hPa` > 0°C (strato di fusione) o `freezing_level_height` > 1500m
 - **Wind shear**: vento da S/SW (`wind_direction_850hPa` 150–250°) in quota sopra cuscino freddo
 - **Precipitazioni**: pioggia prevista dai modelli numerici
 - **Macroarea**: Nord-Ovest, Nord-Est, Centro-Nord
@@ -652,8 +652,8 @@ Nebbia da avvezione che si forma sul mare e invade la costa. Si origina in prima
 ### Stagione: Marzo–Maggio (picco Aprile)
 
 ### Segnali nei dati (flag se ≥3)
-- **SST < T(2m)**: Temperatura mare (Step 3F) inferiore alla temperatura aria di almeno 2-4°C
-- **UR(2m) >90%** sulla costa
+- **SST < T(2m)**: `sea_surface_temperature` inferiore alla `temperature_2m` di almeno 2-4°C
+- **UR(2m) >90%** (`relative_humidity_2m`) sulla costa
 - **Vento debole**: brezza di mare leggera (<10-15 km/h) che "spinge" la nebbia verso terra
 - **Stagione**: Primavera (Marzo-Maggio)
 - **Cloud cover**: bassa o nulla (cielo sereno sopra la nebbia)
@@ -678,8 +678,8 @@ Fenomeno tipico della Liguria e del Golfo di Genova caratterizzato da nubi basse
 Liguria (settore centro-occidentale), occasionalmente Toscana costiera e Versilia.
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
-- **SST < T(2m)**: Temperatura mare inferiore alla temperatura aria (anche con scarto ridotto)
-- **UR(2m) > 85-90%** sulla costa
+- **SST < T(2m)**: `sea_surface_temperature` inferiore alla `temperature_2m` (anche con scarto ridotto)
+- **UR(2m) > 85-90%** (`relative_humidity_2m`) sulla costa
 - **Vento da S/SE/SW**: Bassa intensità (<15-20 km/h)
 - **Stagione**: Primavera e Autunno
 - **Cloud cover low**: `cloud_cover_low` >75% (nubi basse/nebbia) mentre nell'entroterra è sereno
@@ -704,7 +704,7 @@ Vento gelido proveniente dalle steppe siberiane che porta ondate di freddo estre
 Tutta Italia, con picchi di freddo e neve su versante Adriatico e Nord.
 
 ### Segnali nei dati (flag se presenti TUTTI i seguenti)
-- **T 850hPa < -10/-12°C**
+- **T 850hPa < -10/-12°C** (`temperature_850hPa`)
 - **Vento da E/NE**: Costante e sostenuto
 - **UR in calo**: Aria continentale molto secca originariamente, ma si carica di umidità sull'Adriatico (vedi ASE)
 - **Stagione**: Inverno (Gennaio-Marzo)
@@ -728,7 +728,7 @@ Fenomeno simile al "Lake-Effect Snow" nordamericano. Si verifica quando aria gel
 Marche (soprattutto centro-sud: Ancona, Macerata, Fermo, Ascoli), Abruzzo (Teramo, Pescara, Chieti), Molise, Puglia (Gargano, Barese). Talvolta raggiunge la Romagna.
 
 ### Segnali nei dati (flag se presenti ≥3 di questi)
-- **Delta T (SST - T850hPa) > 13-15°C**: Differenza marcata tra temperatura del mare (Step 3F) e aria a 850hPa.
+- **Delta T (SST - T850hPa) > 13-15°C**: Differenza marcata tra temperatura del mare (`sea_surface_temperature`) e `temperature_850hPa`.
 - **Vento da NE/ENE**: Direzione tra 30° e 80° (`wind_direction_850hPa`) con fetch lungo sul mare.
 - **Umidità in aumento**: `relative_humidity_850hPa` > 70% in prossimità della costa adriatica.
 - **T suolo**: `temperature_2m` prossima o inferiore a 0°C (per neve al piano).
@@ -879,20 +879,20 @@ Colonna d'aria in rotazione (vortice) che si forma sopra il mare e si estende da
 - **Laghi prealpini**: Garda, Maggiore, Como (trombe lacustri, meno frequenti)
 
 ### Segnali nei dati — Tipo Tornadico (flag se ≥4 di questi)
-- **CAPE**: >1000 J/kg (instabilità convettiva significativa)
-- **Lifted Index**: < -6 (instabilità elevata)
-- **Low-level Shear**: differenza vento 925hPa vs 10m > 30 km/h
-- **Deep-layer Shear**: differenza vento 500hPa vs 10m > 60 km/h
-- **Wind shear 0-3km**: differenza vento 850hPa vs 10m >40 km/h (stima da `wind_speed_850hPa` e `wind_speed_10m`)
-- **SST (Sea Surface Temperature)**: >20°C (mare caldo, energia per convezione)
+- **CAPE**: >1000 J/kg (`cape`) (instabilità convettiva significativa)
+- **Lifted Index**: < -6 (`lifted_index`) (instabilità elevata)
+- **Low-level Shear**: Delta `wind_speed_925hPa` vs `wind_speed_10m` > 30 km/h
+- **Deep-layer Shear**: Delta `wind_speed_500hPa` vs `wind_speed_10m` > 60 km/h
+- **Wind shear 0-3km**: Delta `wind_speed_850hPa` vs `wind_speed_10m` > 40 km/h
+- **SST (Sea Surface Temperature)**: >20°C (`sea_surface_temperature`) (mare caldo, energia per convezione)
 - **T aria - SST**: differenza <3°C (aria più fredda sopra mare caldo → forte instabilità superficiale)
 - **UR bassa quota**: `relative_humidity_2m` >80% (umidità per alimentazione convettiva)
 - **Fulmini (Step L)**: attività elettrica in area costiera/marina
 - **Radar VIL (Step I)**: >15 kg/m² (cella convettiva organizzata)
 
 ### Segnali nei dati — Tipo Fair-Weather (flag se ≥3 di questi)
-- **CAPE**: <500 J/kg (instabilità moderata)
-- **SST**: >22°C (mare molto caldo)
+- **CAPE**: <500 J/kg (`cape`) (instabilità moderata)
+- **SST**: >22°C (`sea_surface_temperature`) (mare molto caldo)
 - **T aria - SST**: differenza 2-5°C
 - **Vento debole**: `wind_speed_10m` <15 km/h (condizioni di bel tempo)
 - **Nuvole**: `cloud_cover` 30-60% (cumuli isolati, non temporali organizzati)
@@ -931,14 +931,14 @@ Colonna d'aria in rotazione violenta che si estende dalla base di un cumulonembo
 - **Sicilia orientale**: Catania, Messinese
 
 ### Segnali nei dati (flag se ≥5 di questi)
-- **CAPE**: >1500 J/kg (forte instabilità)
-- **Lifted Index**: < -8 (instabilità estrema)
-- **Low-level Shear (0-1km)**: differenza vento 925hPa vs 10m > 40 km/h
-- **Wind shear 0-3km**: differenza vento 850hPa vs 10m >55 km/h
-- **Wind shear 0-6km**: differenza vento 500hPa vs 10m >70 km/h (stima da `wind_speed_500hPa` e `wind_speed_10m`)
-- **Convective Inhibition (CIN)**: <50 J/kg (poca energia da superare per innesco)
+- **CAPE**: >1500 J/kg (`cape`) (forte instabilità)
+- **Lifted Index**: < -8 (`lifted_index`) (instabilità estrema)
+- **Low-level Shear (0-1km)**: Delta `wind_speed_925hPa` vs `wind_speed_10m` > 40 km/h
+- **Wind shear 0-3km**: Delta `wind_speed_850hPa` vs `wind_speed_10m` > 55 km/h
+- **Wind shear 0-6km**: Delta `wind_speed_500hPa` vs `wind_speed_10m` > 70 km/h
+- **Convective Inhibition (CIN)**: <50 J/kg (`convective_inhibition`) (poca energia da superare per innesco)
 - **UR bassa quota**: `relative_humidity_2m` >70% (umidità per alimentazione)
-- **Temperatura 850hPa**: >10°C (aria calda in quota, capping inversion debole)
+- **Temperatura 850hPa**: `temperature_850hPa` >10°C (aria calda in quota, capping inversion debole)
 - **Fulmini (Step L)**: >10/15min in area → attività convettiva intensa
 - **Radar VIL (Step I)**: >25 kg/m² → grandine probabile, cella severa
 

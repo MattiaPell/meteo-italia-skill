@@ -61,7 +61,9 @@ Monitoraggio a cura del **Centro Funzionale Regione Lazio**.
 
 ---
 
-## 📡 API Real-time: floods.it (Trentino-Alto Adige)
+## 📡 Rete di Monitoraggio Real-time — Nord-Est
+
+### 1. floods.it (Trentino-Alto Adige)
 
 **Copertura**: bacini Adige, Brenta, Sarca, Chiese.
 
@@ -99,6 +101,19 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 | ADIGE_ROVERETO | Adige | Rovereto | Adige | 2.80 | 3.80 |
 | BRENTA_BASSANO | Brenta | Bassano del Grappa | Brenta | 3.50 | 4.50 |
 | SARCA_ARCO | Sarca | Arco | Sarca | 2.00 | 3.00 |
+
+### 2. ARPAV (Regione Veneto)
+**Copertura**: bacini Adige, Brenta, Po (Delta), Bacchiglione.
+
+| ID Stazione | Fiume | Località | Soglia 1 (m) | Soglia 2 (m) | Soglia 3 (m) |
+|-------------|-------|----------|--------------|--------------|--------------|
+| **124** | Adige | Verona (Pte Nuovo) | 1.00 m | 1.50 m | 2.00 m |
+| **142** | Adige | Boara Pisani | 2.50 m | 3.50 m | 4.50 m |
+| **105** | Brenta | Bassano (Barzizza) | 1.50 m | 2.50 m | 3.50 m |
+| **108** | Bacchiglione | Vicenza (Ponte degli Angeli) | 4.50 m | 5.50 m | 6.00 m |
+| **132** | Po | Ariano (Delta) | 2.50 m | 3.50 m | 4.50 m |
+
+**Note ARPAV**: Le soglie ARPAV si riferiscono al livello idrometrico relativo allo zero della stazione. Per il monitoraggio in tempo reale, l'agente può consultare l'API REST `api.arpa.veneto.it/rest/v1/meteo/stazioni/{id}/dati?parametro=livello_idrometrico`.
 
 ---
 
@@ -144,6 +159,7 @@ Precipitazioni: >80mm/24h (Allerta Arancione/Rossa PC)
 | Bacino | Ente | URL |
 |--------|------|-----|
 | **Po (Intero)** | AIPO | [agenziapo.it](https://www.agenziapo.it/content/monitoraggio-idrografico-0) |
+| **Veneto** | ARPAV | [arpa.veneto.it/dati-ambientali/](https://www.arpa.veneto.it/dati-ambientali/dati-in-tempo-reale/idro) |
 | **Emilia-Romagna** | ARPAE | [allertameteo.regione.emilia-romagna.it](https://allertameteo.regione.emilia-romagna.it/livello-idrometrico) |
 | **Toscana** | CFR | [cfr.toscana.it](https://www.cfr.toscana.it/monitoraggio/stazioni.php?type=idro) |
 | **Lazio** | CFR | [regione.lazio.it](https://www.regione.lazio.it/protezione-civile) |
