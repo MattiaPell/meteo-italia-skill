@@ -45,3 +45,9 @@ Action: Always include the 925hPa level (T, RH, Geo) in the fetch for Northern m
 **Learning:** Convective indicators (CAPE, LI) and ground-level safety variables (soil_temperature_0cm, soil_moisture) are often needed for automated nowcasting triggers (Lightning, Gelicidio, Fog) before the conditional logic of specialized groups is evaluated. Moving them to the base fetch ensures detection is always available. Additionally, 925hPa wind data is essential for low-level shear analysis required for Tornado and Waterspout risk assessment in Italy.
 
 **Action:** Promoted CAPE, LI, soil_temperature_0cm, soil_moisture_0_to_1cm, and 925hPa level variables to the base hourly fetch in SKILL.md. Added triggers and shear-based logic for Tornado and Waterspout detection in references/local_phenomena.md.
+
+## 2025-05-25 — [Operational] Multi-Level Upper-Air Promotion for Safety
+
+**Learning:** Automated detection of complex hazards like Foehn, Gelicidio, and V-Shaped storms requires multi-level upper-air data (925, 850, 500hPa geopotential and humidity). Promoting these to the base fetch removes "detection blindness" where the agent misses a trigger because it hasn't fetched the diagnostic data. Expanded hydrological coverage to Veneto (ARPAV) is also essential for Po/Adige flood monitoring.
+
+**Action:** Promoted 14 upper-air variables (Geopotential, Wind, T, RH) for 925/850/500hPa levels to the Base fetch in SKILL.md. Updated references/local_phenomena.md with explicit variable-based triggers. Integrated ARPAV station thresholds into references/hydro_italia.md.
