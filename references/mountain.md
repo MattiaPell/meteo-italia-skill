@@ -59,10 +59,34 @@ Raffreddamento percepito sulla pelle per effetto del vento.
 
 ## 📐 Regole Empiriche e Quote
 
-### Quota Neve
-- **Zero Termico**: Quota (m slm) dove la temperatura è 0°C.
-- **Quota Neve**: In presenza di precipitazioni, la neve solitamente scende 300-400m sotto lo zero termico.
-- **Neve da Omotermia**: In valli strette e chiuse, la neve può scendere fino a 600-800m sotto lo zero termico per il raffreddamento da fusione.
+### 📐 Raffinamento Quota Neve (Snow-Line Intelligence)
+
+La determinazione dell'esatta quota neve richiede correttivi rispetto al semplice Zero Termico (Z.T.), specialmente nell'orografia complessa italiana.
+
+#### 1. Correttivo per Intensità Precipitazione (Raffreddamento da Fusione)
+La fusione della neve sottrae calore all'aria circostante, abbassando lo zero termico durante l'evento.
+
+| Intensità (mm/h o cm/h) | Correzione Quota Neve | Effetto |
+| :--- | :--- | :--- |
+| **Debole** (< 2 mm/h) | Z.T. - 200m | Quota neve standard |
+| **Moderata** (2–5 mm/h) | Z.T. - 400m | Abbassamento significativo |
+| **Forte / Nubifragio** (> 5 mm/h) | Z.T. - 600/800m | **Omotermia**: neve fino a quote collinari |
+
+#### 2. Correttivo Orografico (Effetto Valle/Conca)
+Nelle valli strette (es. Valle d'Aosta, Valtellina, valli Dolomitiche), il ristagno di aria fredda e il raffreddamento da fusione sono amplificati.
+- **Valli strette**: Sottrai ulteriori **100–200m** alla quota neve prevista.
+- **Valli aperte / Pianura**: Nessun correttivo aggiuntivo.
+
+#### 3. Correttivo per Umidità (UR)
+La neve fonde più difficilmente in aria secca.
+- **UR < 70%**: La neve può scendere fino a +1.5°C / +2.0°C (Neve "secca").
+- **UR > 90%**: La neve fonde già a +0.5°C (Neve "pesante/bagnata").
+
+#### ⚠️ Formula Nimbus per Quota Neve Prevista
+`Quota Neve = Zero_Termico_Modello - (300m + Correttivo_Intensità + Correttivo_Valle)`
+
+**Esempio**: Zero Termico a 1500m, pioggia forte prevista in una valle stretta:
+`1500 - (300 + 300 + 200) = 700m`. La neve arriverà a 700m nonostante lo Z.T. a 1500m.
 
 ### Terminologia Quote
 - **Collinare**: 200 – 600 m slm

@@ -94,21 +94,37 @@ Indica il comfort termico per la balneazione nelle coste italiane.
 | 25–27°C | Calda | Tipica del pieno agosto nel Mediterraneo |
 | >28°C | Molto calda | Possibile proliferazione algale / stress ecosistema |
 
-### 🌊 Traversia (Rischio Mareggiata Onshore)
+### 🌊 Traversia e Rischio Mareggiata (Coastal Risk Matrix)
 
-La "Traversia" è la direzione del vento e del mare che colpisce perpendicolarmente la costa, causando il massimo impatto (mareggiata).
+La "Traversia" rappresenta la direzione del vento e del moto ondoso che colpisce perpendicolarmente la linea di costa, massimizzando l'energia dell'impatto (mareggiata) e il sovralzo idraulico (storm surge).
 
-| Costa / Regione | Traversia (Dir. Critica) | Vento Principale |
-|---|---|---|
-| **Liguria (Centro-Levante)** | SW / S (200°–240°) | Libeccio |
-| **Liguria (Ponente)** | S / SE (150°–200°) | Scirocco |
-| **Toscana / Lazio** | WSW / SW (220°–260°) | Libeccio |
-| **Sardegna Occidentale** | NW / W (270°–320°) | Maestrale |
-| **Sicilia Meridionale** | S / SW (180°–230°) | Libeccio / Scirocco |
-| **Sicilia Orientale / Ionio** | E / SE (90°–140°) | Levante / Scirocco |
-| **Puglia Adriatica** | NE / E (40°–90°) | Bora / Grecale |
-| **Alto Adriatico (Venezia)** | SE / ESE (120°–160°) | Scirocco (Acqua Alta) |
-| **Marche / Abruzzo** | NE (30°–60°) | Bora / Adriatic Sea Effect |
+#### Matrice di Rischio per Settore Costiero
+
+| Settore Costiero | Area Geografica | Traversia (Gradi) | Vento Critico | Soglia Mareggiata (Wave H) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Liguria Centrale/Levante** | Genova, Chiavari, Spezia | 200° – 240° | Libeccio | > 3.0 m |
+| **Liguria Ponente** | Savona, Imperia, Sanremo | 150° – 200° | Scirocco / Mezzogiorno | > 2.5 m |
+| **Toscana Nord / Versilia** | Viareggio, Massa, Livorno | 220° – 260° | Libeccio | > 3.0 m |
+| **Toscana Sud / Lazio** | Grosseto, Civitavecchia, Ostia | 230° – 270° | Libeccio / Ponente | > 2.5 m |
+| **Campania / Calabria Tirr.** | Napoli, Salerno, Paola | 240° – 280° | Ponente / Libeccio | > 3.0 m |
+| **Sardegna Ovest** | Alghero, Oristano, Bosa | 270° – 320° | Maestrale | > 4.0 m |
+| **Sardegna Est** | Olbia, Nuoro, Costa Rei | 90° – 140° | Levante / Scirocco | > 2.5 m |
+| **Sicilia Nord** | Palermo, Cefalù, Messina | 310° – 350° | Tramontana / Maestrale | > 3.0 m |
+| **Sicilia Sud** | Agrigento, Gela, Pozzallo | 180° – 230° | Libeccio / Scirocco | > 2.5 m |
+| **Sicilia Est / Calabria Jon.** | Catania, Siracusa, Crotone | 90° – 130° | Levante / Scirocco | > 3.0 m |
+| **Puglia Adriatica / Gargano** | Vieste, Bari, Brindisi | 30° – 70° | Bora / Grecale | > 2.5 m |
+| **Puglia Salento (Jonico)** | Gallipoli, Porto Cesareo | 180° – 220° | Scirocco / Libeccio | > 2.0 m |
+| **Marche / Abruzzo / Molise** | Ancona, Pescara, Termoli | 30° – 60° | Bora / Grecale | > 3.0 m |
+| **Alto Adriatico / Romagna** | Rimini, Ravenna, Chioggia | 60° – 120° | Bora / Levante | > 2.0 m |
+| **Laguna di Venezia** | Venezia, Lido | 120° – 160° | Scirocco | > 1.5 m (Storm Surge) |
+
+#### ⚠️ Logica di Analisi Rischio Costiero
+1.  **Check Direzione**: Se `wave_direction` (Step F) o `wind_direction` (Step A) rientra nel range di Traversia ±20°.
+2.  **Check Intensità**: Se `wave_height` (Step F) supera la **Soglia Mareggiata**.
+3.  **Check Fetch**: Se il vento soffia da quella direzione per più di 6-9 ore.
+4.  **Effetto Combinato**: Se Pressione MSL < 1005 hPa, aggiungi +0.5m all'altezza onde prevista (effetto Storm Surge).
+
+**Output Report**: Se il rischio è confermato, segnalare come "Rischio Mareggiata Onshore per Traversia da {DIR}".
 
 ---
 

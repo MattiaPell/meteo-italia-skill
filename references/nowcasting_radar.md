@@ -62,10 +62,19 @@ Per stimare l'arrivo di un sistema su un punto target, confrontare gli ultimi 4 
 - **Tempo stimato di arrivo (ETA)** = Distanza attuale / Velocità media
 - *Nota*: L'estrapolazione lineare è affidabile solo per i primi 30-60 minuti.
 
-### 3. Incertezza Temporale
-- **0–30 min**: Alta affidabilità (estrapolazione radar)
-- **30–90 min**: Media affidabilità (radar + tendenza NWP)
-- **>90 min**: Bassa affidabilità (prevale il dato dei modelli numerici)
+### 3. Matrice di Transizione Radar–NWP (Blending)
+Per la massima accuratezza, non passare bruscamente da radar a modello, ma applica una pesatura progressiva:
+
+| Orizzonte (min) | Peso RADAR | Peso Modello (NWP) | Strategia Operativa |
+|---|---|---|---|
+| **0–15** | 100% | 0% | Estrapolazione pura: il radar "comanda" |
+| **15–45** | 80% | 20% | Radar primario, usa NWP solo per lo sviluppo della cella |
+| **45–90** | 40% | 60% | NWP diventa primario, radar serve per validare il trend |
+| **90–150** | 10% | 90% | Modello comanda, radar segnala solo se l'evento è in ritardo |
+| **>150** | 0% | 100% | Affidati esclusivamente ai modelli numerici |
+
+**Logica di correzione NWP via Radar:**
+Se a T+60m il radar mostra un sistema a 20km dal target, ma il modello lo prevedeva già sopra il target → applica un **ritardo temporale** di ~30-45min alle previsioni del modello per le ore successive.
 
 ---
 
