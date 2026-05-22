@@ -51,3 +51,9 @@ Action: Always include the 925hPa level (T, RH, Geo) in the fetch for Northern m
 **Learning:** Automated detection of complex hazards like Foehn, Gelicidio, and V-Shaped storms requires multi-level upper-air data (925, 850, 500hPa geopotential and humidity). Promoting these to the base fetch removes "detection blindness" where the agent misses a trigger because it hasn't fetched the diagnostic data. Expanded hydrological coverage to Veneto (ARPAV) is also essential for Po/Adige flood monitoring.
 
 **Action:** Promoted 14 upper-air variables (Geopotential, Wind, T, RH) for 925/850/500hPa levels to the Base fetch in SKILL.md. Updated references/local_phenomena.md with explicit variable-based triggers. Integrated ARPAV station thresholds into references/hydro_italia.md.
+
+2025-05-26 — [Operational] Ground-Truth & Safety-Ready Fetch Synchronization
+
+**Learning:** Advanced phenomena detection logic (V-Shaped, Foehn, Cuscino Freddo) is useless if the required upper-air and stability data are missing from the primary fetch. Furthermore, "automated bias calculation" requires actionable Station IDs for regional APIs to bridge the gap between NWP and reality.
+
+**Action:** Synchronized SKILL.md fetch with all 17+ safety/detection variables (CAPE, CIN, 925/850/500hPa). Operationalized arpa_network.md by adding sensor-level ID mappings for ARPA Lombardia and ARPAV, enabling direct ground-truth comparison for major cities. Refined hydro_italia.md with "Nimbus Hydrological Intelligence" logic.

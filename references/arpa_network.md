@@ -221,9 +221,10 @@ Per un'analisi di massima accuratezza, l'agente può tentare di recuperare i dat
 ### ARPAV (Veneto) — REST API
 ```http
 # Ultimi dati orari di una stazione (es. Verona)
-GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=temperatura&periodo=ultimo-giorno
+GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro={PARAM}&periodo=ultimo-giorno
 ```
-*ID comuni: Verona (135), Padova (113), Venezia (123).*
+*ID Comuni: Verona (135), Padova (113), Venezia-Marghera (123), Vicenza (140), Treviso (121), Belluno (104), Rovigo (118).*
+*Parametri: `temperatura`, `precipitazione`, `vento_media`, `umidita_relativa`.*
 
 ### ARPA FVG (Friuli-Venezia Giulia) — JSON
 ```http
@@ -246,8 +247,10 @@ GET https://weather.provinz.bz.it/api/v1/HttpService/getWeatherStationMeasuredDa
 ### ARPA Lombardia — Socrata/CKAN
 ```http
 # Query su portale Open Data (es. Temperatura stazioni ultime 24h)
-GET https://www.dati.lombardia.it/resource/647i-s8de.json?$order=data%20desc&$limit=50
+GET https://www.dati.lombardia.it/resource/647i-s8de.json?id_sensore={ID_SENSORE}&$order=data%20desc&$limit=24
 ```
+*ID Sensori Milano (Brera): T (642), UR (648), Pioggia (644), Vento (646).*
+*ID Sensori Brescia (V. S. Rocchino): T (666), UR (672), Pioggia (668), Vento (670).*
 
 ### ⚠️ Logica di Calcolo Bias
 1.  **Fetch**: Recupera `T_osservata` dell'ultima ora disponibile dalla stazione ARPA.
@@ -268,20 +271,21 @@ GET https://www.dati.lombardia.it/resource/647i-s8de.json?$order=data%20desc&$li
 
 ## Stazioni di Riferimento per Città Chiave
 
-| Città | ARPA | Stazione principale | ICAO/WMO |
-|-------|------|---------------------|----------|
-| Milano | ARPA Lombardia | Milano Linate / Brera | LIML / 16080 |
-| Lecco | ARPA Lombardia | Lecco (Via Amendola/Sora) | — / — |
-| Torino | ARPA Piemonte | Torino Caselle | LIMF / 16059 |
-| Venezia | ARPAV | Venezia Tessera / Lido | LIPZ / 16105 |
-| Rovigo | ARPAV | Rovigo città | — / 16116 |
-| Verona | ARPAV | Verona Villafranca | LIPX / 16090 |
-| Bologna | ARPAE | Bologna Borgo Panigale | LIPE / 16140 |
-| Ancona | ARPA Marche | Falconara / Ancona | LIPY / 16190 |
-| Perugia | ARPA Umbria | Perugia Sant'Egidio | LIRZ / 16181 |
-| Firenze | LAMMA | Firenze Peretola | LIRQ / 16170 |
-| Roma | MeteoAM | Roma Ciampino / Fiumicino | LIRA-LIRF / 16239-16242 |
-| Napoli | ARPA Campania | Napoli Capodichino | LIRN / 16289 |
-| Palermo | SIAS | Palermo Punta Raisi | LICJ / 16405 |
-| Cagliari | ARPAS | Cagliari Elmas | LIEE / 16560 |
-| Trieste | ARPA FVG | Trieste Porto / Molo F.lli Bandiera | — / 16110 |
+| Città | ARPA | Stazione principale | ICAO/WMO | Station ID (Regionale) |
+|-------|------|---------------------|----------|------------------------|
+| **Milano** | ARPA Lombardia | Milano Brera / Linate | LIML / 16080 | Brera: 642 (T) |
+| **Lecco** | ARPA Lombardia | Lecco (V. Amendola) | — / — | 601 (T) |
+| **Torino** | ARPA Piemonte | Torino Caselle | LIMF / 16059 | — |
+| **Venezia** | ARPAV | Venezia Tessera / Lido | LIPZ / 16105 | 123 (Marghera) |
+| **Rovigo** | ARPAV | Rovigo città | — / 16116 | 118 |
+| **Verona** | ARPAV | Verona Villafranca | LIPX / 16090 | 135 |
+| **Bologna** | ARPAE | Borgo Panigale | LIPE / 16140 | — |
+| **Ancona** | ARPA Marche | Falconara / Ancona | LIPY / 16190 | — |
+| **Perugia** | ARPA Umbria | Perugia S. Egidio | LIRZ / 16181 | — |
+| **Firenze** | LAMMA | Firenze Peretola | LIRQ / 16170 | — |
+| **Roma** | MeteoAM | Roma Ciampino / Fiumicino| LIRA-LIRF / 16239-16242 | — |
+| **Napoli** | ARPA Campania | Napoli Capodichino | LIRN / 16289 | — |
+| **Bari** | ARPA Puglia | Bari Palese | LIBD / 16270 | — |
+| **Palermo** | SIAS | Punta Raisi | LICJ / 16405 | — |
+| **Cagliari** | ARPAS | Cagliari Elmas | LIEE / 16560 | — |
+| **Trieste** | ARPA FVG | Trieste Porto | — / 16110 | OSMER: Trieste |
