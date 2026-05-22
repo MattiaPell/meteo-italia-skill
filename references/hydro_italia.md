@@ -143,14 +143,21 @@ Precipitazioni: >80mm/24h (Allerta Arancione/Rossa PC)
 → Rischio: Piena lampo (Flash Flood) su reticolo minore e fiumi appenninici.
 ```
 
-### Classificazione Rischio Idraulico Nimbus
+### 🌊 Nimbus Hydrological Intelligence (Blending Logic)
 
-| Livello | Descrizione | Trigger |
-|---------|-------------|---------|
-| **BASSO** 🟢 | Nessuna criticità | Livelli < Soglia 1, pioggia debole |
-| **MEDIO** 🟡 | Attenzione idraulica | Superamento Soglia 1 O pioggia intensa su suolo saturo |
-| **ALTO** 🟠 | Criticità elevata | Superamento Soglia 2 O piena prevista in transito da monte |
-| **ESTREMO** 🔴 | Pericolo alluvione | Superamento Soglia 3 O alluvione lampo in corso |
+Per una valutazione operativa del rischio alluvione, l'agente deve incrociare i dati di livello con il forecast e lo stato del suolo.
+
+| Livello Nimbus | Descrizione | Trigger Tecnico | Azione Consigliata |
+|:--- | :--- | :--- | :--- |
+| **BASSO** 🟢 | Sicuro | Livello < Soglia 1; pioggia prevista < 10mm/24h | Monitoraggio standard |
+| **MEDIO** 🟡 | Attenzione | Livello > Soglia 1 **O** pioggia > 30mm/24h su suolo saturo (`soil_moisture` > 0.35) | Allertare per possibile innalzamento |
+| **ALTO** 🟠 | Pre-Allarme | Livello > Soglia 2 **O** onda di piena in arrivo da stazione a monte | Prepararsi all'esondazione aree golenali |
+| **ESTREMO** 🔴 | Emergenza | Livello > Soglia 3 **O** pioggia estrema (> 100mm/24h) su bacini piccoli | Evacuazione aree a rischio, stop navigazione |
+
+**Logica di Corrivazione (Propagazione Piena):**
+- **Po**: Da Piacenza a Pontelagoscuro ~ 48-72 ore.
+- **Adige**: Da Trento a Verona ~ 6-10 ore.
+- **Arno**: Da Firenze a Pisa ~ 8-12 ore.
 
 ---
 
