@@ -138,21 +138,22 @@ Precipitazioni previste (Step A): >40mm/24h nel bacino a monte (Piemonte)
 
 #### Scenario 2: Suolo Saturo + Pioggia Intensa
 ```
-Soil moisture (Step A): >0.35 m³/m³
+Soil moisture superficiale (0-1cm): >0.35 m³/m³ (Rischio ruscellamento)
+Soil moisture profonda (3-9cm): >0.35 m³/m³ (Bacino saturo)
 Precipitazioni: >80mm/24h (Allerta Arancione/Rossa PC)
 → Rischio: Piena lampo (Flash Flood) su reticolo minore e fiumi appenninici.
 ```
 
 ### 🌊 Nimbus Hydrological Intelligence (Blending Logic)
 
-Per una valutazione operativa del rischio alluvione, l'agente deve incrociare i dati di livello con il forecast e lo stato del suolo.
+Per una valutazione operativa del rischio alluvione, l'agente deve incrociare i dati di livello con il forecast e lo stato del suolo a diversi livelli.
 
 | Livello Nimbus | Descrizione | Trigger Tecnico | Azione Consigliata |
 |:--- | :--- | :--- | :--- |
 | **BASSO** 🟢 | Sicuro | Livello < Soglia 1; pioggia prevista < 10mm/24h | Monitoraggio standard |
-| **MEDIO** 🟡 | Attenzione | Livello > Soglia 1 **O** pioggia > 30mm/24h su suolo saturo (`soil_moisture` > 0.35) | Allertare per possibile innalzamento |
-| **ALTO** 🟠 | Pre-Allarme | Livello > Soglia 2 **O** onda di piena in arrivo da stazione a monte | Prepararsi all'esondazione aree golenali |
-| **ESTREMO** 🔴 | Emergenza | Livello > Soglia 3 **O** pioggia estrema (> 100mm/24h) su bacini piccoli | Evacuazione aree a rischio, stop navigazione |
+| **MEDIO** 🟡 | Attenzione | Livello > Soglia 1 **O** pioggia > 30mm/24h su suolo saturo (`soil_moisture_3_to_9cm` > 0.35) | Allertare per possibile innalzamento |
+| **ALTO** 🟠 | Pre-Allarme | Livello > Soglia 2 **O** onda di piena in arrivo da stazione a monte **O** `soil_moisture_0_to_1cm` > 0.40 (immediate runoff) | Prepararsi all'esondazione aree golenali |
+| **ESTREMO** 🔴 | Emergenza | Livello > Soglia 3 **O** pioggia estrema (> 100mm/24h) su bacini già saturi | Evacuazione aree a rischio, stop navigazione |
 
 **Logica di Corrivazione (Propagazione Piena):**
 - **Po**: Da Piacenza a Pontelagoscuro ~ 48-72 ore.
