@@ -224,7 +224,7 @@ Per un'analisi di massima accuratezza, l'agente può tentare di recuperare i dat
 GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro={PARAM}&periodo=ultimo-giorno
 ```
 *ID Comuni: Verona (135), Padova (113), Venezia-Marghera (123), Vicenza (140), Treviso (121), Belluno (104), Rovigo (118).*
-*Parametri: `temperatura`, `precipitazione`, `vento_media`, `umidita_relativa`.*
+*Parametri: `temperatura`, `precipitazione`, `vento_media`, `umidita_relativa`, `livello_idrometrico`.*
 
 ### ARPA FVG (Friuli-Venezia Giulia) — JSON
 ```http

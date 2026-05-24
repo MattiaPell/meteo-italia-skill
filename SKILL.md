@@ -88,7 +88,8 @@ GET https://api.open-meteo.com/v1/forecast
           cloud_cover_high,visibility,weather_code,
           relative_humidity_2m,freezing_level_height,boundary_layer_height,
           pressure_msl,uv_index,snow_depth,cape,lifted_index,
-          convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,
+          convective_inhibition,soil_temperature_0cm,soil_temperature_6cm,
+          soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,
           temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
           relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,
           wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,
@@ -107,9 +108,9 @@ GET https://api.open-meteo.com/v1/forecast
 ```
 
 **Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_500hPa`
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_temperature_6cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_500hPa`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
-- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,et0_fao_evapotranspiration`
+- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_18cm,et0_fao_evapotranspiration`
 - **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `wet_bulb_temperature_2m,geopotential_height_700hPa`
 
 **Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
@@ -359,7 +360,7 @@ Consulta `references/hydro_italia.md` per le soglie critiche di:
 1. **Livello attuale vs soglie**: confronta `value` con soglie Gialla/Arancione/Rossa (AIPO/CFR).
 2. **Trend (ultime 3-6 ore)**: in salita/discesa/stabile.
 3. **Combinato con Step A (precipitazioni)**: se previsti >30mm/24h E livello > soglia gialla → scenario peggiorativo (Rischio Idraulico Nimbus).
-4. **Combinato con Step A (soil_moisture)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
+4. **Combinato con Step A (soil_moisture_0_to_1cm)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
 5. **Combinato con lo storico recente in C**: piogge cumulate 7gg >100mm → bacino già carico.
 
 **Nota:** floods.it è l'unica API real-time strutturata. Per gli altri bacini, integrare con osservazioni ARPA (Step D) e portali AIPO/CFR citati in references.
@@ -499,12 +500,12 @@ Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra
 ### 🌾 Agricoltura / Campagna
 Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura", "peronospora", "viticoltura", "olivicoltura"
 Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), grandine (CAPE + LI),
-bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture),
+bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture_0_to_1cm),
 Somma Termica (GDD) per maturazione, Rischio Peronospora (Regola dei 3-10),
 siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
 umidità fogliare (UR >90% = rischio funghi/oidio), gelate tardive (T < -1°C in primavera).
 **Rischio allagamento campi**: se livello fiumi > soglia gialla + pioggia prevista >20mm/24h.
-**Ristagno idrico**: se soil_moisture >0.35 + livello falda in salita (dati idrologici Step M).
+**Ristagno idrico**: se `soil_moisture_0_to_1cm` >0.35 + livello falda in salita (dati idrologici Step M).
 **Storico recente**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case (Step C).
 
 ### 🏗️ Cantiere / Lavori all'aperto
@@ -696,7 +697,7 @@ Stato: {🟢 Basso / 🟡 Medio / 🟠 Alto / 🔴 Estremo} (Rischio Idraulico N
 Trend 6h: {in salita / stabile / in discesa} ({±X}m)
 {se livello > soglia gialla + pioggia prevista: ⚠️ scenario peggiorativo}
 {se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo / esondazione}
-{se fuori Trentino: "Dati real-time via API limitati al Trentino. Altri bacini: Analisi via soglie AIPO/CFR/PC."}
+{se fuori Trentino/Veneto: "Dati real-time via API limitati al Trentino e Veneto. Altri bacini: Analisi via soglie AIPO/CFR/PC."}
 
 ### 🛰️ Satellite (Step N)
 Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}
