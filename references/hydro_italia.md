@@ -113,7 +113,8 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 | **108** | Bacchiglione | Vicenza (Ponte degli Angeli) | 4.50 m | 5.50 m | 6.00 m |
 | **132** | Po | Ariano (Delta) | 2.50 m | 3.50 m | 4.50 m |
 
-**Note ARPAV**: Le soglie ARPAV si riferiscono al livello idrometrico relativo allo zero della stazione. Per il monitoraggio in tempo reale, l'agente può consultare l'API REST `api.arpa.veneto.it/rest/v1/meteo/stazioni/{id}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno`.
+**Note ARPAV**: Le soglie ARPAV si riferiscono al livello idrometrico relativo allo zero della stazione. Per il monitoraggio in tempo reale, l'agente deve consultare l'API REST:
+`GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{id}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno`.
 
 ---
 
@@ -151,9 +152,9 @@ Per una valutazione operativa del rischio alluvione, l'agente deve incrociare i 
 | Livello Nimbus | Descrizione | Trigger Tecnico | Azione Consigliata |
 |:--- | :--- | :--- | :--- |
 | **BASSO** 🟢 | Sicuro | Livello < Soglia 1; pioggia prevista < 10mm/24h | Monitoraggio standard |
-| **MEDIO** 🟡 | Attenzione | Livello > Soglia 1 **O** pioggia > 30mm/24h su suolo saturo (`soil_moisture_3_to_9cm` > 0.35) | Allertare per possibile innalzamento |
-| **ALTO** 🟠 | Pre-Allarme | Livello > Soglia 2 **O** onda di piena in arrivo da stazione a monte **O** `soil_moisture_0_to_1cm` > 0.40 (immediate runoff) | Prepararsi all'esondazione aree golenali |
-| **ESTREMO** 🔴 | Emergenza | Livello > Soglia 3 **O** pioggia estrema (> 100mm/24h) su bacini già saturi | Evacuazione aree a rischio, stop navigazione |
+| **MEDIO** 🟡 | Attenzione | Livello > Soglia 1 **O** pioggia > 30mm/24h su suolo saturo (`soil_moisture_0_to_1cm` > 0.35) | Allertare per possibile innalzamento |
+| **ALTO** 🟠 | Pre-Allarme | Livello > Soglia 2 **O** onda di piena in arrivo da stazione a monte **O** saturazione profonda (`soil_moisture_3_to_9cm` > 0.40) | Prepararsi all'esondazione aree golenali |
+| **ESTREMO** 🔴 | Emergenza | Livello > Soglia 3 **O** pioggia estrema (> 100mm/24h) su bacini piccoli con suolo già saturo | Evacuazione aree a rischio, stop navigazione |
 
 **Logica di Corrivazione (Propagazione Piena):**
 - **Po**: Da Piacenza a Pontelagoscuro ~ 48-72 ore.

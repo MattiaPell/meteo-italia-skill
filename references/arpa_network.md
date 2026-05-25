@@ -224,7 +224,8 @@ Per un'analisi di massima accuratezza, l'agente può tentare di recuperare i dat
 GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro={PARAM}&periodo=ultimo-giorno
 ```
 *ID Comuni: Verona (135), Padova (113), Venezia-Marghera (123), Vicenza (140), Treviso (121), Belluno (104), Rovigo (118).*
-*Parametri: `temperatura`, `precipitazione`, `vento_media`, `umidita_relativa`.*
+*(Vedi references/hydro_italia.md per ID Idrometrici ARPAV: Verona 124, Vicenza 108, Bassano 105, ecc.)*
+*Parametri: `temperatura`, `precipitazione`, `vento_media`, `umidita_relativa`, `livello_idrometrico`.*
 
 ### ARPA FVG (Friuli-Venezia Giulia) — JSON
 ```http
@@ -277,8 +278,8 @@ GET https://www.dati.lombardia.it/resource/647i-s8de.json?id_sensore={ID_SENSORE
 | **Lecco** | ARPA Lombardia | Lecco (V. Amendola) | — / — | 601 (T) |
 | **Torino** | ARPA Piemonte | Torino Caselle | LIMF / 16059 | — |
 | **Venezia** | ARPAV | Venezia Tessera / Lido | LIPZ / 16105 | 123 (Marghera) |
-| **Rovigo** | ARPAV | Rovigo città | — / 16116 | 118 |
-| **Verona** | ARPAV | Verona Villafranca | LIPX / 16090 | 135 |
+| **Rovigo** | ARPAV | Rovigo città | — / 16116 | 118 (Meteo) / 132 (Idro) |
+| **Verona** | ARPAV | Verona Villafranca | LIPX / 16090 | 135 (Meteo) / 124 (Idro) |
 | **Bologna** | ARPAE | Borgo Panigale | LIPE / 16140 | — |
 | **Ancona** | ARPA Marche | Falconara / Ancona | LIPY / 16190 | — |
 | **Perugia** | ARPA Umbria | Perugia S. Egidio | LIRZ / 16181 | — |

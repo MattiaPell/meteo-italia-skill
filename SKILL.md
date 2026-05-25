@@ -1,22 +1,10 @@
 ---
 name: meteo-italia
 description: >
-  Analisi comparativa delle previsioni meteo multi-modello specializzata per l'Italia.
-  Usa questa skill ogni volta che l'utente chiede del tempo in Italia: previsioni,
-  confronto modelli, affidabilità forecast, analisi di fenomeni locali italiani
-  (foehn, bora, scirocco, tramontana, libeccio, maestrale, levante, ostro, ponente,
-  garbino, ponentino, cuscino freddo, gelicidio, grandine padana, neve appenninica,
-  temporali adriatici, adriatic sea effect, acqua alta venezia, allerte Protezione Civile).
-  Trigger per: "che tempo fa", "previsioni meteo", "piove domani", "neve", "grandine",
-  "maestrale", "bora", "scirocco", "tramontana", "libeccio", "levante", "ostro",
-  "ponente", "grecale", "garbino", "ponentino", "maccaja", "caligo", "lupa di mare",
-  "breva", "tivano", "ora", "peler", "lago di garda",
-  "tornado", "tromba d'aria", "tromba marina", "cuscino freddo",
-  "inversione termica", "gelicidio", "pioggia congelantesi", "acqua alta", "marea venezia", "mose",
-  "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione",
-  "ciclismo", "bici", "bicicletta", "uscita in bici",
-  "caldo", "allerta meteo", "modelli meteo", "ECMWF vs ICON", "accordo modelli",
-  "analisi meteo [città italiana]", "weekend meteo", "settimana meteo".
+  Analisi meteo multi-modello (ECMWF, ICON, GFS) per l'Italia. Include allerte Protezione Civile, radar DPC, dati ARPA,
+  fenomeni locali (Bora, Foehn, Scirocco) e use-case (agricoltura, montagna, mare, volo).
+  Trigger: "meteo", "previsioni", "pioggia", "neve", "allerta", "vento", "bora", "scirocco", "foehn", "temporale",
+  "grandine", "mare", "montagna", "ghiaccio", "nebbia", "acqua alta", "modelli meteo".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
   domanda sul tempo in Italia usa questa skill.
 ---
@@ -39,6 +27,7 @@ allerte ufficiali (Protezione Civile), climatologia di riferimento (ERA5) e bias
 | Periodo | Oggi (giornata corrente) |
 | Variabili | Temperatura, precipitazioni, vento, temporali, weather code |
 | Output | Report strutturato + widget visuale |
+| Response Mode | **Lite** (query semplici) o **Pro** (analisi/use case) |
 | Use case | Generico (vedi sezione Use Case per specializzazioni) |
 
 Identifica subito: **macroarea** (→ set modelli) + **regione amministrativa** (→ ARPA + allerte PC).
@@ -60,11 +49,11 @@ Workflow A–N (14 step in ordine, eseguiti in parallelo dove indicato):
 |---|---|---|---|
 | A | Previsioni numeriche (Open-Meteo) | Sempre | references/models.md, references/italy_zones.md |
 | B | Climatologia ERA5 | Sempre (10y baseline) | references/climatology.md |
-| C | Storico recente (ultimi 7gg) | Sempre | references/uv_marine_recent.md |
+| C | Analisi Storico | Sempre | **Derivata da Step A** (`past_days=7`) |
 | D | Osservazioni ARPA | Sempre | references/arpa_network.md |
 | E | Allerta Protezione Civile | Sempre | references/arpa_network.md |
 | F | Dati marini | Se costiero/nautica/ASE/Caligo | references/uv_marine_recent.md |
-| G | UV Index | Incluso in A, report se UV>5 | references/uv_marine_recent.md |
+| G | UV Index | Sempre | **Incluso in Step A**. Report se UV>5 |
 | H | Qualità aria CAMS | Pianura Padana (ott-mar), salute, inversione, scirocco | references/air_quality.md |
 | I | Nowcasting Radar DPC | Allerta ≥gialla, CAPE>800, weather_code 80-99, richiesta 1-3h | references/nowcasting_radar.md |
 | J | Ensemble Spread | Orizzonte >3gg, eventi significativi, allerta ≥gialla, divergenza modelli | references/ensemble_spread.md |
@@ -94,8 +83,6 @@ GET https://api.open-meteo.com/v1/forecast
           relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,
           wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,
           wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,
-          geopotential_height_1000hPa,geopotential_height_925hPa,
-          geopotential_height_850hPa,geopotential_height_500hPa,
           {GRUPPO_ENERGY}, {GRUPPO_AGRO}, {GRUPPO_PRO}
   &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
          apparent_temperature_min,precipitation_sum,snowfall_sum,
@@ -108,10 +95,10 @@ GET https://api.open-meteo.com/v1/forecast
 ```
 
 **Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_500hPa`
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
-- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,et0_fao_evapotranspiration,leaf_wetness_probability`
-- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `wet_bulb_temperature_2m,geopotential_height_700hPa`
+- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,et0_fao_evapotranspiration`
+- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_700hPa,geopotential_height_500hPa`
 
 **Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
 
@@ -202,7 +189,8 @@ pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili
 ```http
 GET https://radar-api.protezionecivile.it/findLastProductByType?type=VMI
 ```
-Salva `time` (epoch ms UTC) come `T`. Se la chiamata fallisce o restituisce 404, la rete radar potrebbe essere in manutenzione.
+Salva `time` (epoch ms UTC) come `T`.
+**Fallback:** Se la chiamata fallisce o restituisce 404, la rete radar potrebbe essere in manutenzione. Utilizza il `weather_code` orario del modello ICON-D2 (Step A) per stimare la precipitazione immediata e segnala nel report: "Radar DPC non disponibile, stima da modello ad alta risoluzione".
 
 **Step 2 — Scarica prodotti chiave:**
 ```http
@@ -339,16 +327,28 @@ Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, 
 
 **Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico/idraulico (Step E), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in C), use case agricoltura/cantieri/viabilità/nautica. **Altrimenti:** disattiva.
 
-**Fetch catalogo stazioni (floods.it — open data, no auth):**
+**Fetch real-time (floods.it e ARPAV — open data):**
+
+1. **Trentino-Alto Adige (floods.it):**
 ```http
 GET https://www.floods.it/api/v1/monitoring/index.json
-```
-Filtra le stazioni entro 50km dal punto target. **Copertura API:** Trentino-Alto Adige.
-
-**Fetch dati stazione (se stazione trovata):**
-```http
+# Se sensor_id trovato:
 GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 ```
+
+2. **Veneto (ARPAV API):**
+```http
+GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno
+```
+*(Vedi references/arpa_network.md per ID stazioni: Verona 124, Vicenza 108, Bassano 105, ecc.)*
+
+Filtra le stazioni entro 50km dal punto target. **Copertura API Real-time:** Trentino-Alto Adige e Veneto.
+
+**Fallback Idrologico (Aree non coperte):**
+Per le zone geografiche non coperte dai sensori real-time (fuori Trentino/Veneto), stima il rischio idraulico potenziale utilizzando i parametri di Step A e C:
+- **Criticità Alta**: `soil_moisture_0_to_1cm` > 0.35 m³/m³ (suolo saturo) **E** precipitazioni cumulate 7gg > 100mm.
+- **Aggravante**: Previsione pioggia > 30mm/24h.
+Segnala come: "Rischio Idraulico stimato via Nimbus (dati locali non disponibili)".
 
 **Fetch ARPAV (Regione Veneto — stazioni Adige, Brenta, Bacchiglione):**
 ```http
@@ -366,10 +366,10 @@ Consulta `references/hydro_italia.md` per le soglie critiche di:
 1. **Livello attuale vs soglie**: confronta `value` con soglie Gialla/Arancione/Rossa (AIPO/CFR).
 2. **Trend (ultime 3-6 ore)**: in salita/discesa/stabile.
 3. **Combinato con Step A (precipitazioni)**: se previsti >30mm/24h E livello > soglia gialla → scenario peggiorativo (Rischio Idraulico Nimbus).
-4. **Combinato con Step A (soil_moisture)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
+4. **Combinato con Step A (soil_moisture_0_to_1cm)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
 5. **Combinato con lo storico recente in C**: piogge cumulate 7gg >100mm → bacino già carico.
 
-**Nota:** floods.it è l'unica API real-time strutturata. Per gli altri bacini, integrare con osservazioni ARPA (Step D) e portali AIPO/CFR citati in references.
+**Nota:** floods.it e ARPAV sono le principali API real-time strutturate integrate. Per gli altri bacini, integrare con osservazioni ARPA (Step D) e portali AIPO/CFR citati in references.
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 
@@ -491,7 +491,6 @@ Aggiungi: `elevation={quota_target}` nella chiamata API.
 **Satellite per nuvolosità in quota**: immagini IR10.8 per valutazione temporali in formazione sui rilievi e copertura nuvolosa generale (Step N).
 
 ### 🐝 Apicoltura / Impollinazione
-Trigger: "apicoltura", "alveare", "miele", "fioritura", "api", "impollinazione"
 Focus: Finestre di volo (T > 10°C, vento < 25 km/h), secrezione nettarifero (T notturna > 12°C e UR > 60%),
 rischio gelate tardive su fioriture (Acacia, Castagno, Agrumi), rischio grandine e piogge battenti.
 **Storico recente**: giorni di volo nell'ultima settimana e piogge pregresse per stato vegetativo (Step C).
@@ -506,12 +505,12 @@ Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra
 ### 🌾 Agricoltura / Campagna
 Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura", "peronospora", "viticoltura", "olivicoltura"
 Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), grandine (CAPE + LI),
-bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture),
+bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture_0_to_1cm),
 Somma Termica (GDD) per maturazione, Rischio Peronospora (Regola dei 3-10),
 siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
 umidità fogliare (UR >90% = rischio funghi/oidio), gelate tardive (T < -1°C in primavera).
 **Rischio allagamento campi**: se livello fiumi > soglia gialla + pioggia prevista >20mm/24h.
-**Ristagno idrico**: se soil_moisture >0.35 + livello falda in salita (dati idrologici Step M).
+**Ristagno idrico**: se `soil_moisture_0_to_1cm` >0.35 + livello falda in salita (dati idrologici Step M).
 **Storico recente**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case (Step C).
 
 ### 🏗️ Cantiere / Lavori all'aperto
@@ -546,7 +545,6 @@ Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calor
 **Storico recente**: segnala se ondata calore già in corso da giorni (Step C).
 
 ### 🚲 Ciclismo / Sport su strada
-Trigger: "ciclismo", "bici", "bicicletta", "uscita in bici", "corsa su strada", "granfondo"
 Focus: Vento (intensità e direzione), T percepita (comfort), rischio pioggia (grip), qualità aria.
 **Soglie Operative**:
 - **Vento**: >25 km/h = disturbo significativo (laterale/frontale), >40 km/h = rischio sicurezza.
@@ -601,6 +599,20 @@ Focus:
 ---
 
 ## Template Report
+
+### 🟢 Report Sintetico (Response Mode: LITE)
+Da usare per query semplici ("Che tempo fa?", "Piove?", "Temperatura?").
+```
+## 🌤️ Meteo {LUOGO} — {DATA}
+**Sintesi**: {2-3 righe su cielo, precipitazioni e vento}
+**🌡️ Temp**: {min} / {max}°C (Percepita: {max_app}°C)
+**🚨 Allerta**: {🟢 Verde / 🟡 Gialla / 🟠 Arancione / 🔴 Rossa} - {Tipo/Nessuna}
+**☔ Pioggia**: {P}% ({range mm})
+**💨 Vento**: {intensità} km/h da {DIR}
+```
+
+### 🔵 Report Completo (Response Mode: PRO)
+Da usare per "analisi", "report" o use-case specifici.
 
 ```
 ## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA}
@@ -703,7 +715,7 @@ Stato: {🟢 Basso / 🟡 Medio / 🟠 Alto / 🔴 Estremo} (Rischio Idraulico N
 Trend 6h: {in salita / stabile / in discesa} ({±X}m)
 {se livello > soglia gialla + pioggia prevista: ⚠️ scenario peggiorativo}
 {se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo / esondazione}
-{se fuori Trentino/Veneto: "Dati real-time via API limitati al Nord-Est (Trentino e Veneto). Altri bacini: Analisi via soglie AIPO/CFR/PC."}
+{se fuori Trentino/Veneto: "Dati real-time via API limitati al Trentino e Veneto. Altri bacini: Analisi via soglie AIPO/CFR/PC."}
 
 ### 🛰️ Satellite (Step N)
 Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}
