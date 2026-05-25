@@ -96,7 +96,7 @@ GET https://api.open-meteo.com/v1/forecast
 **Ottimizzazione parametri orari:**
 - **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
-- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,et0_fao_evapotranspiration,leaf_wetness_probability`
+- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,et0_fao_evapotranspiration`
 - **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_850hPa,geopotential_height_700hPa,geopotential_height_500hPa`
 
 **Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
@@ -326,19 +326,25 @@ Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, 
 
 **Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico/idraulico (Step E), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in C), use case agricoltura/cantieri/viabilità/nautica. **Altrimenti:** disattiva.
 
-**Fetch catalogo stazioni (floods.it — open data, no auth):**
+**Fetch real-time (floods.it e ARPAV — open data):**
+
+1. **Trentino-Alto Adige (floods.it):**
 ```http
 GET https://www.floods.it/api/v1/monitoring/index.json
-```
-Filtra le stazioni entro 50km dal punto target. **Copertura API:** Trentino-Alto Adige.
-
-**Fetch dati stazione (se stazione trovata):**
-```http
+# Se sensor_id trovato:
 GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 ```
 
+2. **Veneto (ARPAV API):**
+```http
+GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno
+```
+*(Vedi references/arpa_network.md per ID stazioni: Verona 124, Vicenza 108, Bassano 105, ecc.)*
+
+Filtra le stazioni entro 50km dal punto target. **Copertura API Real-time:** Trentino-Alto Adige e Veneto.
+
 **Fallback Idrologico (Aree non coperte):**
-Per le zone geografiche non coperte da `floods.it` (fuori Trentino/Veneto), stima il rischio idraulico potenziale utilizzando i parametri di Step A e C:
+Per le zone geografiche non coperte dai sensori real-time (fuori Trentino/Veneto), stima il rischio idraulico potenziale utilizzando i parametri di Step A e C:
 - **Criticità Alta**: `soil_moisture_0_to_1cm` > 0.35 m³/m³ (suolo saturo) **E** precipitazioni cumulate 7gg > 100mm.
 - **Aggravante**: Previsione pioggia > 30mm/24h.
 Segnala come: "Rischio Idraulico stimato via Nimbus (dati locali non disponibili)".
@@ -356,7 +362,7 @@ Consulta `references/hydro_italia.md` per le soglie critiche di:
 4. **Combinato con Step A (soil_moisture_0_to_1cm)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
 5. **Combinato con lo storico recente in C**: piogge cumulate 7gg >100mm → bacino già carico.
 
-**Nota:** floods.it è l'unica API real-time strutturata. Per gli altri bacini, integrare con osservazioni ARPA (Step D) e portali AIPO/CFR citati in references.
+**Nota:** floods.it e ARPAV sono le principali API real-time strutturate integrate. Per gli altri bacini, integrare con osservazioni ARPA (Step D) e portali AIPO/CFR citati in references.
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 

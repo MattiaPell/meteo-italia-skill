@@ -113,7 +113,8 @@ GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 | **108** | Bacchiglione | Vicenza (Ponte degli Angeli) | 4.50 m | 5.50 m | 6.00 m |
 | **132** | Po | Ariano (Delta) | 2.50 m | 3.50 m | 4.50 m |
 
-**Note ARPAV**: Le soglie ARPAV si riferiscono al livello idrometrico relativo allo zero della stazione. Per il monitoraggio in tempo reale, l'agente può consultare l'API REST `api.arpa.veneto.it/rest/v1/meteo/stazioni/{id}/dati?parametro=livello_idrometrico`.
+**Note ARPAV**: Le soglie ARPAV si riferiscono al livello idrometrico relativo allo zero della stazione. Per il monitoraggio in tempo reale, l'agente deve consultare l'API REST:
+`GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{id}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno`.
 
 ---
 

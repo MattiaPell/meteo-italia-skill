@@ -16,6 +16,7 @@ GET https://archive-api.open-meteo.com/v1/archive
 ### Strategia consigliata
 Scarica gli ultimi 30 anni per la stessa settimana del calendario → calcola media e σ.
 Per risparmio token: scarica gli ultimi 10 anni (sufficiente per la maggior parte delle analisi).
+Tutti gli indici a 7 giorni (Bilancio Idrico, piogge cumulate) sono derivati dal parametro `past_days=7` della chiamata primaria (Step A).
 
 ```
 # Esempio: riferimento climatologico per il 15 maggio
@@ -162,13 +163,13 @@ La regola empirica per l'avvio delle infezioni primarie di *Plasmopara viticola*
 1. **Temperatura**: T minima e media > 10°C.
 2. **Germogli**: Lunghezza del tralcio > 10 cm.
 3. **Pioggia**: Almeno 10 mm di pioggia caduti in 24-48 ore.
-4. **Leaf Wetness**: `leaf_wetness_probability` > 50% per almeno 4-6 ore consecutive accelera l'infezione.
+4. **Leaf Wetness Proxy**: Bagnatura fogliare stimata se `relative_humidity_2m` > 90% o `precipitation` > 0. La persistenza per 4-6 ore accelera l'infezione.
 *Nota: Se tutte e quattro le condizioni sono vere, il rischio di infezione è critico.*
 
 ### Altre Soglie Vite
-- **Fioritura**: Condizioni ideali 15–25°C e UR 50–70%. Piogge battenti o bagnatura fogliare persistente durante la fioritura possono causare colatura (mancata allegagione).
+- **Fioritura**: Condizioni ideali 15–25°C e UR 50–70%. Piogge battenti o bagnatura fogliare persistente (Proxy: UR > 90%) durante la fioritura possono causare colatura (mancata allegagione).
 - **Gelate Tardive**: Danni gravi se T < -1/-2°C dopo il germogliamento (marzo-maggio).
-- **Oidio (Mal Bianco)**: Favorito da T 20–27°C e UR elevata. A differenza della Peronospora, l'Oidio non richiede bagnatura fogliare liquida (anzi, la pioggia battente può lavare le spore), ma beneficia di `leaf_wetness_probability` tra 10-30% (umidità interstiziale).
+- **Oidio (Mal Bianco)**: Favorito da T 20–27°C e UR elevata. A differenza della Peronospora, l'Oidio non richiede bagnatura fogliare liquida, ma beneficia di UR tra 70-85% (umidità interstiziale).
 
 ---
 
