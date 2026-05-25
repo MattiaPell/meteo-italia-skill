@@ -138,14 +138,15 @@ Precipitazioni previste (Step A): >40mm/24h nel bacino a monte (Piemonte)
 
 #### Scenario 2: Suolo Saturo + Pioggia Intensa
 ```
-Soil moisture (Step A): >0.35 m³/m³
+Soil moisture superficiale (0-1cm): >0.35 m³/m³ (Rischio ruscellamento)
+Soil moisture profonda (3-9cm): >0.35 m³/m³ (Bacino saturo)
 Precipitazioni: >80mm/24h (Allerta Arancione/Rossa PC)
 → Rischio: Piena lampo (Flash Flood) su reticolo minore e fiumi appenninici.
 ```
 
 ### 🌊 Nimbus Hydrological Intelligence (Blending Logic)
 
-Per una valutazione operativa del rischio alluvione, l'agente deve incrociare i dati di livello con il forecast e lo stato del suolo.
+Per una valutazione operativa del rischio alluvione, l'agente deve incrociare i dati di livello con il forecast e lo stato del suolo a diversi livelli.
 
 | Livello Nimbus | Descrizione | Trigger Tecnico | Azione Consigliata |
 |:--- | :--- | :--- | :--- |

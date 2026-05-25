@@ -157,17 +157,18 @@ Riferimento per l'uso della variabile `soil_temperature_6cm` (Step 3A). Soglie A
 
 ## 🍇 Focus Viticoltura (Vitis vinifera)
 
-### Rischio Peronospora (Regola dei Tre Dieci)
+### Rischio Peronospora (Regola dei Tre Dieci + Wetness)
 La regola empirica per l'avvio delle infezioni primarie di *Plasmopara viticola*:
 1. **Temperatura**: T minima e media > 10°C.
 2. **Germogli**: Lunghezza del tralcio > 10 cm.
 3. **Pioggia**: Almeno 10 mm di pioggia caduti in 24-48 ore.
-*Nota: Se tutte e tre le condizioni sono vere, il rischio di infezione è elevato.*
+4. **Leaf Wetness**: `leaf_wetness_probability` > 50% per almeno 4-6 ore consecutive accelera l'infezione.
+*Nota: Se tutte e quattro le condizioni sono vere, il rischio di infezione è critico.*
 
 ### Altre Soglie Vite
-- **Fioritura**: Condizioni ideali 15–25°C e UR 50–70%. Piogge battenti o forte umidità (>85%) durante la fioritura possono causare colatura (mancata allegagione).
+- **Fioritura**: Condizioni ideali 15–25°C e UR 50–70%. Piogge battenti o bagnatura fogliare persistente durante la fioritura possono causare colatura (mancata allegagione).
 - **Gelate Tardive**: Danni gravi se T < -1/-2°C dopo il germogliamento (marzo-maggio).
-- **Oidio**: Favorito da T 20–27°C e UR elevata ma senza pioggia battente (che lava le spore).
+- **Oidio (Mal Bianco)**: Favorito da T 20–27°C e UR elevata. A differenza della Peronospora, l'Oidio non richiede bagnatura fogliare liquida (anzi, la pioggia battente può lavare le spore), ma beneficia di `leaf_wetness_probability` tra 10-30% (umidità interstiziale).
 
 ---
 
