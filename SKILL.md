@@ -77,7 +77,8 @@ GET https://api.open-meteo.com/v1/forecast
           cloud_cover_high,visibility,weather_code,
           relative_humidity_2m,freezing_level_height,boundary_layer_height,
           pressure_msl,uv_index,snow_depth,cape,lifted_index,
-          convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,
+          convective_inhibition,soil_temperature_0cm,soil_temperature_6cm,
+          soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,
           temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
           relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,
           wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,
@@ -348,6 +349,12 @@ Per le zone geografiche non coperte dai sensori real-time (fuori Trentino/Veneto
 - **Criticità Alta**: `soil_moisture_0_to_1cm` > 0.35 m³/m³ (suolo saturo) **E** precipitazioni cumulate 7gg > 100mm.
 - **Aggravante**: Previsione pioggia > 30mm/24h.
 Segnala come: "Rischio Idraulico stimato via Nimbus (dati locali non disponibili)".
+
+**Fetch ARPAV (Regione Veneto — stazioni Adige, Brenta, Bacchiglione):**
+```http
+GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno
+```
+*ID Stazioni Veneto: Verona (124), Boara Pisani (142), Bassano (105), Vicenza (108), Ariano (132).*
 
 **Interpretazione e Dati Manuali (Po, Arno, Tevere):**
 Consulta `references/hydro_italia.md` per le soglie critiche di:
