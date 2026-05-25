@@ -136,6 +136,11 @@ Queste soglie sono specifiche per il territorio italiano e più stringenti degli
 | Artemisia (`mugwort`) | lug–set | lug–ago |
 | Ambrosia (`ragweed`) | ago–set | ago–set |
 
+**Nota su Bagnatura Fogliare e Pollini**:
+La variabile `leaf_wetness_probability` (Step G) agisce come un limitatore naturale per la dispersione dei pollini.
+- **`leaf_wetness_probability` > 50%**: i pollini rimangono "ancorati" alle superfici umide, riducendo drasticamente la concentrazione atmosferica anche con vento moderato.
+- **Washout**: la bagnatura fogliare persistente è spesso associata a pioviggine o alta UR che abbatte i pollini in sospensione (wet deposition).
+
 ---
 
 ## Connessione Meteo → Qualità dell'Aria
