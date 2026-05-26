@@ -143,6 +143,27 @@ La bagnatura fogliare (Proxy: `relative_humidity_2m` > 90% o `precipitation` > 0
 
 ---
 
+## 🔥 Nimbus Fire Intelligence (NFR)
+
+Valutazione proattiva del rischio incendi boschivi basata su indici idro-meteorologici.
+
+### Indicatori di Rischio
+- **VPD (Vapour Pressure Deficit)**: Deficit di pressione di vapore. `VPD > 1.5 kPa` indica aria molto secca che facilita l'ignizione.
+- **Sotto-raffreddamento del suolo**: `soil_moisture_0_to_1cm < 0.15 m³/m³` (suolo molto secco).
+- **Vento**: `wind_speed_10m > 25 km/h` (propagazione rapida).
+
+### Classificazione Rischio Incendi
+| Livello | Condizioni Trigger | Flag Report |
+|:--- | :--- | :--- |
+| **BASSO** 🟢 | Suolo umido, vento calmo | Rischio trascurabile |
+| **MEDIO** 🟡 | `VPD > 1.0` OR `soil_moisture < 0.20` | Attenzione: vegetazione secca |
+| **ALTO** 🟠 | `VPD > 1.5` AND `wind > 20 km/h` | **Rischio Incendio Elevato** |
+| **ESTREMO** 🔴 | `VPD > 2.0` AND `wind > 35 km/h` AND `soil_moisture < 0.15` | **Pericolo Incendi Estremo (Red Flag)** |
+
+**Nota Operativa**: Durante eventi di **Scirocco** o **Garbino**, il rischio passa rapidamente da Basso a Estremo a causa del crollo dell'UR e dell'aumento termico.
+
+---
+
 ## Connessione Meteo → Qualità dell'Aria
 
 Questa è la parte più utile per l'integrazione con il forecast meteorologico:
