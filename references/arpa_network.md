@@ -108,8 +108,9 @@ Mappa regione → ente ARPA → endpoint dati osservativi.
 - **Province:** PG, TR
 
 ### ARPA Lazio
-- **URL dati:** https://www.arpalazio.net/main/aria/sci/rete/
+- **URL dati:** https://temporeale.regione.lazio.it/ (Centro Funzionale Regionale)
 - **Bollettino:** https://www.meteoam.it (Aeronautica Militare — riferimento principale per Lazio)
+- **Stazioni:** RM Collegio Romano (RM-172), Roma Ripetta (Idro)
 - **Province:** RM, VT, RI, LT, FR
 
 ### ARPA Abruzzo
@@ -121,7 +122,7 @@ Mappa regione → ente ARPA → endpoint dati osservativi.
 ## Sud
 
 ### ARPA Campania
-- **URL dati:** https://www.arpacampania.it/web/guest/43
+- **URL dati:** http://centrofunzionale.regione.campania.it/ (Dati real-time)
 - **Province:** NA, SA, AV, BN, CE
 
 ### ARPA Puglia
@@ -276,15 +277,15 @@ GET https://www.dati.lombardia.it/resource/647i-s8de.json?id_sensore={ID_SENSORE
 |-------|------|---------------------|----------|------------------------|
 | **Milano** | ARPA Lombardia | Milano Brera / Linate | LIML / 16080 | Brera: 642 (T) |
 | **Lecco** | ARPA Lombardia | Lecco (V. Amendola) | — / — | 601 (T) |
-| **Torino** | ARPA Piemonte | Torino Caselle | LIMF / 16059 | — |
+| **Torino** | ARPA Piemonte | Torino Giardini Reali | — / — | 001272907 |
 | **Venezia** | ARPAV | Venezia Tessera / Lido | LIPZ / 16105 | 123 (Marghera) |
 | **Rovigo** | ARPAV | Rovigo città | — / 16116 | 118 (Meteo) / 132 (Idro) |
 | **Verona** | ARPAV | Verona Villafranca | LIPX / 16090 | 135 (Meteo) / 124 (Idro) |
-| **Bologna** | ARPAE | Borgo Panigale | LIPE / 16140 | — |
+| **Bologna** | ARPAE | Bologna Savena | — / — | MeteoSystem (Urbana) |
 | **Ancona** | ARPA Marche | Falconara / Ancona | LIPY / 16190 | — |
 | **Perugia** | ARPA Umbria | Perugia S. Egidio | LIRZ / 16181 | — |
-| **Firenze** | LAMMA | Firenze Peretola | LIRQ / 16170 | — |
-| **Roma** | MeteoAM | Roma Ciampino / Fiumicino| LIRA-LIRF / 16239-16242 | — |
+| **Firenze** | LAMMA | Firenze Uffizi | — / — | TOS01004679 (Idro) |
+| **Roma** | MeteoAM/CFR | Roma Collegio Romano | — / — | RM-172 |
 | **Napoli** | ARPA Campania | Napoli Capodichino | LIRN / 16289 | — |
 | **Bari** | ARPA Puglia | Bari Palese | LIBD / 16270 | — |
 | **Palermo** | SIAS | Punta Raisi | LICJ / 16405 | — |

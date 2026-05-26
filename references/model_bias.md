@@ -98,6 +98,8 @@ I modelli numerici (NWP) con risoluzione > 2km spesso non catturano l'effetto di
 | **Napoli** | +0.5°C | **+1.5°C** | Effetto mitigato dalla brezza di mare |
 | **Bologna** | +1.0°C | **+2.0°C** | Particolarmente intenso in estate |
 | **Firenze** | +1.0°C | **+2.5°C** | Effetto conca amplifica l'accumulo |
+| **Bari** | +1.0°C | **+4.0°C** | UHI intensa in estate, mitigata in costa |
+| **Palermo** | +1.0°C | **+2.5°C** | Effetto amplificato da orografia (conca) |
 
 ### ⚠️ Logica di Applicazione Correzione Urbana
 1.  **Check Località**: Se il punto target è in area densamente urbanizzata (Capoluoghi di Provincia).

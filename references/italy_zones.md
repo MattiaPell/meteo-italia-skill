@@ -247,10 +247,22 @@ Per ottenere la massima accuratezza, l'agente deve regolare i pesi base sopra el
 *   **Aumenta peso (+0.4)**: `italia_meteo_arpae_icon_2i`. È il modello più calibrato per la microfisica della nebbia in Val Padana.
 *   **Diminuisce peso (-0.3)**: `gfs_seamless` (spesso dissipa la nebbia troppo presto).
 
-### 4. Scenario: Venti Locali e Orografia (Bora, Foehn, Tramontana)
-*Trigger: Forti gradienti pressori orografici.*
+### 4. Scenario: Venti Locali e Orografia (Bora, Foehn, Tramontana, Garbino)
+*Trigger: Forti gradienti pressori orografici o correnti di caduta.*
 *   **Aumenta peso (+0.3)**: `icon_d2`, `meteoswiss_icon_seamless` (Alpi), `italia_meteo_arpae_icon_2i`.
-*   **Diminuisce peso (-0.2)**: `ecmwf_ifs`, `gfs_seamless` (sottostimano le raffiche nelle valli strette).
+*   **Diminuisce peso (-0.2)**: `ecmwf_ifs`, `gfs_seamless` (sottostimano le raffiche nelle valli strette o l'effetto compressione).
+
+### 5. Scenario: Neve e Quota Neve (Snow-Line)
+*Trigger: snowfall > 0 o temperature vicine allo zero termico.*
+*   **Aumenta peso (+0.4)**: `icon_d2`. Ottima gestione del raffreddamento da fusione (omotermia).
+*   **Aumenta peso (+0.3)**: `meteoswiss_icon_seamless` (Alpi), `geosphere_seamless` (Alpi Orientali).
+*   **Diminuisce peso (-0.2)**: `gfs_seamless` (spesso sovrastima la quota neve).
+
+### 6. Scenario: Vento forte (Sinottico e Mareggiate)
+*Trigger: Vento sostenuto > 40 km/h o raffiche > 70 km/h (non convettivo).*
+*   **Aumenta peso (+0.3)**: `ecmwf_ifs`, `arpege_europe`. Migliore stima del vento medio sinottico.
+*   **Aumenta peso (+0.2)**: `icon_d2`. Ottimo per le raffiche di punta (gusts).
+*   **Diminuisce peso (-0.1)**: `gfs_seamless` (spesso sovrastima lo scirocco al Sud).
 
 ---
 
