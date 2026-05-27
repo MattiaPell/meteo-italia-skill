@@ -319,44 +319,40 @@ Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare q
 
 Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, integrazione con radar, e alternative API.
 
-#### M — Dati Idrologici (Bacino del Po e Grandi Fiumi)
+#### M — Dati Idrologici (Trentino real-time + bacini nazionali via soglie)
+
+Mappa esplicita del monitoraggio:
+- **TIER A (API real-time)**: floods.it → solo Trentino-Alto Adige.
+- **TIER B (soglie manuali + ARPA)**: Po, Adige, Arno, Tevere, Reno, Volturno → usa references/hydro_italia.md + Step D (ARPA).
+- **TIER C (nessun dato disponibile)**: tutti gli altri → dichiara esplicitamente "dati idrologici real-time non disponibili per questa zona".
 
 **Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico/idraulico (Step E), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in C), use case agricoltura/cantieri/viabilità/nautica. **Altrimenti:** disattiva.
 
-**Fetch real-time (floods.it e ARPAV — open data):**
+### TIER A (API real-time)
 
-1. **Trentino-Alto Adige (floods.it):**
+**Trentino-Alto Adige (floods.it):**
 ```http
 GET https://www.floods.it/api/v1/monitoring/index.json
 # Se sensor_id trovato:
 GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
 ```
 
-2. **Veneto (ARPAV API):**
+### TIER B (soglie manuali + ARPA)
+
+**Veneto (ARPAV API):**
 ```http
 GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno
 ```
-*(Vedi references/arpa_network.md per ID stazioni: Verona 124, Vicenza 108, Bassano 105, ecc.)*
+*(Vedi references/arpa_network.md per ID stazioni: Verona 124, Vicenza 108, Bassano 105, ecc. — Stazioni: Verona 124, Boara Pisani 142, Bassano 105, Vicenza 108, Ariano 132)*
 
-Filtra le stazioni entro 50km dal punto target. **Copertura API Real-time:** Trentino-Alto Adige e Veneto.
-
-**Fallback Idrologico (Aree non coperte):**
-Per le zone geografiche non coperte dai sensori real-time (fuori Trentino/Veneto), stima il rischio idraulico potenziale utilizzando i parametri di Step A e C:
-- **Criticità Alta**: `soil_moisture_0_to_1cm` > 0.35 m³/m³ (suolo saturo) **E** precipitazioni cumulate 7gg > 100mm.
-- **Aggravante**: Previsione pioggia > 30mm/24h.
-Segnala come: "Rischio Idraulico stimato via Nimbus (dati locali non disponibili)".
-
-**Fetch ARPAV (Regione Veneto — stazioni Adige, Brenta, Bacchiglione):**
-```http
-GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno
-```
-*ID Stazioni Veneto: Verona (124), Boara Pisani (142), Bassano (105), Vicenza (108), Ariano (132).*
-
-**Interpretazione e Dati Manuali (Po, Arno, Tevere):**
-Consulta `references/hydro_italia.md` per le soglie critiche di:
+**Interpretazione e Dati Manuali (Po, Adige, Arno, Tevere, Reno, Volturno):**
+Consulta `references/hydro_italia.md` e incrocia con le osservazioni ARPA (Step D) per le soglie critiche di:
 1.  **Fiume Po**: Stazioni di Piacenza, Cremona, Casalmaggiore, Boretto, Borgoforte, Pontelagoscuro.
-2.  **Fiume Arno**: Firenze (Nave di Rovezzano, Uffizi) e Pisa.
-3.  **Fiume Tevere**: Roma (Ripetta, Isola Tiberina).
+2.  **Fiume Adige**: Trento e Verona.
+3.  **Fiume Arno**: Firenze (Nave di Rovezzano, Uffizi) e Pisa.
+4.  **Fiume Tevere**: Roma (Ripetta, Isola Tiberina).
+5.  **Fiume Reno**: Casalecchio Chiusa.
+6.  **Fiume Volturno**: Capua.
 
 **Logica di Analisi:**
 1. **Livello attuale vs soglie**: confronta `value` con soglie Gialla/Arancione/Rossa (AIPO/CFR).
@@ -365,7 +361,14 @@ Consulta `references/hydro_italia.md` per le soglie critiche di:
 4. **Combinato con Step A (soil_moisture_0_to_1cm)**: se >0.35 m³/m³ → suolo saturo, deflusso superficiale rapido.
 5. **Combinato con lo storico recente in C**: piogge cumulate 7gg >100mm → bacino già carico.
 
-**Nota:** floods.it e ARPAV sono le principali API real-time strutturate integrate. Per gli altri bacini, integrare con osservazioni ARPA (Step D) e portali AIPO/CFR citati in references.
+### TIER C (nessun dato disponibile)
+
+Per tutte le altre zone geografiche non coperte da TIER A o TIER B, dichiara esplicitamente: **"dati idrologici real-time non disponibili per questa zona"**.
+
+In queste aree, stima il rischio idraulico potenziale utilizzando i parametri di Step A e C:
+- **Criticità Alta**: `soil_moisture_0_to_1cm` > 0.35 m³/m³ (suolo saturo) **E** precipitazioni cumulate 7gg > 100mm.
+- **Aggravante**: Previsione pioggia > 30mm/24h.
+Segnala come: "Rischio Idraulico stimato via Nimbus (dati locali non disponibili)".
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 
@@ -736,14 +739,14 @@ Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontan
 {se fulmini + nuclei intensi (>45 dBZ) in Vision: ⚠️ grandine probabile (>70%)}
 {se dry lightning: ⚠️ rischio incendi — fulmini senza pioggia}
 
-### 🌊 Rischio Idraulico — Po e Grandi Fiumi (Step M) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
+### 🌊 Dati Idrologici (Step M) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Fiume: {NOME} a {LOCALITÀ} | Livello: {X}m
 Soglie: {Gialla: X | Arancione: Y | Rossa: Z}
 Stato: {🟢 Basso / 🟡 Medio / 🟠 Alto / 🔴 Estremo} (Rischio Idraulico Nimbus)
 Trend 6h: {in salita / stabile / in discesa} ({±X}m)
 {se livello > soglia gialla + pioggia prevista: ⚠️ scenario peggiorativo}
 {se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo / esondazione}
-{se fuori Trentino/Veneto: "Dati real-time via API limitati al Trentino e Veneto. Altri bacini: Analisi via soglie AIPO/CFR/PC."}
+{se TIER C: "dati idrologici real-time non disponibili per questa zona"}
 
 ### 🛰️ Satellite (Step N) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}
