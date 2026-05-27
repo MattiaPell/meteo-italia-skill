@@ -36,10 +36,17 @@ Identifica subito: **macroarea** (→ set modelli) + **regione amministrativa** 
 
 ```http
 GET https://geocoding-api.open-meteo.com/v1/search
-  ?name={CITTA}&count=3&language=it&format=json
+  ?name={CITTA}&count=10&language=it&format=json
 ```
-Usa `results[0]`. Per comuni omonimi verifica `admin1` (regione) e `country_code=IT`.
-Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
+
+**Logica di validazione obbligatoria:**
+1.  **Filtro Italia**: Scorri `results` e seleziona il primo con `country_code == "IT"`. Se `results[0]` non è "IT", scarta e passa ai successivi.
+2.  **Fallback Estero**: Se nessun risultato ha `country_code == "IT"`, chiedi conferma all'utente:
+    *"Non ho trovato {CITTA} in Italia. Intendevi {risultato_più_vicino} ({regione})?"*
+3.  **Disambiguazione**: Se trovi >3 risultati con `country_code == "IT"`, mostra una scelta all'utente prima di procedere:
+    *"{CITTA} ({admin1}) o {CITTA} ({admin2})?"*
+
+Annota lat, lon, quota (`elevation`) del risultato scelto — serve per neve e mountain bias.
 
 ### 3. Fetch sequenziale prioritizzato
 
