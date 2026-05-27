@@ -41,28 +41,32 @@ GET https://geocoding-api.open-meteo.com/v1/search
 Usa `results[0]`. Per comuni omonimi verifica `admin1` (regione) e `country_code=IT`.
 Annota lat, lon, quota (`elevation`) — serve per neve e mountain bias.
 
-### 3. Fetch in parallelo (esegui tutto insieme)
+### 3. Fetch sequenziale prioritizzato
 
-Workflow A–N (14 step in ordine, eseguiti in parallelo dove indicato):
+L'esecuzione del workflow segue una sequenza prioritizzata suddivisa in 3 Tier. L'agente deve completare il **TIER 1** prima di procedere al **TIER 2**.
 
-| Step | Nome | Condizione | Riferimento |
-|---|---|---|---|
-| A | Previsioni numeriche (Open-Meteo) | Sempre | references/models.md, references/italy_zones.md |
-| B | Climatologia ERA5 | Sempre (10y baseline) | references/climatology.md |
-| C | Analisi Storico | Sempre | **Derivata da Step A** (`past_days=7`) |
-| D | Osservazioni ARPA | Sempre | references/arpa_network.md |
-| E | Allerta Protezione Civile | Sempre | references/arpa_network.md |
-| F | Dati marini | Se costiero/nautica/ASE/Caligo | references/uv_marine_recent.md |
-| G | UV Index | Sempre | **Incluso in Step A**. Report se UV>5 |
-| H | Qualità aria CAMS | Pianura Padana (ott-mar), salute, inversione, scirocco | references/air_quality.md |
-| I | Nowcasting Radar DPC | Allerta ≥gialla, CAPE>800, weather_code 80-99, richiesta 1-3h | references/nowcasting_radar.md |
-| J | Ensemble Spread | Orizzonte >3gg, eventi significativi, allerta ≥gialla, divergenza modelli | references/ensemble_spread.md |
-| K | METAR/TAF | Aviazione/droni, validazione forecast, ARPA non disp., divergenza >2°C | references/metar_taf.md |
-| L | Lightning Detection | Allerta ≥gialla per temporali, CAPE>800, nautica/montagna/outdoor | references/lightning.md |
-| M | Dati Idrologici | Allerta ≥gialla idro, pioggia>30mm/24h, cumulata 7gg>100mm, agricoltura | references/hydro_italia.md |
-| N | Satellite Meteosat | Allerta ≥gialla, divergenza modelli >1.5σ, nebbia prevista, nautica/aero | references/satellite.md |
+**Regola di gestione del contesto:** Se il contesto supera 80k token dopo il TIER 1, esegui solo gli step TIER 2 con condizione TRUE. Salta completamente il TIER 3.
 
-Esegui simultaneamente i passi A–N:
+| Tier | Step | Nome | Condizione | Riferimento |
+|---|---|---|---|---|
+| **TIER 1** | A | Previsioni numeriche (Open-Meteo) | Sempre | references/models.md, references/italy_zones.md |
+| | B | Climatologia ERA5 | Sempre (10y baseline) | references/climatology.md |
+| | E | Allerta Protezione Civile | Sempre | references/arpa_network.md |
+| **TIER 2** | D | Osservazioni ARPA | Sempre | references/arpa_network.md |
+| | F | Dati marini | Se costiero/nautica/ASE/Caligo | references/uv_marine_recent.md |
+| | H | Qualità aria CAMS | Pianura Padana (ott-mar), salute, inversione, scirocco | references/air_quality.md |
+| | J | Ensemble Spread | Orizzonte >3gg, eventi significativi, allerta ≥gialla, divergenza modelli | references/ensemble_spread.md |
+| **TIER 3** | I | Nowcasting Radar DPC | Allerta ≥gialla, CAPE>800, weather_code 80-99, richiesta 1-3h | references/nowcasting_radar.md |
+| | K | METAR/TAF | Aviazione/droni, validazione forecast, ARPA non disp., divergenza >2°C | references/metar_taf.md |
+| | L | Lightning Detection | Allerta ≥gialla per temporali, CAPE>800, nautica/montagna/outdoor | references/lightning.md |
+| | M | Dati Idrologici | Allerta ≥gialla idro, pioggia>30mm/24h, cumulata 7gg>100mm, agricoltura | references/hydro_italia.md |
+| | N | Satellite Meteosat | Allerta ≥gialla, divergenza modelli >1.5σ, nebbia prevista, nautica/aero | references/satellite.md |
+
+*Nota: Gli Step C (Analisi Storico) e G (UV Index) sono inclusi o derivati dallo Step A.*
+
+Esegui i passi seguendo l'ordine dei Tier:
+
+#### TIER 1 (Obbligatori sempre)
 
 #### A — Previsioni numeriche (Open-Meteo)
 Vedi `references/models.md` per il set corretto per macroarea.
@@ -102,6 +106,16 @@ GET https://api.open-meteo.com/v1/forecast
 
 **Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
 
+#### C — Storico recente (ultimi 7gg)
+Analisi derivata dal parametro `past_days=7` nel fetch A.
+Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
+Vedi `references/uv_marine_recent.md` per soglie e interpretazione.
+
+#### G — UV Index
+Già incluso nel fetch A (`uv_index`, `uv_index_clear_sky`, `uv_index_max`).
+Includi la sezione UV nel report se: `uv_index_max` >5, use case spiaggia/montagna, o richiesta esplicita.
+Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
+
 #### B — Climatologia ERA5
 Per confrontare il forecast con la norma storica del periodo.
 ```http
@@ -115,16 +129,6 @@ GET https://archive-api.open-meteo.com/v1/archive
 ```
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
 
-#### C — Storico recente (ultimi 7gg)
-Analisi derivata dal parametro `past_days=7` nel fetch A.
-Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
-Vedi `references/uv_marine_recent.md` per soglie e interpretazione.
-
-#### D — Osservazioni ARPA
-Consulta `references/arpa_network.md` per endpoint e stazioni della regione target.
-Recupera: T attuale, precipitazioni ultime 6/24h, vento, umidità dalla stazione più vicina.
-Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
-
 #### E — Allerta Protezione Civile
 ```http
 GET https://mappe.protezionecivile.gov.it/geowebcache/service/wms
@@ -132,6 +136,13 @@ GET https://mappe.protezionecivile.gov.it/geowebcache/service/wms
 ```
 Oppure consulta il bollettino testuale su `mappe.protezionecivile.gov.it`.
 Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
+
+#### TIER 2 (Condizionali ad alta priorità)
+
+#### D — Osservazioni ARPA
+Consulta `references/arpa_network.md` per endpoint e stazioni della regione target.
+Recupera: T attuale, precipitazioni ultime 6/24h, vento, umidità dalla stazione più vicina.
+Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
 
 #### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
 Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo), oppure Macroarea Sicilia/Sud (per Lupa di mare).
@@ -148,11 +159,6 @@ GET https://marine-api.open-meteo.com/v1/marine
   &forecast_days={N}
 ```
 Vedi scala Beaufort e soglie operative in `references/uv_marine_recent.md`.
-
-#### G — UV Index
-Già incluso nel fetch A (`uv_index`, `uv_index_clear_sky`, `uv_index_max`).
-Includi la sezione UV nel report se: `uv_index_max` >5, use case spiaggia/montagna, o richiesta esplicita.
-Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 
 #### H — Qualità aria CAMS (condizionale)
 
@@ -176,6 +182,34 @@ GET https://air-quality-api.open-meteo.com/v1/air-quality
 Interpreta con `references/air_quality.md`: scala AQI EEA (0-20 buono → >100 pessimo),
 scenari accumulo/dispersione da dati meteo, flag dust sahariano vs PM antropico,
 pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili.
+
+#### J — Ensemble Spread (condizionale)
+
+**Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
+
+```http
+GET https://ensemble-api.open-meteo.com/v1/ensemble
+  ?latitude={LAT}&longitude={LON}
+  &models=ecmwf_ifs025_ensemble_mean,icon_seamless_ensemble_mean,gfs025_ensemble_mean
+  &hourly=temperature_2m,temperature_2m_spread,
+          apparent_temperature,apparent_temperature_spread,
+          precipitation_mean,precipitation_spread,
+          wind_gusts_10m_mean,wind_gusts_10m_spread,
+          cape_mean,cape_spread,
+          snowfall_mean,snowfall_spread,
+          precipitation_probability_mean
+  &daily=temperature_2m_max,temperature_2m_min,
+         apparent_temperature_max,apparent_temperature_min,
+         precipitation_sum,wind_speed_10m_max
+  &timezone=Europe/Rome
+  &forecast_days=16
+```
+
+`spread` = σ tra i membri. p90-p10 ≈ spread × 2.56 (gaussiana, valido per T; non per precipitazioni).
+Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
+Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
+
+#### TIER 3 (Condizionali a bassa priorità)
 
 #### I — Nowcasting Radar DPC (solo se condizioni attivanti)
 
@@ -229,32 +263,6 @@ Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema
 - Incertezza per orizzonte temporale
 
 **Licenza obbligatoria**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
-
-#### J — Ensemble Spread (condizionale)
-
-**Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
-
-```http
-GET https://ensemble-api.open-meteo.com/v1/ensemble
-  ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_seamless_ensemble_mean,gfs025_ensemble_mean
-  &hourly=temperature_2m,temperature_2m_spread,
-          apparent_temperature,apparent_temperature_spread,
-          precipitation_mean,precipitation_spread,
-          wind_gusts_10m_mean,wind_gusts_10m_spread,
-          cape_mean,cape_spread,
-          snowfall_mean,snowfall_spread,
-          precipitation_probability_mean
-  &daily=temperature_2m_max,temperature_2m_min,
-         apparent_temperature_max,apparent_temperature_min,
-         precipitation_sum,wind_speed_10m_max
-  &timezone=Europe/Rome
-  &forecast_days=16
-```
-
-`spread` = σ tra i membri. p90-p10 ≈ spread × 2.56 (gaussiana, valido per T; non per precipitazioni).
-Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
-Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
 
 #### K — METAR/TAF (condizionale)
 
