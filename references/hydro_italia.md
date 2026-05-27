@@ -61,6 +61,28 @@ Monitoraggio a cura del **Centro Funzionale Regione Lazio**.
 
 ---
 
+## 🌊 Fiume Reno (Bologna)
+
+Monitoraggio a cura di **ARPAE Emilia-Romagna**.
+
+| Stazione | Località | Soglia 1 (Gialla) | Soglia 2 (Arancione) | Soglia 3 (Rossa) |
+|----------|----------|-------------------|-------------------|-------------------|
+| **Casalecchio Chiusa** | Casalecchio di Reno | 0.80 m | 1.60 m | 2.20 m |
+
+---
+
+## 🌊 Fiume Volturno (Capua)
+
+Monitoraggio a cura del **Centro Funzionale Multirischi Regione Campania**.
+
+| Stazione | Località | Note |
+|----------|----------|------|
+| **Capua** | Capua Centro | Consulta il Bollettino di Criticità regionale per le soglie in vigore. |
+
+**Nota Operativa Volturno**: In assenza di soglie fisse tabellate, fare riferimento ai livelli storici (piena 2023: ~8.20 m) e agli avvisi di criticità emessi dal Centro Funzionale Campania.
+
+---
+
 ## 📡 Rete di Monitoraggio Real-time — Nord-Est
 
 ### 1. floods.it (Trentino-Alto Adige)
