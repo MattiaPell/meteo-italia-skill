@@ -466,7 +466,7 @@ Se radar e NWP divergono sullo scenario a 1-3h → segnala esplicitamente l'ince
 
 | Richiesta | Formato |
 |---|---|
-| "analisi", "report", non specificato | Report strutturato + widget HTML/React |
+| "analisi", "report", non specificato | Report strutturato (con Execution Manifest) + widget HTML/React |
 | "grafico", "visualizza", "chart" | Widget con grafici comparativi modelli |
 | "piove?", "nevica?", "fa caldo?" | Risposta sintetica con semaforo |
 | "dati", "numeri", "JSON" | Tabella strutturata |
@@ -600,9 +600,32 @@ Focus:
 
 ## Template Report
 
+### 📋 Execution Manifest (OBBLIGATORIO)
+Da compilare SEMPRE prima di qualsiasi analisi. Se lo **Step A** è in stato "**🧠 Stima interna**", è obbligatorio inserire il banner di avviso in cima al report.
+
+| Step | Nome | Stato | Fonte | Timestamp |
+|---|---|---|---|---|
+| A | Previsioni numeriche | ✅ / ⚠️ / ❌ / 🧠 | | |
+| B | Climatologia ERA5 | | | |
+| ... | ... | ... | ... | ... |
+
+**Stati ammessi:**
+- ✅ **Eseguito**: Dati reali ottenuti con successo.
+- ⚠️ **Parziale**: Alcuni dati mancanti o fallback utilizzati.
+- ❌ **Saltato**: Step non necessario o fallito senza fallback.
+- 🧠 **Stima interna**: Dati non disponibili, basati su conoscenza del modello.
+
+---
+
 ### 🟢 Report Sintetico (Response Mode: LITE)
 Da usare per query semplici ("Che tempo fa?", "Piove?", "Temperatura?").
+
+{⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
+
 ```
+## 📋 Execution Manifest
+{Tabella Manifest}
+
 ## 🌤️ Meteo {LUOGO} — {DATA}
 **Sintesi**: {2-3 righe su cielo, precipitazioni e vento}
 **🌡️ Temp**: {min} / {max}°C (Percepita: {max_app}°C)
@@ -614,7 +637,12 @@ Da usare per query semplici ("Che tempo fa?", "Piove?", "Temperatura?").
 ### 🔵 Report Completo (Response Mode: PRO)
 Da usare per "analisi", "report" o use-case specifici.
 
+{⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
+
 ```
+## 📋 Execution Manifest
+{Tabella Manifest}
+
 ## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA}
 
 {⚠️ ALERT: UTILIZZO FONTI ESTERNE - Solo se Open-Meteo non disponibile}
