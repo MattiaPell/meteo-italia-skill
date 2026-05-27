@@ -31,11 +31,12 @@ Da usare quando l'API Open-Meteo non è raggiungibile direttamente dall'ambiente
 
 ## Strategia di Aggregazione (quando API non disponibile)
 
-1. Recupera dati da almeno 3 portali diversi per la città target
-2. Per ogni variabile (T max, T min, precipitazioni, vento) confronta i valori
-3. Calcola consensus manuale: media e range dei valori trovati
-4. Segnala la fonte e il livello di concordanza nel report
-5. Per eventi critici: cita sempre la fonte ufficiale (Protezione Civile, ARPAE, MeteoAM)
+1. **Obbligo di Trasparenza**: Se utilizzi dati da questi portali, inserisci un **ALERT** esplicito in cima al report (vedi `SKILL.md`).
+2. Recupera dati da almeno 3 portali diversi per la città target.
+3. Per ogni variabile (T max, T min, precipitazioni, vento) confronta i valori.
+4. Calcola consensus manuale: media e range dei valori trovati.
+5. Segnala le fonti specifiche utilizzate e il livello di concordanza nel report.
+6. Per eventi critici: cita sempre la fonte ufficiale (Protezione Civile, ARPAE, MeteoAM).
 
 ## Come Leggere i Dati dai Portali
 
