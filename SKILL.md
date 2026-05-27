@@ -617,6 +617,9 @@ Da usare per "analisi", "report" o use-case specifici.
 ```
 ## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA}
 
+{⚠️ ALERT: UTILIZZO FONTI ESTERNE - Solo se Open-Meteo non disponibile}
+> **AVVISO**: I dati per questa analisi sono stati aggregati da fonti esterne (es. 3bMeteo, iLMeteo, Meteo.it) a causa dell'indisponibilità temporanea dei sistemi primari Open-Meteo. L'accuratezza potrebbe variare.
+
 ### 📡 Nowcasting Radar (0-6h) — {HH:MM} ora locale (Step I)
 Situazione attuale: {sistema in atto / in avvicinamento / assente}
 VMI max: {X} dBZ → {intensità} | SRI: {X} mm/h | VIL: {X} kg/m²
@@ -749,6 +752,6 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 - `timezone=Europe/Rome` sempre per l'Italia (mai `auto`)
 - Isole: usa sempre ECMWF come backbone — altri modelli hanno copertura ridotta
 - Montagna >1500m: aggiungi `elevation={quota}` per dati corretti
-- Se Open-Meteo non raggiungibile: aggrega da portali italiani (vedi `references/italian_portals.md`)
+- **Strategia Fallback**: Se Open-Meteo non è raggiungibile, aggrega dati da portali italiani (3bMeteo, iLMeteo, etc. — vedi `references/italian_portals.md`). In questo caso, **è obbligatorio inserire un alert esplicito** nel report per informare l'utente che sono state utilizzate fonti esterne non-API.
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
 - Bias noti dei modelli → consulta sempre `references/model_bias.md` prima di interpretare outlier
