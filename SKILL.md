@@ -1,15 +1,15 @@
 ---
 name: meteo-italia
 description: >
-  Analisi meteo multi-modello (ECMWF, ICON, GFS) per l'Italia. Include allerte Protezione Civile, radar DPC, dati ARPA,
-  fenomeni locali (Bora, Foehn, Scirocco) e use-case (agricoltura, montagna, mare, volo).
-  Trigger: "meteo", "previsioni", "pioggia", "neve", "allerta", "vento", "bora", "scirocco", "foehn", "temporale",
-  "grandine", "mare", "montagna", "ghiaccio", "nebbia", "acqua alta", "modelli meteo".
-  NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
-  domanda sul tempo in Italia usa questa skill.
+  Analisi meteo multi-modello Italia. Previsioni, confronto ECMWF/ICON/GFS, fenomeni locali (foehn, bora, scirocco), allerte PC, qualità aria, nowcasting temporali. Trigger: qualsiasi domanda meteo su città/regione italiana.
 ---
 
 # Weather Forecast Analysis — Italia
+
+## Trigger Keywords
+"meteo", "previsioni", "pioggia", "neve", "allerta", "vento", "bora", "scirocco", "foehn", "temporale", "grandine", "mare", "montagna", "ghiaccio", "nebbia", "acqua alta", "modelli meteo".
+
+---
 
 Analisi comparativa multi-modello specializzata per il territorio italiano.
 Integra: previsioni numeriche (Open-Meteo), osservazioni in tempo reale (reti ARPA regionali),
