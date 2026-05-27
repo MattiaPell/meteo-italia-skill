@@ -185,48 +185,29 @@ pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili
 - `weather_code` corrente 80–99 (rovesci/temporali in atto)
 - Utente chiede situazione nelle prossime 1-3h ("sta arrivando?", "tra quanto finisce?")
 
-**Step 1 — Verifica disponibilità e timestamp:**
+**Step 1 — Verifica disponibilità e fetch VMI:**
 ```http
 GET https://radar-api.protezionecivile.it/findLastProductByType?type=VMI
 ```
-Salva `time` (epoch ms UTC) come `T`.
-**Fallback:** Se la chiamata fallisce o restituisce 404, la rete radar potrebbe essere in manutenzione. Utilizza il `weather_code` orario del modello ICON-D2 (Step A) per stimare la precipitazione immediata e segnala nel report: "Radar DPC non disponibile, stima da modello ad alta risoluzione".
-
-**Step 2 — Scarica prodotti chiave:**
+Salva `time` (epoch ms UTC) come `T`. Se disponibile:
 ```http
 POST https://radar-api.protezionecivile.it/downloadProduct
 {"productType": "VMI", "productDate": T}
-
-POST https://radar-api.protezionecivile.it/downloadProduct
-{"productType": "SRI", "productDate": T}
-
-POST https://radar-api.protezionecivile.it/downloadProduct
-{"productType": "POH", "productDate": T}   ← probabilità grandine
-
-POST https://radar-api.protezionecivile.it/downloadProduct
-{"productType": "VIL", "productDate": T}   ← grandine intensa
-
-POST https://radar-api.protezionecivile.it/downloadProduct
-{"productType": "ETM", "productDate": T}   ← sviluppo verticale
-
-POST https://radar-api.protezionecivile.it/downloadProduct
-{"productType": "SRT1", "productDate": T}  ← cumulata ultima ora
 ```
+Recupera l'URL dell'immagine dal campo `url` della risposta.
 
-**Step 3 — Sequenza per analisi movimento (ultimi 30 min):**
-```http
-POST /downloadProduct {"productType":"VMI","productDate": T-300000}    ← T-5min
-POST /downloadProduct {"productType":"VMI","productDate": T-600000}    ← T-10min
-POST /downloadProduct {"productType":"VMI","productDate": T-1800000}   ← T-30min
-```
-Usa i 4 frame (T, T-5, T-10, T-30) per stimare direzione e velocità del sistema.
+**Step 2 — Analisi Vision (Qualitativa):**
+Se l'agente ha capacità Vision, deve analizzare l'immagine VMI per identificare:
+1. **Presenza di nuclei**: individuare macchie colorate (riflettività).
+2. **Intensità (dBZ)**: stimare l'intensità in base alla scala colori (giallo/arancio = forte, rosso/viola = estremo).
+3. **Posizione**: localizzare i nuclei rispetto al punto target (es. "cella intensa a 20km Nord-Ovest").
 
-**Interpretazione e estrapolazione:** vedi `references/nowcasting_radar.md` per:
-- Scala dBZ → intensità precipitazioni
-- VIL → probabilità grandine
-- ETM → sviluppo verticale / severità
-- Calcolo vettore movimento e stima arrivo su punto target
-- Incertezza per orizzonte temporale
+**Fallback Testuale:**
+Se l'immagine non è visualizzabile, non è interpretabile o le API falliscono:
+- Dichiarare nel report: "nowcasting non disponibile in questa sessione".
+- Fornire il link diretto per consultazione manuale: https://mappe.protezionecivile.gov.it
+
+**Estrapolazione:** vedi `references/nowcasting_radar.md` per la scala dBZ e la logica di blending con i modelli NWP (ICON-D2) per la tendenza 0-3h.
 
 **Licenza obbligatoria**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
 
@@ -314,7 +295,7 @@ Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare q
 1. **Conta fulmini** nell'area entro 50km dal punto target. Soglie: >10 fulmini in 50km² = temporale attivo, >20 = temporale severo
 2. **Verifica trend**: confronto con fetch 15 min precedente. +50% = intensificazione, -50% = dissolvimento
 3. **Integrazione con Step A (CAPE/LI)**: CAPE >1500 + fulmini >10/15min → supercella probabile
-4. **Integrazione con Step I (radar DPC)**: fulmini + VIL >25 kg/m² → grandine probabile (>70%)
+4. **Integrazione con Step I (radar DPC)**: nuclei intensi (>45 dBZ) in Vision + fulmini → grandine probabile (>70%)
 5. **Dry lightning**: fulmini >5/15min ma precipitazioni osservate <1mm → rischio incendi (segnala esplicitamente)
 
 **Distanza e movimento:** calcola distanza dal punto target (Haversine). <5km = pericolo immediato. Confronta posizione fulmini t-15min vs t-30min per stimare direzione e velocità di movimento.
@@ -621,12 +602,13 @@ Da usare per "analisi", "report" o use-case specifici.
 > **AVVISO**: I dati per questa analisi sono stati aggregati da fonti esterne (es. 3bMeteo, iLMeteo, Meteo.it) a causa dell'indisponibilità temporanea dei sistemi primari Open-Meteo. L'accuratezza potrebbe variare.
 
 ### 📡 Nowcasting Radar (0-6h) — {HH:MM} ora locale (Step I)
-Situazione attuale: {sistema in atto / in avvicinamento / assente}
-VMI max: {X} dBZ → {intensità} | SRI: {X} mm/h | VIL: {X} kg/m²
-Movimento: {DIR} a {X} km/h | Distanza da {LUOGO}: {D} km
-+30min: {scenario} | +60min: {scenario} | +90min: {scenario}
-{se grandine: ⚠️ POH: {X}% — Echo Top: {X} km}
-Affidabilità: 0-30min Alta → 30-60min Media → >60min Bassa (usa NWP)
+{se immagine disponibile:
+Analisi visiva: {descrizione nuclei, intensità dBZ e posizione rispetto al target}
+Tendenza 0-3h: {blending tra osservazione radar e modello ICON-D2}
+| altrimenti:
+⚠️ nowcasting non disponibile in questa sessione.
+Consulta manuale: https://mappe.protezionecivile.gov.it}
+Affidabilità: 0-30min Alta (Radar) → 30-60min Media → >60min Bassa (NWP)
 Fonte: Radar-DPC (CC-BY-SA)
 
 ### 🚨 Allerta {COLORE} — {TIPO} (Step E)
@@ -708,7 +690,7 @@ Fulmini ultimi 15min: {N} in {area}km² | Densità: {X}/50km²/15min
 Trend: {in intensificazione / stabile / in dissolvimento}
 Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontano})
 {se CAPE>1500 + fulmini>10: ⚠️ supercella probabile}
-{se fulmini + VIL>25: ⚠️ grandine probabile (>70%)}
+{se fulmini + nuclei intensi (>45 dBZ) in Vision: ⚠️ grandine probabile (>70%)}
 {se dry lightning: ⚠️ rischio incendi — fulmini senza pioggia}
 
 ### 🌊 Rischio Idraulico — Po e Grandi Fiumi (Step M)

@@ -4,10 +4,9 @@ Guida all'interpretazione dei prodotti della Rete Radar Nazionale gestita dal Di
 
 ---
 
-## Prodotti Chiave e Soglie
+## Prodotto Principale: VMI (Vertical Maximum Intensity)
 
-### VMI (Vertical Maximum Intensity)
-Massima riflettività sulla verticale (espresso in dBZ). Indica l'intensità istantanea della precipitazione e la presenza di nuclei temporaleschi.
+Il **VMI** rappresenta la massima riflettività sulla verticale (espresso in dBZ). È l'unico prodotto utilizzato in questa sessione per il nowcasting istantaneo.
 
 | dBZ | Intensità | Descrizione |
 |---|---|---|
@@ -17,64 +16,32 @@ Massima riflettività sulla verticale (espresso in dBZ). Indica l'intensità ist
 | 45–55 | Molto forte | Temporale, possibile grandine piccola |
 | >55 | Estrema | Temporale violento, grandine probabile |
 
-### SRI (Surface Rainfall Intensity)
-Intensità di precipitazione al suolo stimata (espresso in mm/h).
-
-| mm/h | Classe | Impatto |
-|---|---|---|
-| <2 | Debole | Fenomeni trascurabili |
-| 2–10 | Moderata | Pioggia costante |
-| 10–30 | Forte | Allagamenti locali possibili |
-| >30 | Molto forte/Nubifragio | Rischio alluvioni lampo (flash floods) |
-
-### POH (Probability of Hail)
-Probabilità di presenza di grandine all'interno della nube (0–100%).
-- **<30%**: Rischio basso
-- **30–70%**: Rischio moderato (grandine probabile)
-- **>70%**: Rischio alto (grandine quasi certa)
-
-### VIL (Vertically Integrated Liquid)
-Quantità di acqua liquida integrata sulla verticale (kg/m²).
-- **VIL < 10**: Precipitazione liquida ordinaria
-- **VIL 10–20**: Possibile grandine piccola
-- **VIL > 20**: Alta probabilità di grandine di medie/grandi dimensioni (>2cm) o nubifragio estremo
-
-### ETM (Echo Top Map)
-Altezza massima della nube (quota dove la riflettività scende sotto i 18-20 dBZ), in km.
-- **ETM < 5 km**: Nubi stratiformi o rovesci deboli
-- **ETM 5–8 km**: Temporali ordinari
-- **ETM > 10 km**: Temporali a forte sviluppo verticale (supercelle, MCS)
-- **ETM > 12 km**: Sconfinamento in stratosfera (temporali estremi)
+*Nota: Altri prodotti (SRI, VIL, POH, ETM) non sono disponibili in questa configurazione per ottimizzare le chiamate API.*
 
 ---
 
-## Analisi del Movimento (Nowcasting 0-3h)
+## Analisi Qualitativa (Nowcasting 0-3h)
 
-Per stimare l'arrivo di un sistema su un punto target, confrontare gli ultimi 4 frame (T, T-5m, T-10m, T-30m).
+In produzione, l'analisi si basa sulla singola immagine **VMI** (Vertical Maximum Intensity) più recente.
 
-### 1. Vettore Movimento
-- Identifica il baricentro del nucleo più intenso (dBZ > 45)
-- Calcola lo spostamento tra T-30 e T attuale
-- **Velocità (km/h)** = (Distanza in km tra i due punti) * 2
-- **Direzione** = Angolo del vettore risultante
+### 1. Interpretazione Vision
+Se l'agente ha capacità Vision, deve analizzare l'immagine per:
+- **Identificare i nuclei**: Localizzare le aree con riflettività significativa.
+- **Valutare l'intensità**: Usare la scala dBZ (giallo >35, rosso >45, viola >55).
+- **Prossimità**: Stimare la distanza e la direzione dei nuclei rispetto alle coordinate target.
 
-### 2. Estrapolazione Lineare
-- **Tempo stimato di arrivo (ETA)** = Distanza attuale / Velocità media
-- *Nota*: L'estrapolazione lineare è affidabile solo per i primi 30-60 minuti.
+### 2. Blending Radar–NWP (ICON-D2)
+Il radar fornisce la "verità al suolo" istantanea. Poiché non è possibile calcolare vettori di movimento precisi da un singolo frame in questa sessione, si utilizza il radar per validare o correggere il trend del modello ad alta risoluzione (**ICON-D2**):
 
-### 3. Matrice di Transizione Radar–NWP (Blending)
-Per la massima accuratezza, non passare bruscamente da radar a modello, ma applica una pesatura progressiva:
+| Orizzonte (min) | Strategia Operativa |
+|---|---|
+| **0–15** | **Radar Dominante**: Se il radar mostra un nucleo sul target, la pioggia è certa, indipendentemente dal modello. |
+| **15–45** | **Validazione NWP**: Se il radar conferma il sistema previsto dal modello, aumenta la fiducia nel forecast ICON-D2. |
+| **45–90** | **Correzione Temporale**: Se il radar mostra il sistema "in ritardo" o "in anticipo" rispetto alla posizione prevista dal modello per l'ora corrente, trasla temporalmente il forecast NWP. |
+| **>90** | **NWP Dominante**: Affidarsi esclusivamente ai modelli numerici per l'evoluzione a medio termine. |
 
-| Orizzonte (min) | Peso RADAR | Peso Modello (NWP) | Strategia Operativa |
-|---|---|---|---|
-| **0–15** | 100% | 0% | Estrapolazione pura: il radar "comanda" |
-| **15–45** | 80% | 20% | Radar primario, usa NWP solo per lo sviluppo della cella |
-| **45–90** | 40% | 60% | NWP diventa primario, radar serve per validare il trend |
-| **90–150** | 10% | 90% | Modello comanda, radar segnala solo se l'evento è in ritardo |
-| **>150** | 0% | 100% | Affidati esclusivamente ai modelli numerici |
-
-**Logica di correzione NWP via Radar:**
-Se a T+60m il radar mostra un sistema a 20km dal target, ma il modello lo prevedeva già sopra il target → applica un **ritardo temporale** di ~30-45min alle previsioni del modello per le ore successive.
+**Logica di correzione:**
+Se il radar mostra un sistema a 20km dal target che il modello prevedeva già in transito → segnala un possibile ritardo dell'evento di 30-60 minuti rispetto alla tabella oraria NWP.
 
 ---
 

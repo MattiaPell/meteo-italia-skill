@@ -888,7 +888,7 @@ Colonna d'aria in rotazione (vortice) che si forma sopra il mare e si estende da
 - **T aria - SST**: differenza <3°C (aria più fredda sopra mare caldo → forte instabilità superficiale)
 - **UR bassa quota**: `relative_humidity_2m` >80% (umidità per alimentazione convettiva)
 - **Fulmini (Step L)**: attività elettrica in area costiera/marina
-- **Radar VIL (Step I)**: >15 kg/m² (cella convettiva organizzata)
+- **Radar VMI (Step I)**: nuclei >45 dBZ in Vision (cella convettiva organizzata)
 
 ### Segnali nei dati — Tipo Fair-Weather (flag se ≥3 di questi)
 - **CAPE**: <500 J/kg (`cape`) (instabilità moderata)
@@ -940,7 +940,7 @@ Colonna d'aria in rotazione violenta che si estende dalla base di un cumulonembo
 - **UR bassa quota**: `relative_humidity_2m` >70% (umidità per alimentazione)
 - **Temperatura 850hPa**: `temperature_850hPa` >10°C (aria calda in quota, capping inversion debole)
 - **Fulmini (Step L)**: >10/15min in area → attività convettiva intensa
-- **Radar VIL (Step I)**: >25 kg/m² → grandine probabile, cella severa
+- **Radar VMI (Step I)**: nuclei >55 dBZ in Vision → grandine probabile, cella severa
 
 ### Scala EF (Enhanced Fujita) — Stima dai dati
 | Classe EF | Vento stimato | Danni tipici | Probabilità in Italia |
