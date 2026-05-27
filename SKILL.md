@@ -604,10 +604,10 @@ Da usare per query semplici ("Che tempo fa?", "Piove?", "Temperatura?").
 {⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
 
 ```
-## 📋 Execution Manifest
+## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
 
-## 🌤️ Meteo {LUOGO} — {DATA}
+## 🌤️ Meteo {LUOGO} — {DATA} [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 **Sintesi**: {2-3 righe su cielo, precipitazioni e vento}
 **🌡️ Temp**: {min} / {max}°C (Percepita: {max_app}°C)
 **🚨 Allerta**: {🟢 Verde / 🟡 Gialla / 🟠 Arancione / 🔴 Rossa} - {Tipo/Nessuna}
@@ -621,15 +621,15 @@ Da usare per "analisi", "report" o use-case specifici.
 {⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
 
 ```
-## 📋 Execution Manifest
+## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
 
-## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA}
+## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA} [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 
 {⚠️ ALERT: UTILIZZO FONTI ESTERNE - Solo se Open-Meteo non disponibile}
 > **AVVISO**: I dati per questa analisi sono stati aggregati da fonti esterne (es. 3bMeteo, iLMeteo, Meteo.it) a causa dell'indisponibilità temporanea dei sistemi primari Open-Meteo. L'accuratezza potrebbe variare.
 
-### 📡 Nowcasting Radar (0-6h) — {HH:MM} ora locale (Step I)
+### 📡 Nowcasting Radar (0-6h) — {HH:MM} ora locale (Step I) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {se immagine disponibile:
 Analisi visiva: {descrizione nuclei, intensità dBZ e posizione rispetto al target}
 Tendenza 0-3h: {blending tra osservazione radar e modello ICON-D2}
@@ -639,54 +639,54 @@ Consulta manuale: https://mappe.protezionecivile.gov.it}
 Affidabilità: 0-30min Alta (Radar) → 30-60min Media → >60min Bassa (NWP)
 Fonte: Radar-DPC (CC-BY-SA)
 
-### 🚨 Allerta {COLORE} — {TIPO} (Step E)
+### 🚨 Allerta {COLORE} — {TIPO} (Step E) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Dettaglio allerta Protezione Civile ufficiale}
 
-### Consensus Multi-Modello
+### Consensus Multi-Modello [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Modelli: {N} | Macroarea: {ZONA} | Concordanza: Alta/Media/Bassa
 {lista modelli con pesi}
 
-### 📅 Ultimi 7 giorni (Step C)
+### 📅 Ultimi 7 giorni (Step C) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Precipitazioni cumulate: {X}mm (norma: {Y}mm → {±Z}%)
 **Bilancio Idrico Nimbus**: {±X}mm ({Surplus/Equilibrio/Deficit/Stress})
 Giorni senza pioggia: {N} consecutivi | T media anomalia: {±X}°C
 Contesto: {frase — es. "suoli saturi" / "siccità in corso" / "nella norma"}
 
-### 📊 vs Climatologia (Step B)
+### 📊 vs Climatologia (Step B) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 T max: {X}°C | Media storica: {Y}°C | Anomalia: {±Z}°C ({dentro norma/anomalo/estremo})
 Precipitazioni: {X}mm attesi | Media periodo: {Y}mm | {valutazione}
 
-### 📡 Osservato (stazione {NOME_STAZIONE}, ore {HH} — Step D)
+### 📡 Osservato (stazione {NOME_STAZIONE}, ore {HH} — Step D) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 T: {X}°C | Pioggia ultime 6h: {X}mm | Vento: {X} km/h da {DIR}
 {confronto con forecast precedente: scarto modelli}
 
-### Scenario del giorno
+### Scenario del giorno [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {2-3 righe narrative su come si sviluppa la giornata}
 **Visibilità**: {X} km ({Classe})
 
-### Temperatura
+### Temperatura [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Range: {min}–{max}°C | **Percepita (Apparent)**: {min_app}–{max_app}°C
 Consensus: {media}°C ±{σ}°C | Anomalia: {+/-X}°C vs norma
 
-### Precipitazioni
+### Precipitazioni [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {N}/{TOT} modelli prevedono pioggia | Quantitativi: {range mm} | P: {%}%
 {se temporali: CAPE={X} J/kg, LI={Y}, scenario grandine}
 
-### Vento
+### Vento [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Sostenuto: {X} km/h da {DIR} | Raffiche: {max} km/h
 {flag: FOEHN / BORA / TRAMONTANA / SCIROCCO / LIBECCIO / MAESTRALE / GARBINO / PONENTINO / GRECALE / BREVA / TIVANO / ORA / PELER}
 
-### ☀️ UV Index (Step G)
+### ☀️ UV Index (Step G) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Picco: {X} ({Basso/Moderato/Alto/Molto alto/Estremo}) alle {HH}:00
 Protezione: {raccomandazione SPF}
 
-### 🌊 Condizioni Marine (Step F)
+### 🌊 Condizioni Marine (Step F) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Stato del mare: Grado {N} (Douglas) | Onde: {X}m | Beaufort (Vento): {N}
 **Mare Morto (Swell)**: {Bassa/Media/Alta} | Periodo: {X}s ({Descrizione})
 **SST (Temperatura Mare)**: {X}°C ({Comfort})
 Balneazione: {Ok/Cautela/Sconsigliata} | Nautica: {Ok/Cautela/Sconsigliata}
 
-### 📊 Ensemble Spread (Step J)
+### 📊 Ensemble Spread (Step J) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 T max: p10={A}°C | mediana={B}°C | p90={C}°C | spread={D}°C → {Bassa/Media/Alta/Molto alta}
 Precipitazioni: mediana={X}mm | p90={Y}mm | P(>5mm)={P}% | P(>20mm)={Q}%
 Vento raffica: mediana={X} km/h | p90={Y} km/h | P(>70km/h)={P}%
@@ -695,7 +695,7 @@ Scenario p10 (ottimistico): {descrizione breve}
 Scenario p90 (pessimistico): {descrizione breve}
 
 
-### 💨 Qualità dell'Aria (Step H)
+### 💨 Qualità dell'Aria (Step H) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
 {se Bacino Padano: Protocollo Aria: {Verde/Arancio/Rosso} (Misure temporanee)}
@@ -705,7 +705,7 @@ PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
 Condizioni: {accumulo/dispersione/neutro}
 Soggetti sensibili: {raccomandazione}
 
-### ✈️ Validazione METAR (Step K)
+### ✈️ Validazione METAR (Step K) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Aeroporto: {ICAO} | Osservato: {HH:MM} UTC
 T osservata: {X}°C | T prevista: {Y}°C → Scarto: {±Z}°C
 Vento osservato: {DIR}/{X}kt raffiche {Y}kt | Vento previsto: {DIR}/{X}kt
@@ -713,7 +713,7 @@ Visibilità: {X}m ({VFR/IFR/LIFR}) | Nuvole: {SKC/FEW/SCT/BKN/OVC}
 {se divergenza >2°C: ⚠️ modello sovrastima/sottostima — correggi forecast}
 {se visibilità <2000m: ⚠️ nebbia — critico per viabilità}
 
-### ⚡ Fulmini in Tempo Reale (Step L)
+### ⚡ Fulmini in Tempo Reale (Step L) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Fulmini ultimi 15min: {N} in {area}km² | Densità: {X}/50km²/15min
 Trend: {in intensificazione / stabile / in dissolvimento}
 Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontano})
@@ -721,7 +721,7 @@ Distanza minima: {X}km ({pericolo immediato / in zona / nelle vicinanze / lontan
 {se fulmini + nuclei intensi (>45 dBZ) in Vision: ⚠️ grandine probabile (>70%)}
 {se dry lightning: ⚠️ rischio incendi — fulmini senza pioggia}
 
-### 🌊 Rischio Idraulico — Po e Grandi Fiumi (Step M)
+### 🌊 Rischio Idraulico — Po e Grandi Fiumi (Step M) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Fiume: {NOME} a {LOCALITÀ} | Livello: {X}m
 Soglie: {Gialla: X | Arancione: Y | Rossa: Z}
 Stato: {🟢 Basso / 🟡 Medio / 🟠 Alto / 🔴 Estremo} (Rischio Idraulico Nimbus)
@@ -730,21 +730,21 @@ Trend 6h: {in salita / stabile / in discesa} ({±X}m)
 {se suolo saturo + pioggia >50mm: ⚠️ rischio piena lampo / esondazione}
 {se fuori Trentino/Veneto: "Dati real-time via API limitati al Trentino e Veneto. Altri bacini: Analisi via soglie AIPO/CFR/PC."}
 
-### 🛰️ Satellite (Step N)
+### 🛰️ Satellite (Step N) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Canale IR10.8: {copertura nuvolosa — sereno / parzialmente coperto / coperto}
 {se fronti: Banda frontale {in arrivo / in transito / in allontanamento} — posizione vs NWP: {convergente / divergente}}
 {se celle convettive: Tops freddi (<-60°C) → temporali intensi {con/senza} overshooting}
 {se nebbia: Strato nuvoloso basso confermato in {Val Padana / zona costiera}}
 {se dust: Area diffusa IR8.7 → conferma dust CAMS}
 
-### ⚠️ Fenomeni speciali
+### ⚠️ Fenomeni speciali [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {solo se presenti — con spiegazione del meccanismo fisico}
 
-### ⚠️ Incertezze
+### ⚠️ Incertezze [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Tipo evento: {TIPO} | Affidabilità contestuale: {Alta/Media/Bassa}
 {dove i modelli divergono e perché conta praticamente}
 
-### Raccomandazione operativa
+### Raccomandazione operativa [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {frase diretta — scenario più probabile, cosa aspettarsi, cosa fare}
 
 ---
@@ -765,3 +765,4 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 - **Strategia Fallback**: Se Open-Meteo non è raggiungibile, aggrega dati da portali italiani (3bMeteo, iLMeteo, etc. — vedi `references/italian_portals.md`). In questo caso, **è obbligatorio inserire un alert esplicito** nel report per informare l'utente che sono state utilizzate fonti esterne non-API.
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
 - Bias noti dei modelli → consulta sempre `references/model_bias.md` prima di interpretare outlier
+- **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (dati fetchati in questa sessione), 🟡 PARZIALE (dati parziali o da cache), 🔴 STIMA (generato dalla conoscenza interna del modello). Non omettere mai il badge confidence. Preferisci dichiarare 🔴 STIMA piuttosto che omettere la sezione.
