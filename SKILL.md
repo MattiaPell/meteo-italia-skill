@@ -662,6 +662,7 @@ Da usare per query semplici ("Che tempo fa?", "Piove?", "Temperatura?").
 {⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
 
 ```
+
 ## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
 
@@ -679,6 +680,7 @@ Da usare per "analisi", "report" o use-case specifici.
 {⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
 
 ```
+
 ## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
 
@@ -752,7 +754,6 @@ Concordanza ensemble–deterministico: {Alta/Media/Bassa}
 Scenario p10 (ottimistico): {descrizione breve}
 Scenario p90 (pessimistico): {descrizione breve}
 
-
 ### 💨 Qualità dell'Aria (Step H) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 AQI: {X} — {Buono/Discreto/Moderato/Scarso/Molto scarso/Pessimo} {EMOJI}
 PM2.5: {X} µg/m³ | PM10: {X} µg/m³ | NO2: {X} µg/m³ | O3: {X} µg/m³
@@ -820,10 +821,18 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 - `timezone=Europe/Rome` sempre per l'Italia (mai `auto`)
 - Isole: usa sempre ECMWF come backbone — altri modelli hanno copertura ridotta
 - Montagna >1500m: aggiungi `elevation={quota}` per dati corretti
-- **Strategia Fallback**: Se Open-Meteo non è raggiungibile, aggrega dati da portali italiani (3bMeteo, iLMeteo, etc. — vedi `references/italian_portals.md`). In questo caso, **è obbligatorio inserire un alert esplicito** nel report per informare l'utente che sono state utilizzate fonti esterne non-API.
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
 - Bias noti dei modelli → consulta sempre `references/model_bias.md` prima di interpretare outlier
 - **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (dati fetchati in questa sessione), 🟡 PARZIALE (dati parziali o da cache), 🔴 STIMA (generato dalla conoscenza interna del modello). Non omettere mai il badge confidence. Preferisci dichiarare 🔴 STIMA piuttosto che omettere la sezione.
+
+## Fallback Strategy
+
+SE Open-Meteo API restituisce errore 5xx o timeout >10s:
+1. Prova https://historical-forecast-api.open-meteo.com per dati storici recenti.
+2. Usa `references/italian_portals.md` per portali regionali alternativi.
+3. Se anche i portali falliscono: dichiara nel report "dati NWP non disponibili", produci solo sezioni E (allerte Protezione Civile), D (ARPA se disponibile) e una stima qualitativa basata sulla climatologia `references/climatology.md`.
+
+**MANDATORIO**: NON produrre numeri specifici di temperatura o precipitazioni senza fonte reale.
 
 ## Rate Limits e Retry Strategy
 
