@@ -792,3 +792,10 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
 - Bias noti dei modelli → consulta sempre `references/model_bias.md` prima di interpretare outlier
 - **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (dati fetchati in questa sessione), 🟡 PARZIALE (dati parziali o da cache), 🔴 STIMA (generato dalla conoscenza interna del modello). Non omettere mai il badge confidence. Preferisci dichiarare 🔴 STIMA piuttosto che omettere la sezione.
+
+## Rate Limits e Retry Strategy
+
+- **CheckWX**: 3000 req/giorno → se quota esaurita, switcha immediatamente su `aviationweather.gov` senza notificare l'utente.
+- **DMI Lightning**: ~60 req/min → se 429 (Too Many Requests), aspetta 2s e riprova una volta sola, poi dichiara "lightning data non disponibile".
+- **Open-Meteo**: no hard limit ma fair use → se >10 modelli nella stessa chiamata e risposta >5s, riduci a 5 modelli prioritari per macroarea (vedi `references/italy_zones.md`).
+- **floods.it**: no rate limit noto → in caso di 503 (Service Unavailable), skip senza retry.
