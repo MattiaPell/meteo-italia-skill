@@ -125,11 +125,11 @@ Confronta il conteggio fulmini negli ultimi 15 min con il conteggio nei 15 min p
 | <800 J/kg | <5/15min | Temporale debole o isolato |
 
 #### Fulmini + Radar DPC (Step I)
-| Radar VIL | Fulmini | Interpretazione |
+| Radar VMI (Vision) | Fulmini | Interpretazione |
 |-----------|---------|-----------------|
-| >25 kg/m² | >10/15min | Grandine probabile (probabilità >70%) |
-| >15 kg/m² | 5-10/15min | Pioggia intensa, possibile grandine |
-| <15 kg/m² | >10/15min | Temporale elettrico, poca pioggia |
+| >55 dBZ | >10/15min | Grandine probabile (probabilità >70%) |
+| >45 dBZ | 5-10/15min | Pioggia intensa, possibile grandine |
+| <35 dBZ | >10/15min | Temporale elettrico, poca pioggia |
 
 #### Fulmini + Precipitazioni (Step A)
 | Precipitazione prevista | Fulmini osservati | Interpretazione |
