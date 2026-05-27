@@ -274,6 +274,17 @@ Headers: X-API-KEY: {YOUR_API_KEY}
 ```http
 GET https://aviationweather.gov/api/data/metar?ids=LIRF,LIMC,LIPE&format=json
 ```
+**Parsing JSON nativo aviationweather.gov:**
+Mappa i campi:
+- `raw_text` → decodifica manuale
+- `temp_c` → temperatura
+- `wind_speed_kt` → vento
+- `wind_dir_degrees` → direzione
+- `visibility_statute_mi` → visibilità (converti in km: ×1.609)
+- `sky_condition[].sky_cover` → copertura nuvolosa
+- `altim_in_hg` → QNH (converti in hPa: ×33.864)
+
+**Nota**: Se il JSON non ha il campo decodificato, usa regex su `raw_text`: temperatura = `/(\d{2})\/(\d{2})/`, vento = `/(\d{3})(\d{2})KT/`.
 
 **Interpretazione — confronto forecast vs osservato:**
 1. **Temperatura**: METAR T osservata vs NWP T prevista. Scarto >2°C → modello sovrastima/sottostima. Scarto >4°C → modello inaffidabile per questa zona/giornata

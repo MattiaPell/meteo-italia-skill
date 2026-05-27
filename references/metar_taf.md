@@ -192,7 +192,17 @@ GET https://aviationweather.gov/api/data/metar?ids=LIRF,LIMC,LIPE&format=json
 GET https://aviationweather.gov/api/data/taf?ids=LIRF&format=json
 ```
 
-**Nota**: aviationweather.gov restituisce METAR raw (es. `LIRF 191030Z 36008KT 9999 FEW025 22/14 Q1015`). L'agente AI può decodificare manualmente il formato METAR standard ICAO.
+### Parsing JSON nativo aviationweather.gov
+Mappa i campi per l'integrazione:
+- `raw_text` → decodifica manuale
+- `temp_c` → temperatura
+- `wind_speed_kt` → vento
+- `wind_dir_degrees` → direzione
+- `visibility_statute_mi` → visibilità (converti in km: ×1.609)
+- `sky_condition[].sky_cover` → copertura nuvolosa
+- `altim_in_hg` → QNH (converti in hPa: ×33.864)
+
+**Nota**: aviationweather.gov restituisce METAR raw (es. `LIRF 191030Z 36008KT 9999 FEW025 22/14 Q1015`). L'agente AI può decodificare manualmente il formato METAR standard ICAO. Se il JSON non ha il campo decodificato, usa regex su `raw_text`: temperatura = `/(\d{2})\/(\d{2})/`, vento = `/(\d{3})(\d{2})KT/`.
 
 ---
 
