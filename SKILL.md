@@ -17,6 +17,35 @@ allerte ufficiali (Protezione Civile), climatologia di riferimento (ERA5) e bias
 
 ---
 
+## Bootstrap obbligatorio
+
+Prima di qualsiasi analisi, carica in contesto i seguenti file nell'ordine
+indicato. NON procedere al Step 1 finché non hai letto almeno i file
+contrassegnati con [CORE]:
+
+[CORE] references/models.md
+[CORE] references/italy_zones.md
+[CORE] references/model_bias.md
+[CORE] references/climatology.md
+[CORE] references/event_reliability.md
+[OPTIONAL - carica solo se use case attivo] references/mountain.md
+[OPTIONAL] references/air_quality.md
+[OPTIONAL] references/uv_marine_recent.md
+[OPTIONAL] references/ensemble_spread.md
+[OPTIONAL] references/nowcasting_radar.md
+[OPTIONAL] references/lightning.md
+[OPTIONAL] references/hydro_italia.md
+[OPTIONAL] references/metar_taf.md
+[OPTIONAL] references/local_phenomena.md
+[OPTIONAL] references/arpa_network.md
+[OPTIONAL] references/satellite.md
+[OPTIONAL] references/italian_portals.md
+
+Se non riesci a leggere un file [CORE], dichiara esplicitamente nel report:
+'⚠️ Knowledge base parziale — [nome file] non disponibile.'
+
+---
+
 ## Flusso di lavoro
 
 ### 1. Determina Parametri
