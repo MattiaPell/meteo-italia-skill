@@ -117,6 +117,16 @@ L'evapotraspirazione potenziale (ET0) confrontata con le precipitazioni indica l
 - **0.15–0.30 m³/m³**: Umidità moderata
 - **>0.35 m³/m³**: Suolo molto umido / saturo
 
+### 🧪 Vapor Pressure Deficit (VPD)
+Il VPD indica la "sete" dell'aria. Più è alto, più l'aria estrae acqua da piante e animali.
+
+| VPD (kPa) | Livello | Impatto |
+|-----------|---------|---------|
+| **< 0.4** | Basso | Rischio funghi/muffe per scarsa traspirazione |
+| **0.4 – 0.8** | Ideale | Traspirazione ottimale per la maggior parte delle piante |
+| **0.8 – 1.5** | Alto | Stress moderato, chiusura stomi nelle ore calde |
+| **> 1.5** | Critico | Stress severo, rischio appassimento e **ignizione incendi** |
+
 ---
 
 ## 📈 Somma Termica (GDD - Growing Degree Days)
@@ -210,6 +220,29 @@ Il nettare richiede un bilancio tra umidità e calore.
 ### Rischio Gelate Tardive (Aprile-Maggio)
 - **T < 0°C**: Danno irreversibile ai fiori di Acacia e Agrumi (perdita raccolto anno).
 - **T < -2°C**: Danno ai germogli di Castagno.
+
+---
+
+## 🐄 Focus Zootecnia — Stress Termico Animale (THI)
+
+Il **Temperature-Humidity Index (THI)** è il parametro di riferimento per il benessere animale in stalla, particolarmente critico per le vacche da latte nel Bacino Padano.
+
+### Formula THI (Cattle/Livestock)
+```
+THI = (1.8 × T + 32) - [(0.55 - 0.0055 × RH) × (1.8 × T - 26)]
+```
+*Dove T è la temperatura dell'aria (°C) e RH è l'umidità relativa (%).*
+
+### Soglie di Stress Termico (Dairy Cattle)
+| THI | Categoria | Impatto sulla produzione |
+|-----|-----------|-------------------------|
+| **< 68** | **Nessuno** ✅ | Benessere ottimale |
+| **68 – 71** | **Soglia/Lieve** 🟡 | Inizio riduzione ingestione, lieve calo produzione |
+| **72 – 79** | **Moderato** 🟠 | Calo fertilità, perdita significativa latte (-2/3 kg/die) |
+| **80 – 89** | **Grave** 🔴 | Stress metabolico severo, necessità raffrescamento attivo |
+| **> 90** | **Emergenza** ⬛ | Pericolo di morte dell'animale |
+
+**Nota Operativa**: Se THI > 72, attivare sistemi di ventilazione e nebulizzazione in stalla. Monitorare il recupero notturno (THI < 65 per almeno 6 ore).
 
 ---
 

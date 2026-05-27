@@ -2,9 +2,9 @@
 name: meteo-italia
 description: >
   Analisi meteo multi-modello (ECMWF, ICON, GFS) per l'Italia. Include allerte Protezione Civile, radar DPC, dati ARPA,
-  fenomeni locali (Bora, Foehn, Scirocco) e use-case (agricoltura, montagna, mare, volo).
+  fenomeni locali (Bora, Foehn, Scirocco) e use-case (agricoltura, montagna, mare, volo, zootecnia).
   Trigger: "meteo", "previsioni", "pioggia", "neve", "allerta", "vento", "bora", "scirocco", "foehn", "temporale",
-  "grandine", "mare", "montagna", "ghiaccio", "nebbia", "acqua alta", "modelli meteo".
+  "grandine", "mare", "montagna", "ghiaccio", "nebbia", "acqua alta", "modelli meteo", "allevamento", "zootecnia".
   NON aspettare che l'utente chieda esplicitamente "analisi multi-modello" — qualsiasi
   domanda sul tempo in Italia usa questa skill.
 ---
@@ -76,8 +76,8 @@ GET https://api.open-meteo.com/v1/forecast
           wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,
           cloud_cover_high,visibility,weather_code,
           relative_humidity_2m,freezing_level_height,boundary_layer_height,
-          pressure_msl,uv_index,snow_depth,cape,lifted_index,
-          convective_inhibition,soil_temperature_0cm,soil_temperature_6cm,
+          pressure_msl,uv_index,vapor_pressure_deficit,snow_depth,cape,
+          lifted_index,convective_inhibition,soil_temperature_0cm,soil_temperature_6cm,
           soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,
           temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
           relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,
@@ -95,7 +95,7 @@ GET https://api.open-meteo.com/v1/forecast
 ```
 
 **Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_3_to_9cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,geopotential_height_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_500hPa`
+- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,vapor_pressure_deficit,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_3_to_9cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,geopotential_height_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_500hPa`
 - **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
 - **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,et0_fao_evapotranspiration`
 - **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_700hPa`
@@ -537,6 +537,14 @@ Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), tem
 **Satellite per copertura nuvolosa costiera**: immagini IR10.8 per valutazione sistemi temporaleschi in avvicinamento dal mare (Step N).
 Vedi scale Douglas/Beaufort e soglie in `references/uv_marine_recent.md`.
 
+### 🐄 Allevamento / Zootecnia
+Trigger: "allevamento", "stalla", "animali", "zootecnia", "vacche", "maiali", "stress termico"
+Focus: **Stress Termico Animale (THI - Temperature Humidity Index)**, comfort termico in stalla, rischio colpo di calore per il bestiame, ventilazione.
+**Zootecnia Intelligence**: Calcola il THI per vacche da latte utilizzando T e UR.
+- Soglie: THI > 68 (Soglia stress), > 72 (Stress lieve), > 79 (Moderato), > 89 (Grave/Emergenza).
+- **VPD (Vapor Pressure Deficit)**: monitora VPD > 1.5 kPa per rischio disidratazione e impatto sulla qualità del foraggio.
+**Applicazione**: Includi raccomandazioni per ventilazione forzata e raffrescamento se THI > 72.
+
 ### 🌡️ Salute / Caldo estremo / Allergie
 Trigger: "caldo", "afa", "anziani", "bambini", "salute", "allergie", "polline", "asma"
 Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calore (T >35°C per 3+ giorni), UV index, qualità aria.
@@ -666,6 +674,12 @@ Sostenuto: {X} km/h da {DIR} | Raffiche: {max} km/h
 ### ☀️ UV Index (Step G)
 Picco: {X} ({Basso/Moderato/Alto/Molto alto/Estremo}) alle {HH}:00
 Protezione: {raccomandazione SPF}
+
+### 🐄 Benessere Animale (Zootecnia)
+**Indice THI (Cattle)**: {X} — {Nessuno/Lieve/Moderato/Grave} Stress Termico
+Vapor Pressure Deficit (VPD): {X} kPa ({Livello})
+Raccomandazione: {ventilazione/raffrescamento/nessuna}
+Fonte: Formula THI NRC/Wang et al.
 
 ### 🌊 Condizioni Marine (Step F)
 Stato del mare: Grado {N} (Douglas) | Onde: {X}m | Beaufort (Vento): {N}
