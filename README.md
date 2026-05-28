@@ -1,6 +1,13 @@
 # Meteo Italia Skill ⛅
 
-Skill per **analisi comparativa multi-modello delle previsioni meteo** specializzata per il territorio italiano. Integra modelli numerici, osservazioni ARPA, allerte Protezione Civile e climatologia di riferimento.
+---
+⚠️ USO PERSONALE E INFORMATIVO
+Questo sistema è basato su fetch di dati pubblici e knowledge base non certificata.
+NON è adatto a decisioni professionali in ambito nautico, alpinistico,
+agricolo o di protezione civile. Per questi use case consultare i siti ufficiali (Meteo AM, Protezione Civile, ARPA).
+---
+
+Skill per **analisi comparativa multi-modello delle previsioni meteo** (uso personale e informativo) specializzata per il territorio italiano. Integra modelli numerici, osservazioni ARPA e climatologia di riferimento.
 
 Progettata principalmente per agenti AI (OpenClaw, Hermes...): l'agente carica `SKILL.md` come istruzioni operative per eseguire analisi meteo complete e strutturate.
 
@@ -40,7 +47,7 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 | **Multi-modello** | Confronta simultaneamente fino a 10 modelli su Open-Meteo API |
 | **Geocoding** | Ricerca città italiane con discriminazione omonimi via `admin1` (regione) |
 | **Fenomeni locali** | Riconoscimento automatico di foehn, bora, scirocco, tramontana, libeccio, grandine padana, neve appenninica, temporali adriatici |
-| **Allerte PC** | Integrazione allerte Protezione Civile per regione |
+| **Allerte** | Integrazione allerte da fonti pubbliche per regione (solo informativo) |
 | **Qualità aria** | Dati CAMS via Open-Meteo AQ API |
 | **Matrice affidabilità** | Affidabilità forecast per tipo di evento × orizzonte temporale |
 | **Bias noti** | Calibrazione per macroarea italiana con bias documentati per modello e stagione |
@@ -78,7 +85,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | [ensemble_spread.md](references/ensemble_spread.md) | Spread ensemble — incertezza probabilistica |
 | [event_reliability.md](references/event_reliability.md) | Affidabilità forecast per evento e orizzonte |
 | [local_phenomena.md](references/local_phenomena.md) | Flag automatici per fenomeni italiani |
-| [mountain.md](references/mountain.md) | Montagna, Neve e Valanghe (AINEVA) e Agro-meteo |
+| [mountain.md](references/mountain.md) | Montagna, Neve e Agro-meteo |
 | [air_quality.md](references/air_quality.md) | Qualità dell'aria — CAMS + Open-Meteo AQ API |
 | [italian_portals.md](references/italian_portals.md) | Portali meteo italiani di fallback |
 | [nowcasting_radar.md](references/nowcasting_radar.md) | Nowcasting radar — precipitazioni in tempo reale |
@@ -92,7 +99,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 
 | Use Case | Focus |
 |----------|-------|
-| 🏔️ Montagna / Escursionismo / Sci | Quota neve, temporali pomeridiani, UV in quota, valanghe (AINEVA), fulmini in cresta |
+| 🏔️ Montagna / Escursionismo / Sci | Quota neve, temporali pomeridiani, UV in quota, fulmini in cresta |
 | 🐝 Apicoltura / Impollinazione | Finestre di volo, secrezione nettarifero, gelate tardive |
 | ⚽ Evento sportivo / All'aperto | Probabilità pioggia nella finestra, vento strutture, fulmini (sospensione) |
 | 🌾 Agricoltura / Campagna | Gelate, grandine, bilancio idrico, umidità fogliare, allagamento campi |
