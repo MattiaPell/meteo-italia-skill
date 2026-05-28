@@ -872,3 +872,20 @@ SE Open-Meteo API restituisce errore 5xx o timeout >10s:
 - **DMI Lightning**: ~60 req/min → se 429 (Too Many Requests), aspetta 2s e riprova una volta sola, poi dichiara "lightning data non disponibile".
 - **Open-Meteo**: no hard limit ma fair use → se >10 modelli nella stessa chiamata e risposta >5s, riduci a 5 modelli prioritari per macroarea (vedi `references/italy_zones.md`).
 - **floods.it**: no rate limit noto → in caso di 503 (Service Unavailable), skip senza retry.
+
+## Validation Status
+
+### Componenti verificati
+- [ ] references/climatology.md vs ARPA dati storici
+- [ ] references/model_bias.md vs ECMWF verification scores
+- [ ] references/event_reliability.md vs SMI bollettini storici
+- [ ] references/local_phenomena.md vs Atlante Climatico CNR
+- [ ] Output report vs esperto meteorologo (almeno 10 casi)
+- [ ] Output nautico vs Meteo AM bollettino comparato
+- [ ] Output montagna vs AINEVA bollettino comparato
+
+### Come contribuire alla validazione
+Per ogni campo numerico verificato, aprire una PR con:
+- valore attuale nel reference
+- valore corretto dalla fonte primaria
+- link alla fonte primaria
