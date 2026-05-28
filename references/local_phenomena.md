@@ -1,3 +1,12 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "Soglie vento"
+  - "Segnali nei dati"
+---
+
 # Fenomeni Meteorologici Locali Italiani — Riconoscimento e Flag
 
 Guida per identificare automaticamente i fenomeni tipici italiani dai dati dei modelli.

@@ -41,6 +41,8 @@ contrassegnati con [CORE]:
 [OPTIONAL] references/satellite.md
 [OPTIONAL] references/italian_portals.md
 
+I references con confidence: low sono indicativi. NON citarli come fonti autorevoli nel report. Usa la formulazione 'stima indicativa' invece di 'secondo i dati storici'.
+
 Se non riesci a leggere un file [CORE], dichiara esplicitamente nel report:
 '⚠️ Knowledge base parziale — [nome file] non disponibile.'
 

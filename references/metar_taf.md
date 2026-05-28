@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # METAR/TAF — Osservazioni e Previsioni Aeroportuali
 
 Integrazione dati METAR (Meteorological Aerodrome Report) e TAF (Terminal Aerodrome Forecast) per validazione forecast vs osservato e use case aviazione/droni.

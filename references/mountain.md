@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Montagna, Neve e Valanghe — Soglie e Intelligence
 
 Guida per l'analisi dei fenomeni d'alta quota e del rischio valanghe in Italia.

@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Portali Meteo Italiani — Fallback e Fonti Ufficiali
 
 Da usare quando l'API Open-Meteo non è raggiungibile direttamente dall'ambiente.

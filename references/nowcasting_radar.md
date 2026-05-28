@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Nowcasting Radar DPC — Interpretazione Prodotti
 
 Guida all'interpretazione dei prodotti della Rete Radar Nazionale gestita dal Dipartimento della Protezione Civile (DPC).

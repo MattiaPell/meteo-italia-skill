@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Qualità dell'Aria — CAMS via Open-Meteo
 
 Previsioni qualità dell'aria gratuite via Open-Meteo Air Quality API,

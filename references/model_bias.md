@@ -1,3 +1,12 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "Entità bias"
+  - "Delta T UHI"
+---
+
 # Bias Noti dei Modelli — Italia
 
 Deviazioni sistematiche documentate dei modelli numerici sul territorio italiano.

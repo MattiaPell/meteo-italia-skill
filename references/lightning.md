@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Lightning Detection — DMI Open Data API
 
 Rilevamento fulmini in tempo reale per nowcasting temporali e valutazione rischio incendi.

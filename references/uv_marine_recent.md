@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # UV, Mare e Storico Recente — Soglie Interpretative
 
 Guida per l'interpretazione dei dati UV, Marini e dello storico recente (7 giorni).

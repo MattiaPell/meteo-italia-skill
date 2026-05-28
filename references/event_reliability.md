@@ -1,3 +1,12 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "Probabilità corretta"
+  - "Orizzonte temporale"
+---
+
 # Affidabilità Contestuale per Tipo di Evento — Italia
 
 Matrice evento × orizzonte temporale per stimare l'affidabilità reale del forecast,
