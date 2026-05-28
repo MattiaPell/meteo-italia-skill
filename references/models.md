@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Modelli Meteo Open-Meteo — Riferimento Completo
 
 ## Modelli Core Europa/Italia

@@ -1,3 +1,13 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "T max media"
+  - "T min media"
+  - "Precip. media"
+---
+
 # Climatologia ERA5 — Friuli Venezia Giulia
 
 ### Trieste (45.65°N, 13.76°E, 2m)

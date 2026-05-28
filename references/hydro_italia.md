@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Dati Idrologici Italia — Fiumi, Livelli e Rischio Alluvioni
 
 Monitoraggio idrometrico in tempo reale e fonti di contesto per valutazione rischio alluvioni.

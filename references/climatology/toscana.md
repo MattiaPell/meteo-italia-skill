@@ -1,3 +1,13 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "T max media"
+  - "T min media"
+  - "Precip. media"
+---
+
 # Climatologia ERA5 — Toscana
 
 ### Firenze (43.80°N, 11.20°E, 40m)

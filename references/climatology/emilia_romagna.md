@@ -1,3 +1,13 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "T max media"
+  - "T min media"
+  - "Precip. media"
+---
+
 # Climatologia ERA5 — Emilia Romagna
 
 ### Bologna (44.49°N, 11.34°E, 54m)

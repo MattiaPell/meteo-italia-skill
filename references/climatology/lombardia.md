@@ -1,3 +1,13 @@
+---
+source: "LLM-generated"
+last_verified: "2026-05-28"
+confidence: "low"
+verification_needed:
+  - "T max media"
+  - "T min media"
+  - "Precip. media"
+---
+
 # Climatologia ERA5 — Lombardia
 
 ### Milano (45.47°N, 9.19°E, 122m)

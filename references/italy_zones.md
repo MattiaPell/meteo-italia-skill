@@ -1,3 +1,13 @@
+---
+source: "Mixed"
+last_verified: "2026-05-28"
+confidence: "medium"
+verification_needed:
+  - "Endpoint API"
+  - "Soglie operative"
+  - "ID stazioni"
+---
+
 # Macroaree Italia — Modelli e Pesi
 
 ## Nord-Ovest (Piemonte, Valle d'Aosta, Liguria, Lombardia occidentale)
