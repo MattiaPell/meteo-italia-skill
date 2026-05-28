@@ -1,7 +1,7 @@
 ---
 name: meteo-italia
 description: >
-  Analisi meteo multi-modello Italia. Previsioni, confronto ECMWF/ICON/GFS, fenomeni locali (foehn, bora, scirocco), allerte PC, qualità aria, nowcasting temporali. Trigger: qualsiasi domanda meteo su città/regione italiana.
+  Analisi meteo multi-modello Italia (uso personale e informativo). Previsioni, confronto ECMWF/ICON/GFS, fenomeni locali (foehn, bora, scirocco), qualità aria, nowcasting temporali. Trigger: qualsiasi domanda meteo su città/regione italiana.
 ---
 
 # Weather Forecast Analysis — Italia
@@ -11,9 +11,9 @@ description: >
 
 ---
 
-Analisi comparativa multi-modello specializzata per il territorio italiano.
+Analisi comparativa multi-modello specializzata per il territorio italiano (uso personale e informativo).
 Integra: previsioni numeriche (Open-Meteo), osservazioni in tempo reale (reti ARPA regionali),
-allerte ufficiali (Protezione Civile), climatologia di riferimento (ERA5) e bias noti dei modelli.
+climatologia di riferimento (ERA5) e bias noti dei modelli.
 
 ---
 
@@ -87,7 +87,7 @@ L'esecuzione del workflow segue una sequenza prioritizzata suddivisa in 3 Tier. 
 |---|---|---|---|---|
 | **TIER 1** | A | Previsioni numeriche (Open-Meteo) | Sempre | references/models.md, references/italy_zones.md |
 | | B | Climatologia ERA5 | Sempre (10y baseline) | references/climatology.md |
-| | E | Allerta Protezione Civile | Sempre | references/arpa_network.md |
+| | E | Allerta (Dati Pubblici) | Sempre | references/arpa_network.md |
 | **TIER 2** | D | Osservazioni ARPA | Sempre | references/arpa_network.md |
 | | F | Dati marini | Se costiero/nautica/ASE/Caligo | references/uv_marine_recent.md |
 | | H | Qualità aria CAMS | Pianura Padana (ott-mar), salute, inversione, scirocco | references/air_quality.md |
@@ -165,12 +165,12 @@ GET https://archive-api.open-meteo.com/v1/archive
 ```
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
 
-#### E — Allerta Protezione Civile
+#### E — Allerta (Dati Pubblici)
 ```http
 GET https://mappe.protezionecivile.gov.it/geowebcache/service/wms
   (vedi references/arpa_network.md per parametri corretti)
 ```
-Oppure consulta il bollettino testuale su `mappe.protezionecivile.gov.it`.
+Oppure consulta il bollettino informativo su `mappe.protezionecivile.gov.it`.
 Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
 
 #### TIER 2 (Condizionali ad alta priorità)
@@ -279,7 +279,7 @@ Se l'immagine non è visualizzabile, non è interpretabile o le API falliscono:
 
 **Estrapolazione:** vedi `references/nowcasting_radar.md` per la scala dBZ e la logica di blending con i modelli NWP (ICON-D2) per la tendenza 0-3h.
 
-**Licenza obbligatoria**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
+**Licenza**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
 
 #### K — METAR/TAF (condizionale)
 
@@ -518,14 +518,13 @@ Se radar e NWP divergono sullo scenario a 1-3h → segnala esplicitamente l'ince
 
 Riconosci automaticamente il contesto dall'input e adatta il report:
 
-### 🏔️ Montagna / Escursionismo / Sci
+### 🏔️ Montagna / Escursionismo / Sci (Uso personale e informativo)
 Trigger: "montagna", "escursione", "trekking", "sci", "alpinismo", "rifugio"
 Focus: quota neve (`freezing_level_height`), visibilità, temporali pomeridiani (orario picco 14-17),
-vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target, rischio valanghe (neve fresca + vento).
-**Mountain Intelligence**: Includi sempre il **Pericolo Valanghe (Scala AINEVA 1-5)** e la **Qualità della Neve** (Farinosa, Crostosa, Pesante, Marcia) se applicabile. (Vedi `references/mountain.md`).
+vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target.
+**Mountain Intelligence**: Includi sempre la **Qualità della Neve** (Farinosa, Crostosa, Pesante, Marcia) se applicabile. (Vedi `references/mountain.md`).
 Aggiungi: `elevation={quota_target}` nella chiamata API.
 **UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV (Vedi `references/uv_marine_recent.md`, Step G).
-**Valanghe**: Consulta sempre il bollettino ufficiale **AINEVA** (valanghe.aineva.it) in presenza di neve fresca >30cm o forte vento.
 **Fulmini**: rischio elevato in cresta/esposto se lightning density >5 in 50km² — verifica trend ore 12-18 per temporali pomeridiani (Step L).
 **Satellite per nuvolosità in quota**: immagini IR10.8 per valutazione temporali in formazione sui rilievi e copertura nuvolosa generale (Step N).
 
@@ -567,7 +566,7 @@ acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti espos
 **Satellite per nebbia in Val Padana**: immagini VIS0.6 (diurno) e IR3.9 (notturno) per estensione nebbia (Step N).
 **Rischio allagamento strade**: se livello fiume > soglia rossa per ponte/guado sul percorso (Step M), o pioggia >50mm/24h + dati ISPRA dissesto → rischio interruzione.
 
-### 🏖️ Mare / Spiaggia / Nautica
+### 🏖️ Mare / Spiaggia / Nautica (Uso personale e informativo)
 Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"
 Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), temporali costieri, UV index.
 **Marine API obbligatoria**: attiva fetch F per dati onde completi (wave_height, swell, periodo).
@@ -639,6 +638,17 @@ Focus:
 
 ## Template Report
 
+---
+⚠️ USO PERSONALE E INFORMATIVO
+Questo report è generato da un sistema AI sperimentale basato su
+fetch di dati pubblici e knowledge base non certificata.
+NON è adatto a decisioni professionali in ambito nautico, alpinistico,
+agricolo o di protezione civile. Per questi use case consultare:
+- Meteo AM (Aeronautica Militare): meteoam.it
+- Protezione Civile: protezionecivile.gov.it
+- ARPA regionale di riferimento
+---
+
 ### 📋 Execution Manifest (OBBLIGATORIO)
 Da compilare SEMPRE prima di qualsiasi analisi. Se lo **Step A** è in stato "**🧠 Stima interna**", è obbligatorio inserire il banner di avviso in cima al report.
 
@@ -662,6 +672,16 @@ Da usare per query semplici ("Che tempo fa?", "Piove?", "Temperatura?").
 {⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
 
 ```
+---
+⚠️ USO PERSONALE E INFORMATIVO
+Questo report è generato da un sistema AI sperimentale basato su
+fetch di dati pubblici e knowledge base non certificata.
+NON è adatto a decisioni professionali in ambito nautico, alpinistico,
+agricolo o di protezione civile. Per questi use case consultare:
+- Meteo AM (Aeronautica Militare): meteoam.it
+- Protezione Civile: protezionecivile.gov.it
+- ARPA regionale di riferimento
+---
 
 ## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
@@ -680,6 +700,16 @@ Da usare per "analisi", "report" o use-case specifici.
 {⚠️ ATTENZIONE: report basato su conoscenza interna, non su dati meteorologici in tempo reale. - SOLO SE STEP A = STIMA INTERNA}
 
 ```
+---
+⚠️ USO PERSONALE E INFORMATIVO
+Questo report è generato da un sistema AI sperimentale basato su
+fetch di dati pubblici e knowledge base non certificata.
+NON è adatto a decisioni professionali in ambito nautico, alpinistico,
+agricolo o di protezione civile. Per questi use case consultare:
+- Meteo AM (Aeronautica Militare): meteoam.it
+- Protezione Civile: protezionecivile.gov.it
+- ARPA regionale di riferimento
+---
 
 ## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
@@ -700,7 +730,7 @@ Affidabilità: 0-30min Alta (Radar) → 30-60min Media → >60min Bassa (NWP)
 Fonte: Radar-DPC (CC-BY-SA)
 
 ### 🚨 Allerta {COLORE} — {TIPO} (Step E) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-{Dettaglio allerta Protezione Civile ufficiale}
+{Dettaglio allerta (solo a scopo informativo)}
 
 ### Consensus Multi-Modello [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 Modelli: {N} | Macroarea: {ZONA} | Concordanza: Alta/Media/Bassa
@@ -809,7 +839,7 @@ Tipo evento: {TIPO} | Affidabilità contestuale: {Alta/Media/Bassa}
 ---
 Fonte previsioni: Open-Meteo (CC BY 4.0) | Modelli: {lista}
 Osservazioni: {ARPA regionale} | METAR: CheckWX / aviationweather.gov
-Allerte: Protezione Civile Italiana | Radar: DPC (CC-BY-SA)
+Allerte: Fonti Pubbliche | Radar: DPC (CC-BY-SA)
 Climatologia: ERA5 (media {N} anni) | Pollini: AIA
 Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 ```
@@ -830,7 +860,7 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 SE Open-Meteo API restituisce errore 5xx o timeout >10s:
 1. Prova https://historical-forecast-api.open-meteo.com per dati storici recenti.
 2. Usa `references/italian_portals.md` per portali regionali alternativi.
-3. Se anche i portali falliscono: dichiara nel report "dati NWP non disponibili", produci solo sezioni E (allerte Protezione Civile), D (ARPA se disponibile) e una stima qualitativa basata sulla climatologia `references/climatology.md`.
+3. Se anche i portali falliscono: dichiara nel report "dati NWP non disponibili", produci solo sezioni E (allerte pubbliche se disponibili), D (ARPA se disponibile) e una stima qualitativa basata sulla climatologia `references/climatology.md`.
 
 **MANDATORIO**: NON produrre numeri specifici di temperatura o precipitazioni senza fonte reale.
 
