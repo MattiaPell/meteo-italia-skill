@@ -106,46 +106,44 @@ Esegui i passi seguendo l'ordine dei Tier:
 
 #### TIER 1 (Obbligatori sempre)
 
-#### A — Previsioni numeriche (Open-Meteo)
+#### A — Previsioni numeriche (Open-Meteo) — Strategia a 3 Livelli
 Vedi `references/models.md` per il set corretto per macroarea.
 
+**Regola:** NON caricare variabili di livello superiore se il livello precedente non ne giustifica la necessità. Dichiara nel report quale livello è stato usato.
+
+**LIVELLO 1 — Always (Query iniziale leggera)**
+Usa solo daily + 8 variabili orarie core + 3 modelli macroarea-default.
+- `forecast_days=7`, `past_days=0`
+- **Variabili orarie**: `temperature_2m, precipitation, wind_speed_10m, wind_gusts_10m, weather_code, cloud_cover, precipitation_probability, cape`
+- **Daily**: `temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,weather_code,uv_index_max,et0_fao_evapotranspiration`
+
+**LIVELLO 2 — Condizionale (Eventi significativi)**
+Attiva se il Livello 1 indica: `weather_code` 80-99, `cape` > 500, `precipitation` > 10mm, o `wind_speed_10m` > 50km/h.
+- Seconda chiamata con variabili avanzate: `temperature_850hPa, temperature_500hPa, lifted_index, convective_inhibition, freezing_level_height, visibility, boundary_layer_height`.
+- `past_days=7`.
+- Aggiungi modelli secondari solo se LIVELLO 1 mostra divergenza >1.5°C tra i modelli core.
+
+**LIVELLO 3 — Specializzato (Use case espliciti)**
+Attiva solo se richiesto esplicitamente un use case specializzato:
+- `{GRUPPO_ENERGY}`: `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
+- `{GRUPPO_AGRO}`: `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,et0_fao_evapotranspiration`
+- `{GRUPPO_PRO}`: `wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_700hPa`
+- `forecast_days=16`.
+
+**Fetch Template:**
 ```http
 GET https://api.open-meteo.com/v1/forecast
   ?latitude={LAT}&longitude={LON}
-  &models={MODEL1,MODEL2,...}
-  &hourly=temperature_2m,apparent_temperature,dewpoint_2m,precipitation,
-          precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,
-          wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,
-          cloud_cover_high,visibility,weather_code,
-          relative_humidity_2m,freezing_level_height,boundary_layer_height,
-          pressure_msl,uv_index,snow_depth,cape,lifted_index,
-          convective_inhibition,soil_temperature_0cm,soil_temperature_6cm,
-          soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,
-          temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,
-          relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,
-          wind_direction_850hPa,relative_humidity_850hPa,temperature_500hPa,
-          wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,
-          {GRUPPO_ENERGY}, {GRUPPO_AGRO}, {GRUPPO_PRO}
-  &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
-         apparent_temperature_min,precipitation_sum,snowfall_sum,
-         precipitation_probability_max,wind_speed_10m_max,
-         wind_gusts_10m_max,weather_code,uv_index_max,
-         et0_fao_evapotranspiration
+  &models={SET_MODELLI_LIVELLO}
+  &hourly={SET_VARIABILI_LIVELLO}
+  &daily={SET_DAILY}
   &timezone=Europe/Rome
-  &past_days=7
-  &forecast_days={N}
+  &past_days={0|7}
+  &forecast_days={7|16}
 ```
 
-**Ottimizzazione parametri orari:**
-- **Base**: `temperature_2m,apparent_temperature,dewpoint_2m,precipitation,precipitation_probability,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,weather_code,relative_humidity_2m,freezing_level_height,boundary_layer_height,pressure_msl,uv_index,snow_depth,cape,lifted_index,convective_inhibition,soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_3_to_9cm,temperature_925hPa,wind_speed_925hPa,wind_direction_925hPa,relative_humidity_925hPa,temperature_850hPa,wind_speed_850hPa,wind_direction_850hPa,relative_humidity_850hPa,geopotential_height_850hPa,temperature_500hPa,wind_speed_500hPa,wind_direction_500hPa,relative_humidity_500hPa,geopotential_height_500hPa`
-- **{GRUPPO_ENERGY}** (Solo se trigger Energia/Eolico/Solare): `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
-- **{GRUPPO_AGRO}** (Solo se trigger Agricoltura/Api): `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,et0_fao_evapotranspiration`
-- **{GRUPPO_PRO}** (Solo per analisi esperte/temporali/inversioni): `wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_700hPa`
-
-**Analisi storico recente (past_days=7):** Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
-
 #### C — Storico recente (ultimi 7gg)
-Analisi derivata dal parametro `past_days=7` nel fetch A.
+Analisi disponibile solo se **LIVELLO 2** di Step A è attivato (`past_days=7`).
 Calcola precipitazioni cumulate 7gg, giorni consecutivi senza pioggia, anomalia T media e **Bilancio Idrico Nimbus** (Precipitazioni - ET0). Includi nel report se: pioggia prevista >20mm, allerta ≥gialla, ondata calore/freddo in corso, o use case Agricoltura/Api.
 Vedi `references/uv_marine_recent.md` per soglie e interpretazione.
 
@@ -654,10 +652,10 @@ agricolo o di protezione civile. Per questi use case consultare:
 ### 📋 Execution Manifest (OBBLIGATORIO)
 Da compilare SEMPRE prima di qualsiasi analisi. Se lo **Step A** è in stato "**🧠 Stima interna**", è obbligatorio inserire il banner di avviso in cima al report.
 
-| Step | Nome | Stato | Fonte | Timestamp |
-|---|---|---|---|---|
-| A | Previsioni numeriche | ✅ / ⚠️ / ❌ / 🧠 | | |
-| B | Climatologia ERA5 | | | |
+| Step | Nome | Stato | Fonte | Livello Fetch | Timestamp |
+|---|---|---|---|---|---|
+| A | Previsioni numeriche | ✅ / ⚠️ / ❌ / 🧠 | | 1 / 2 / 3 | |
+| B | Climatologia ERA5 | | | - | |
 | ... | ... | ... | ... | ... |
 
 **Stati ammessi:**
@@ -687,6 +685,7 @@ agricolo o di protezione civile. Per questi use case consultare:
 
 ## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
+**Livello Fetch Step A**: {1 | 2 | 3}
 
 ## 🌤️ Meteo {LUOGO} — {DATA} [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 **Sintesi**: {2-3 righe su cielo, precipitazioni e vento}
@@ -715,6 +714,7 @@ agricolo o di protezione civile. Per questi use case consultare:
 
 ## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 {Tabella Manifest}
+**Livello Fetch Step A**: {1 | 2 | 3}
 
 ## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA} [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
 
