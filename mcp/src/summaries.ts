@@ -150,14 +150,36 @@ export function summarizeForecast(raw: any, models?: string[]): {
 }
 
 /** Best-effort model discovery when the caller didn't pass the list. */
-function inferModels(daily: any, hourly: any): string[] {
+const KNOWN_MODELS = new Set([
+  "ecmwf_ifs025",
+  "ecmwf_ifs025_ensemble_mean",
+  "iconeu",
+  "icon_seamless",
+  "icon_d2",
+  "gfs_seamless",
+  "gfs025",
+  "gfs025_ensemble_mean",
+  "gefs",
+  "arpege",
+  "arome",
+  "metno_nve",
+  "ukmo_seamless",
+  "ukmo_ukdeterministic_2km",
+]);
+
+export function inferModels(daily: any, hourly: any): string[] {
   const found = new Set<string>();
   const scan = (obj: any) => {
-    if (!obj) return;
+    if (!obj || typeof obj !== "object") return;
     for (const k of Object.keys(obj)) {
       if (k === "time") continue;
-      const m = k.match(/_([a-z0-9]+_[a-z0-9]+)$/i) ?? k.match(/_([a-z0-9]+)$/i);
-      if (m) found.add(m[1]);
+      // Match a known model token anywhere in the key (handles multi-underscore ids).
+      for (const model of KNOWN_MODELS) {
+        if (k.toLowerCase().includes(model)) {
+          found.add(model);
+          break;
+        }
+      }
     }
   };
   scan(daily);
