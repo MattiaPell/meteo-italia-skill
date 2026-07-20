@@ -1,15 +1,23 @@
 ---
-source: "MCP-migrated"
+source: "MCP"
 last_verified: "2026-05-28"
 confidence: "high"
-verification_needed:
-  - "Nessuna (i dati e le regole sono migrate nel server MCP)"
 ---
 
-# Modelli Meteo Open-Meteo — Migrato su MCP
+# Modelli Meteorologici Open-Meteo
 
-⚠️ **SPOSTATO SU MCP SERVER**:
-Le informazioni di questo file sono state completamente migrate nel server MCP per ottimizzare la context window dell'agente.
+Questo file descrive le specifiche tecniche e l'organizzazione dei modelli numerici di previsione del tempo (NWP) accessibili tramite Open-Meteo.
 
-- **Usa il tool MCP**:
-  - `meteo_reference_guidelines` (categoria: `models`) per consultare la tabella dettagliata dei modelli core europei, regionali, globali ed ensemble, inclusi i loro pesi di consensus consigliati.
+## Strumento MCP di Riferimento
+
+Utilizza il seguente tool per ottenere linee guida e pesi sui modelli:
+
+### `meteo_reference_guidelines` (categoria: `models`)
+
+- **Scopo**: Fornisce la tabella dettagliata dei modelli meteo core europei, regionali, globali ed ensemble, tra cui:
+  - **ECMWF IFS**: Risoluzione 9km, punto di riferimento globale.
+  - **DWD ICON-D2**: Risoluzione 2km, eccellente per il breve termine e i temporali convettivi.
+  - **ItaliaMeteo ARPAE ICON-2I**: Risoluzione 2.2km, modello regionale ottimizzato per la penisola italiana.
+  - **Météo-France AROME / ARPEGE**: Modelli ad altissima risoluzione per aree alpine e di confine.
+  - **NCEP GFS**: Modello globale di supporto.
+- **Pesi di consensus**: Assegna pesi di affidabilità predefiniti a ciascun modello in base all'orizzonte temporale e allo scenario meteo.

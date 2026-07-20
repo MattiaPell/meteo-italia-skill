@@ -1,16 +1,22 @@
 ---
-source: "MCP-migrated"
+source: "MCP"
 last_verified: "2026-05-28"
 confidence: "high"
-verification_needed:
-  - "Nessuna (i dati e le regole sono migrate nel server MCP)"
 ---
 
-# METAR/TAF Aeroporti — Migrato su MCP
+# METAR/TAF Osservazioni Aeroportuali
 
-⚠️ **SPOSTATO SU MCP SERVER**:
-Le informazioni di questo file sono state completamente migrate nel server MCP per ottimizzare la context window dell'agente.
+Questo file descrive i riferimenti per la consultazione e la decodifica dei bollettini meteorologici aeroportuali d'osservazione (METAR) e di previsione (TAF) per la validazione locale dei modelli.
 
-- **Usa i tool MCP**:
-  - `checkwx_metar_taf` (richiede API key) o `aviationweather_metar` (free fallback) per ottenere e decodificare i dati osservativi degli aeroporti.
-  - `meteo_reference_guidelines` (categoria: `aviation`) per ottenere l'elenco dei codici ICAO degli aeroporti italiani suddivisi per area e le regole di validazione del forecast.
+## Strumenti MCP di Riferimento
+
+Utilizza i seguenti tool per accedere ai dati aeronautici:
+
+### `checkwx_metar_taf` o `aviationweather_metar`
+
+- **Scopo**: Recupera i bollettini METAR/TAF correnti per gli aeroporti italiani e globali. Offre la decodifica automatica di visibilità, vento, temperatura, pressione e copertura nuvolosa.
+- **Parametri**: `icao` dell'aeroporto target.
+
+### `meteo_reference_guidelines` (categoria: `aviation`)
+
+- **Scopo**: Fornisce l'elenco dei codici ICAO degli aeroporti italiani divisi per macroarea geografica (es. LIMC per Malpensa, LIRF per Fiumicino, LICC per Catania, ecc.) e le regole di validazione del forecast (es. scostamenti di temperatura >2°C o vento >10kt).

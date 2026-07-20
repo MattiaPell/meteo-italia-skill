@@ -103,7 +103,7 @@ L'esecuzione del workflow segue una sequenza prioritizzata suddivisa in 3 Tier. 
 
 | Tier | Step | Nome | Condizione | Riferimento |
 |---|---|---|---|---|
-| **TIER 1** | A | Previsioni numeriche (Open-Meteo) | Sempre | references/models.md, references/italy_zones.md |
+| **TIER 1** | A | Previsioni numeriche (Open-Meteo) | Sempre | references/models.md, references/model_tuning.md |
 | | B | Climatologia ERA5 | Sempre (10y baseline) | references/climatology.md |
 | | E | Allerta (Dati Pubblici) | Sempre | references/arpa_network.md |
 | **TIER 2** | D | Osservazioni ARPA | Sempre | references/arpa_network.md |
@@ -407,10 +407,10 @@ Vedi `references/satellite.md` per canali SEVIRI, guida interpretazione pattern,
 
 #### 4a. Consensus modelli numerici (Massima Accuratezza)
 - Per ogni variabile e slot orario: media, min, max, σ tra i modelli.
-- **Dynamic Weighting**: Applica i correttivi di peso basati sullo scenario meteo (Temporali, Fronti, Nebbia, Venti) come definito in `references/italy_zones.md#pesatura-dinamica`.
-- **Outlier**: modelli che scostano >1.5σ → segnala e applica bias noto (vedi `references/model_bias.md`).
+- **Dynamic Weighting**: Applica i correttivi di peso basati sullo scenario meteo (Temporali, Fronti, Nebbia, Venti) come definito in `references/model_tuning.md`.
+- **Outlier**: modelli che scostano >1.5σ → segnala e applica bias noto (vedi `references/model_tuning.md`).
 - **Scenari probabilistici**: "X/Y modelli prevedono precipitazioni >5mm".
-- Usa pesi ponderati da `references/italy_zones.md` e dettagli modelli da `references/models.md`.
+- Usa pesi ponderati da `references/model_tuning.md` e dettagli modelli da `references/models.md`.
 
 #### 4b. Affidabilità contestuale per evento
 Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `references/event_reliability.md`:
@@ -434,7 +434,7 @@ Vedi `references/climatology.md` per valori di riferimento e classificazione ano
 
 **Raffinamenti di Accuratezza obbligatori:**
 1.  **Quota Neve (Snow-Line)**: Non usare solo lo Zero Termico. Applica i correttivi per intensità e orografia (valli strette) definiti in `references/mountain.md#raffinamento-quota-neve`.
-2.  **Isola di Calore Urbana (UHI)**: Se il target è una grande città (MI, RM, NA, TO, BO, FI), correggi le temperature minime notturne in condizioni di cielo sereno e vento calmo (vedi `references/model_bias.md#uhi`).
+2.  **Isola di Calore Urbana (UHI)**: Se il target è una grande città (MI, RM, NA, TO, BO, FI), correggi le temperature minime notturne in condizioni di cielo sereno e vento calmo (vedi `references/model_tuning.md`).
 3.  **Rischio Mareggiata (Traversia)**: Se il target è costiero, verifica se vento/onde colpiscono perpendicolarmente la costa (Traversia) usando la matrice in `references/uv_marine_recent.md#traversia`.
 
 #### 4d. Confronto forecast vs osservato (se dati ARPA disponibili)
@@ -442,7 +442,7 @@ Vedi `references/climatology.md` per valori di riferimento e classificazione ano
 - Se scarto sistematico > 2°C → applica correzione locale al forecast pomeridiano
 
 #### 4e. Fenomeni locali italiani
-Verifica automaticamente i pattern in `references/local_phenomena.md` e `references/italy_zones.md` → flag se attivi.
+Verifica automaticamente i pattern in `references/local_phenomena.md` e `references/model_tuning.md` → flag se attivi.
 
 #### 4f. Analisi Ensemble Spread
 Quando il fetch J è attivo:
@@ -821,7 +821,7 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 - Isole: usa sempre ECMWF come backbone — altri modelli hanno copertura ridotta
 - Montagna >1500m: aggiungi `elevation={quota}` per dati corretti
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
-- Bias noti dei modelli → consulta il tool `meteo_model_tuning` (o `references/model_bias.md` se MCP non attivo) prima di interpretare outlier
+- Bias noti dei modelli → consulta il tool `meteo_model_tuning` (o `references/model_tuning.md` se MCP non attivo) prima di interpretare outlier
 - **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (dati fetchati o ricavati tramite tool MCP in questa sessione), 🟡 PARZIALE (dati parziali o da cache), 🔴 STIMA (generato dalla conoscenza interna del modello). Non omettere mai il badge confidence. Preferisci dichiarare 🔴 STIMA piuttosto che omettere la sezione.
 
 ## Fallback Strategy
@@ -837,7 +837,7 @@ SE Open-Meteo API restituisce errore 5xx o timeout >10s:
 
 - **CheckWX**: 3000 req/giorno → se quota esaurita, switcha immediatamente su `aviationweather.gov` senza notificare l'utente.
 - **DMI Lightning**: ~60 req/min → se 429 (Too Many Requests), aspetta 2s e riprova una volta sola, poi dichiara "lightning data non disponibile".
-- **Open-Meteo**: no hard limit ma fair use → se >10 modelli nella stessa chiamata e risposta >5s, riduci a 5 modelli prioritari per macroarea (usando il tool `meteo_model_tuning` o `references/italy_zones.md` se MCP non attivo).
+- **Open-Meteo**: no hard limit ma fair use → se >10 modelli nella stessa chiamata e risposta >5s, riduci a 5 modelli prioritari per macroarea (usando il tool `meteo_model_tuning` o `references/model_tuning.md` se MCP non attivo).
 - **floods.it**: no rate limit noto → in caso di 503 (Service Unavailable), skip senza retry.
 
 ## Validation Status
