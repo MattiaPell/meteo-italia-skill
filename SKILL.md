@@ -19,30 +19,12 @@ climatologia di riferimento (ERA5) e bias noti dei modelli.
 
 ## Bootstrap obbligatorio
 
-⚠️ **STRATEGIA MCP-FIRST (RACCOMANDATA)**:
-Se il server MCP (`meteo-italia-mcp-server`) è disponibile nell'ambiente, **NON caricare alcun file di reference in contesto**. Usa direttamente i tool MCP dedicati per ottenere climatologia, indici bioclimatici, bias dei modelli, affidabilità e riconoscimento fenomeni locali al volo, risparmiando oltre l'80% di context window.
+⚠️ **STRATEGIA MCP-FIRST OBBLIGATORIA (RACCOMANDATA)**:
+L'intero progetto adotta una filosofia **MCP-First**. Tutti i file presenti sotto `references/` sono stati ridotti a file placeholder minimi. L'intera base di conoscenza dettagliata (tabelle, scale, regole di calcolo e soglie) è stata migrata all'interno del server MCP (`meteo-italia-mcp-server`) per risparmiare oltre il 95% di context window ed evitare rallentamenti dell'agente.
 
-Se l'ambiente NON supporta MCP, carica in contesto i seguenti file nell'ordine indicato prima di procedere al Step 1 (solo file contrassegnati con [CORE] sono strettamente necessari):
+Se il server MCP è disponibile nell'ambiente, **NON caricare alcun file di reference in contesto**. Usa direttamente i tool MCP dedicati per ottenere climatologia, indici bioclimatici avanzati, bias dei modelli, affidabilità, linee guida, e riconoscimento dei fenomeni locali al volo.
 
-[CORE] references/models.md
-[CORE] references/italy_zones.md
-[CORE] references/model_bias.md
-[CORE] references/climatology.md
-[CORE] references/event_reliability.md
-[OPTIONAL - carica solo se use case attivo] references/mountain.md
-[OPTIONAL] references/air_quality.md
-[OPTIONAL] references/uv_marine_recent.md
-[OPTIONAL] references/ensemble_spread.md
-[OPTIONAL] references/nowcasting_radar.md
-[OPTIONAL] references/lightning.md
-[OPTIONAL] references/hydro_italia.md
-[OPTIONAL] references/metar_taf.md
-[OPTIONAL] references/local_phenomena.md
-[OPTIONAL] references/arpa_network.md
-[OPTIONAL] references/satellite.md
-[OPTIONAL] references/italian_portals.md
-
-I references con confidence: low sono indicativi. NON citarli come fonti autorevoli nel report. Usa la formulazione 'stima indicativa' invece di 'secondo i dati storici'.
+Se l'ambiente non supporta l'MCP, l'agente dovrà fare affidamento sulle proprie capacità interne (Stima interna) o sui file minimi presenti nella cartella `references/` che indicano i riferimenti generali dei tool.
 
 ---
 
@@ -78,10 +60,11 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 | M (idro Veneto) | `arpav_idro` | ARPAV |
 | N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
 | **Ref: Climatologia** | `meteo_climatology` | Ottieni medie e anomalie storiche per 110 città italiane |
-| **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, ecc. |
+| **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, Quota Neve, Rischio Incendi (NFR) |
 | **Ref: Fenomeni Locali** | `meteo_local_phenomena` | Riconoscimento automatico Bora, Foehn, Scirocco, Nebbia, Gelicidio, ecc. |
 | **Ref: Bias e Pesi** | `meteo_model_tuning` | Recupera pesi zone, bias modelli e correzione UHI (Isola di Calore) |
 | **Ref: Affidabilità** | `meteo_event_reliability` | Matrice di affidabilità forecast per orizzonte e tipo evento |
+| **Ref: Linee Guida e Scale** | `meteo_reference_guidelines` | Tabelle statiche per categorie: `models`, `marine`, `air_quality`, `mountain`, `hydro`, `nowcasting`, `satellite`, `lightning`, `aviation`, `portals` |
 
 I template `GET https://...` nei singoli step restano come **riferimento/override**: usali solo se il tool MCP non è disponibile.
 

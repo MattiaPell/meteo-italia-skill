@@ -1,68 +1,15 @@
 ---
-source: "Mixed"
+source: "MCP-migrated"
 last_verified: "2026-05-28"
-confidence: "medium"
+confidence: "high"
 verification_needed:
-  - "Endpoint API"
-  - "Soglie operative"
-  - "ID stazioni"
+  - "Nessuna (i dati e le regole sono migrate nel server MCP)"
 ---
 
-# Portali Meteo Italiani — Fallback e Fonti Ufficiali
+# Portali Meteo Italiani — Migrato su MCP
 
-Da usare quando l'API Open-Meteo non è raggiungibile direttamente dall'ambiente.
+⚠️ **SPOSTATO SU MCP SERVER**:
+Le informazioni di questo file sono state completamente migrate nel server MCP per ottimizzare la context window dell'agente.
 
-## Portali Principali (affidabilità per consenso)
-
-| Portale | URL | Modello backend | Affidabilità |
-|---------|-----|-----------------|--------------|
-| **3bMeteo** | 3bmeteo.com | WRF + GFS + ECMWF | ★★★★★ |
-| **iLMeteo** | ilmeteo.it | Proprietario + ECMWF | ★★★★★ |
-| **Meteo.it** | meteo.it | ECMWF + GFS | ★★★★ |
-| **ARPAE** | arpae.it | ARPAE ICON 2I (ufficiale) | ★★★★★ |
-| **Meteo AM** | meteoam.it | Aeronautica Militare (ufficiale) | ★★★★★ |
-| **Meteoblue** | meteoblue.com | ICON + ECMWF + NMM | ★★★★ |
-| **Ventusky** | ventusky.com | GFS/ICON/ECMWF (comparazione) | ★★★★ |
-| **Windy** | windy.com | ECMWF + GFS + ICON (comparazione) | ★★★★ |
-
-## Fonti Ufficiali per Allerte
-
-| Ente | URL | Copertura |
-|------|-----|-----------|
-| **Protezione Civile** | mappe.protezionecivile.gov.it | Italia intera — allerte ufficiali |
-| **ARPAE** | arpae.it/bollettini | Emilia-Romagna (modello ufficiale) |
-| **ARPA Veneto** | arpa.veneto.it/meteo | Veneto |
-| **ARPA Lombardia** | arpalombardia.it | Lombardia |
-| **ARPA Piemonte** | arpa.piemonte.it | Piemonte e Valle d'Aosta |
-| **Meteotrentino** | meteotrentino.it | Trentino-Alto Adige |
-| **ARPA FVG** | meteo.fvg.it | Friuli-Venezia Giulia |
-| **LaMMA** | lamma.toscana.it | Toscana |
-| **Servizio Meteo Sardegna** | sardegnameteo.it | Sardegna |
-
-## Strategia di Aggregazione (quando API non disponibile)
-
-1. **Obbligo di Trasparenza**: Se utilizzi dati da questi portali, inserisci un **ALERT** esplicito in cima al report (vedi `SKILL.md`).
-2. Recupera dati da almeno 3 portali diversi per la città target.
-3. Per ogni variabile (T max, T min, precipitazioni, vento) confronta i valori.
-4. Calcola consensus manuale: media e range dei valori trovati.
-5. Segnala le fonti specifiche utilizzate e il livello di concordanza nel report.
-6. Per eventi critici: cita sempre la fonte ufficiale (Protezione Civile, ARPAE, MeteoAM).
-
-## Come Leggere i Dati dai Portali
-
-**Temperatura:** sempre in °C; verifica se è T aria o percepita
-**Precipitazioni:** in mm; alcuni portali danno totale giornaliero, altri per fascia oraria
-**Vento:** verifica se è sostenuto o raffica; direzione in gradi o lettere (N/NE/E...)
-**Probabilità pioggia:** percentuale — >50% è da considerare "pioggia prevista"
-
-## Note su Windy e Ventusky
-
-Questi portali mostrano più modelli sovrapposti — ottimi per confronto visuale:
-- Windy: seleziona ECMWF, GFS, ICON singolarmente dalla dropdown
-- Ventusky: mostra ECMWF/GFS/ICON/GEM con slider temporale
-- Utili per capire a colpo d'occhio se c'è accordo o divergenza tra modelli
-
----
-
-> **Nota**: Per la rete ARPA completa con tutti gli endpoint regionali, usa `arpa_network.md`.
-> Questo file rimane come riferimento per i portali aggregatori privati (3bMeteo, iLMeteo, ecc.)
+- **Usa il tool MCP**:
+  - `meteo_reference_guidelines` (categoria: `portals`) per ottenere l'elenco dei portali meteo di fallback e le regole di aggregazione del consensus.
