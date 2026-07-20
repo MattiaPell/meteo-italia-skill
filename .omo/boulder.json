@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "active_work_id": "meteo-mcp-fat-tools",
+  "works": {
+    "meteo-mcp-fat-tools": {
+      "work_id": "meteo-mcp-fat-tools",
+      "active_plan": ".omo/plans/meteo-mcp-fat-tools.md",
+      "plan_name": "meteo-mcp-fat-tools",
+      "session_ids": ["codex:root-sisyphus"],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_todos": ["T1","T2","T3","T4","T5","T6","T7","T8","T9"],
+      "notes": "Eseguito direttamente dall'orchestrator: sub-agent fallivano per modello inesistente (opencode/gpt-5-nano). Build tsc verde. Todo T1 riscritto: nessun build-blocker reale (z.coerce già corretto), unico fix era typo ecmwf_ifs04 -> ecmwf_ifs025 (SKILL.md:157, summaries.ts, debug.ts)."
+    }
+  }
+}
