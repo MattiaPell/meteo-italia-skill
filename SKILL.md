@@ -19,9 +19,10 @@ climatologia di riferimento (ERA5) e bias noti dei modelli.
 
 ## Bootstrap obbligatorio
 
-Prima di qualsiasi analisi, carica in contesto i seguenti file nell'ordine
-indicato. NON procedere al Step 1 finché non hai letto almeno i file
-contrassegnati con [CORE]:
+⚠️ **STRATEGIA MCP-FIRST (RACCOMANDATA)**:
+Se il server MCP (`meteo-italia-mcp-server`) è disponibile nell'ambiente, **NON caricare alcun file di reference in contesto**. Usa direttamente i tool MCP dedicati per ottenere climatologia, indici bioclimatici, bias dei modelli, affidabilità e riconoscimento fenomeni locali al volo, risparmiando oltre l'80% di context window.
+
+Se l'ambiente NON supporta MCP, carica in contesto i seguenti file nell'ordine indicato prima di procedere al Step 1 (solo file contrassegnati con [CORE] sono strettamente necessari):
 
 [CORE] references/models.md
 [CORE] references/italy_zones.md
@@ -43,17 +44,11 @@ contrassegnati con [CORE]:
 
 I references con confidence: low sono indicativi. NON citarli come fonti autorevoli nel report. Usa la formulazione 'stima indicativa' invece di 'secondo i dati storici'.
 
-Se non riesci a leggere un file [CORE], dichiara esplicitamente nel report:
-'⚠️ Knowledge base parziale — [nome file] non disponibile.'
-
 ---
 
 ## MCP Server (meteo-italia-mcp-server)
 
-Tutte le chiamate API esterne sono esposte come **tool MCP**. Se l'ambiente
-fornisce questo server, USA I TOOL al posto dei fetch HTTP grezzi: gestiscono
-errori, rate-limit e parsing, e restituiscono `structuredContent` pronto
-all'uso (campi `ok`, `url`, `status`, `data`, `elapsedMs`).
+Tutte le chiamate API esterne e le basi di conoscenza meteorologiche sono esposte come **tool MCP**. Se l'ambiente fornisce questo server, **USA I TOOL al posto dei fetch HTTP grezzi e dei file di reference locali**: gestiscono errori, rate-limit e parsing, ed eseguono calcoli complessi restituendo `structuredContent` pronto all'uso (campi `ok`, `url`, `status`, `data`, `elapsedMs`).
 
 **Avvio / installazione** (vedi `mcp/README.md`):
 ```bash
@@ -65,28 +60,30 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 ```
 `CHECKWX_API_KEY` va esposta come variabile d'ambiente per il tool `checkwx_metar_taf`.
 
-**Mappatura step → tool MCP:**
+**Mappatura step/riferimenti → tool MCP:**
 
-| Step | Tool MCP | Servizio |
+| Step / Riferimento | Tool MCP | Servizio / Funzione |
 |---|---|---|
 | Geocoding | `open_meteo_geocode` | Open-Meteo Geocoding |
 | A (forecast) | `open_meteo_forecast` / `open_meteo_forecast_summary` | Open-Meteo Forecast (raw / compact summary) |
-| B (ERA5) | `open_meteo_archive` | Open-Meteo Archive |
+| B (Climatologia ERA5) | `meteo_climatology` / `open_meteo_archive` | Query norme ERA5 di capoluoghi italiani / Archive raw |
+| E (allerte) | `pc_allerte_wms` | PC WMS & Bollettino JSON |
 | F (marine) | `open_meteo_marine` | Open-Meteo Marine |
 | H (CAMS) | `open_meteo_air_quality` | Open-Meteo Air-Quality |
 | J (ensemble) | `open_meteo_ensemble` | Open-Meteo Ensemble |
-| E (allerte) | `pc_allerte_wms` | PC WMS |
 | I (radar) | `dpc_radar_vmi` | Radar DPC |
 | K (METAR/TAF) | `checkwx_metar_taf` / `aviationweather_metar` | CheckWX / AviationWeather |
 | L (fulmini) | `dmi_lightning` | DMI Lightning |
 | M (idro TA-A) | `floods_it_monitoring` | floods.it |
 | M (idro Veneto) | `arpav_idro` | ARPAV |
 | N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
+| **Ref: Climatologia** | `meteo_climatology` | Ottieni medie e anomalie storiche per 110 città italiane |
+| **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, ecc. |
+| **Ref: Fenomeni Locali** | `meteo_local_phenomena` | Riconoscimento automatico Bora, Foehn, Scirocco, Nebbia, Gelicidio, ecc. |
+| **Ref: Bias e Pesi** | `meteo_model_tuning` | Recupera pesi zone, bias modelli e correzione UHI (Isola di Calore) |
+| **Ref: Affidabilità** | `meteo_event_reliability` | Matrice di affidabilità forecast per orizzonte e tipo evento |
 
-I template `GET https://...` nei singoli step restano come **riferimento/override**:
-usali solo se il tool MCP non è disponibile o per debug nella pagina web.
-La logica di validazione (es. filtro Italia al geocoding, soglie fulmini,
-confronto METAR vs NWP) resta **responsabilità del report**, non dell'MCP.
+I template `GET https://...` nei singoli step restano come **riferimento/override**: usali solo se il tool MCP non è disponibile.
 
 ---
 
@@ -841,15 +838,15 @@ Idrologia: floods.it (Trentino/Veneto) | Satellite: EUMETSAT
 - Isole: usa sempre ECMWF come backbone — altri modelli hanno copertura ridotta
 - Montagna >1500m: aggiungi `elevation={quota}` per dati corretti
 - ECMWF IFS a 9km è open-data completa dal 1 ottobre 2025
-- Bias noti dei modelli → consulta sempre `references/model_bias.md` prima di interpretare outlier
-- **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (dati fetchati in questa sessione), 🟡 PARZIALE (dati parziali o da cache), 🔴 STIMA (generato dalla conoscenza interna del modello). Non omettere mai il badge confidence. Preferisci dichiarare 🔴 STIMA piuttosto che omettere la sezione.
+- Bias noti dei modelli → consulta il tool `meteo_model_tuning` (o `references/model_bias.md` se MCP non attivo) prima di interpretare outlier
+- **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (dati fetchati o ricavati tramite tool MCP in questa sessione), 🟡 PARZIALE (dati parziali o da cache), 🔴 STIMA (generato dalla conoscenza interna del modello). Non omettere mai il badge confidence. Preferisci dichiarare 🔴 STIMA piuttosto che omettere la sezione.
 
 ## Fallback Strategy
 
 SE Open-Meteo API restituisce errore 5xx o timeout >10s:
 1. Prova https://historical-forecast-api.open-meteo.com per dati storici recenti.
 2. Usa `references/italian_portals.md` per portali regionali alternativi.
-3. Se anche i portali falliscono: dichiara nel report "dati NWP non disponibili", produci solo sezioni E (allerte pubbliche se disponibili), D (ARPA se disponibile) e una stima qualitativa basata sulla climatologia `references/climatology.md`.
+3. Se anche i portali falliscono: dichiara nel report "dati NWP non disponibili", produci solo sezioni E (allerte pubbliche se disponibili), D (ARPA se disponibile) e una stima qualitativa basata sulla climatologia usando il tool `meteo_climatology` (o `references/climatology.md` se MCP non attivo).
 
 **MANDATORIO**: NON produrre numeri specifici di temperatura o precipitazioni senza fonte reale.
 
@@ -857,16 +854,16 @@ SE Open-Meteo API restituisce errore 5xx o timeout >10s:
 
 - **CheckWX**: 3000 req/giorno → se quota esaurita, switcha immediatamente su `aviationweather.gov` senza notificare l'utente.
 - **DMI Lightning**: ~60 req/min → se 429 (Too Many Requests), aspetta 2s e riprova una volta sola, poi dichiara "lightning data non disponibile".
-- **Open-Meteo**: no hard limit ma fair use → se >10 modelli nella stessa chiamata e risposta >5s, riduci a 5 modelli prioritari per macroarea (vedi `references/italy_zones.md`).
+- **Open-Meteo**: no hard limit ma fair use → se >10 modelli nella stessa chiamata e risposta >5s, riduci a 5 modelli prioritari per macroarea (usando il tool `meteo_model_tuning` o `references/italy_zones.md` se MCP non attivo).
 - **floods.it**: no rate limit noto → in caso di 503 (Service Unavailable), skip senza retry.
 
 ## Validation Status
 
 ### Componenti verificati
-- [ ] references/climatology.md vs ARPA dati storici
-- [ ] references/model_bias.md vs ECMWF verification scores
-- [ ] references/event_reliability.md vs SMI bollettini storici
-- [ ] references/local_phenomena.md vs Atlante Climatico CNR
+- [ ] `meteo_climatology` vs ARPA dati storici
+- [ ] `meteo_model_tuning` vs ECMWF verification scores
+- [ ] `meteo_event_reliability` vs SMI bollettini storici
+- [ ] `meteo_local_phenomena` vs Atlante Climatico CNR
 - [ ] Output report vs esperto meteorologo (almeno 10 casi)
 - [ ] Output nautico vs Meteo AM bollettino comparato
 - [ ] Output montagna vs AINEVA bollettino comparato

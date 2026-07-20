@@ -57,15 +57,11 @@ end_date:   {ANNO-1}-05-20
 
 *(ERA5 1991-2020 — periodo di riferimento WMO)*
 
-Seleziona la regione per visualizzare i dati dei capoluoghi di provincia:
+⚠️ **NOTA SULL'EFFICIENZA DELLA CONTESTUALIZZAZIONE**:
+Tutti i dati storici mensili per i capoluoghi di provincia italiani (110 città) sono stati migrati all'interno del server MCP. Per accedervi in tempo reale risparmiando spazio in contesto, usa il tool:
+`meteo_climatology(cityName, latitude, longitude, month)`
 
-| Macroarea | Regioni |
-|-----------|---------|
-| **Nord-Ovest** | [Liguria](climatology/liguria.md), [Lombardia](climatology/lombardia.md), [Piemonte](climatology/piemonte.md), [Valle d'Aosta](climatology/valle_aosta.md) |
-| **Nord-Est** | [Emilia-Romagna](climatology/emilia_romagna.md), [Friuli-Venezia Giulia](climatology/friuli_venezia_giulia.md), [Trentino-Alto Adige](climatology/trentino_alto_adige.md), [Veneto](climatology/veneto.md) |
-| **Centro** | [Lazio](climatology/lazio.md), [Marche](climatology/marche.md), [Toscana](climatology/toscana.md), [Umbria](climatology/umbria.md) |
-| **Sud** | [Abruzzo](climatology/abruzzo.md), [Basilicata](climatology/basilicata.md), [Calabria](climatology/calabria.md), [Campania](climatology/campania.md), [Molise](climatology/molise.md), [Puglia](climatology/puglia.md) |
-| **Isole** | [Sardegna](climatology/sardegna.md), [Sicilia](climatology/sicilia.md) |
+I file markdown regionali della cartella `climatology/` sono stati rimossi per evitare sovraccarichi inutili del contesto dell'agente.
 
 ---
 
