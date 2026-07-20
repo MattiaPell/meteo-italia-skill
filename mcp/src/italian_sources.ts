@@ -50,7 +50,7 @@ const LEVEL_BY_COLOR: Record<string, number> = {
   arancione: 2,
   rosso: 3,
 };
-function parseAllerte(data: any, regione?: string): any {
+export function parseAllerte(data: any, regione?: string): any {
   const records: any[] = [];
   const push = (reg: string, livello: string, tipo: string) => {
     const color = livello?.toLowerCase()?.trim();

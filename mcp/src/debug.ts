@@ -1,6 +1,7 @@
 import express from "express";
 import { apiGet, apiPostJson, CHECKWX_API_KEY } from "./http.js";
 import { summarizeForecast } from "./summaries.js";
+import { parseAllerte } from "./italian_sources.js";
 
 /** Split a comma-joined query value into a list (mirrors the MCP tools). */
 function list(v: string | undefined): string[] | undefined {
@@ -93,8 +94,18 @@ export function startDebugServer(port: number) {
       const bytesSum = JSON.stringify(summary).length;
       return { ...raw, data: summary, compression: `${bytesRaw} -> ${bytesSum} bytes (${Math.round((1 - bytesSum / bytesRaw) * 100)}% smaller)` };
     },
-    pc_allerte: (q) =>
-      apiGet("https://mappe.protezionecivile.gov.it/geowebcache/service/wms", {
+    pc_allerte: async (q) => {
+      // 1) Try the public bollettino di criticità JSON API (real alert data).
+      const bulletin = await apiGet(
+        "https://api.protezionecivile.gov.it/bollettini/allerte/ultimo",
+        {}
+      );
+      if (bulletin.ok) {
+        const parsed = parseAllerte(bulletin.data, q.regione || undefined);
+        return { ...bulletin, data: parsed };
+      }
+      // 2) Fallback to WMS.
+      const r = await apiGet("https://mappe.protezionecivile.gov.it/geowebcache/service/wms", {
         service: q.service ?? "WMS",
         request: q.request ?? "GetCapabilities",
         version: q.version ?? "1.3.0",
@@ -104,7 +115,12 @@ export function startDebugServer(port: number) {
         height: q.height,
         format: q.format ?? "application/json",
         crs: "EPSG:4326",
-      }),
+      });
+      if (!r.ok) {
+        r.error = `${r.error} — se l'endpoint è irraggiungibile, consulta https://mappe.protezionecivile.gov.it (bollettino allerte).`;
+      }
+      return r;
+    },
     dpc_radar: async (q) => {
       const find = await apiGet("https://radar-api.protezionecivile.it/findLastProductByType", {
         type: q.productType ?? "VMI",
@@ -247,7 +263,7 @@ const FIELDS = {
   air_quality: { latitude:"45.5", longitude:"9.2", hourly:"pm10,pm2_5,european_aqi,ozone,dust", current:"european_aqi,pm10,pm2_5", domains:"cams_europe", timezone:"Europe/Rome" },
   ensemble: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025_ensemble_mean,gfs025_ensemble_mean", hourly:"temperature_2m,temperature_2m_spread,precipitation_mean,precipitation_spread", daily:"temperature_2m_max,temperature_2m_min", timezone:"Europe/Rome", forecast_days:"7" },
   forecast_summary: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code,cape,wind_gusts_10m", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max", timezone:"Europe/Rome", forecast_days:"7" },
-  pc_allerte: { service:"WMS", request:"GetCapabilities", version:"1.3.0", layer:"", bbox:"", width:"800", height:"600", format:"application/json" },
+  pc_allerte: { regione:"", service:"WMS", request:"GetCapabilities", version:"1.3.0", layer:"", bbox:"", width:"800", height:"600", format:"application/json" },
   dpc_radar: { productType:"VMI", download:"false" },
   checkwx: { icao:"LIRF,LIMC,LIPE", type:"metar" },
   aviationweather: { ids:"LIRF,LIMC,LIPE", format:"json" },
