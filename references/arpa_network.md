@@ -1,16 +1,22 @@
 ---
-source: "MCP-migrated"
+source: "MCP"
 last_verified: "2026-05-28"
 confidence: "high"
-verification_needed:
-  - "Nessuna (i dati e le regole sono migrate nel server MCP)"
 ---
 
-# Rete ARPA/ARPAS Italiana — Migrato su MCP
+# Rete ARPA e Monitoraggio Regionale
 
-⚠️ **SPOSTATO SU MCP SERVER**:
-Le informazioni di questo file sono state completamente migrate nel server MCP per ottimizzare la context window dell'agente.
+Questo file descrive i riferimenti per la consultazione dei dati osservativi real-time provenienti dalle reti delle Agenzie Regionali per la Protezione dell'Ambiente (ARPA/ARPAS).
 
-- **Usa i tool MCP**:
-  - `arpav_idro` per i dati idrometrici real-time in Veneto.
-  - `meteo_reference_guidelines` (categoria: `aviation` o `portals`) per ottenere i metadati delle stazioni e della rete osservativa italiana.
+## Strumenti MCP di Riferimento
+
+Utilizza i seguenti strumenti per accedere alle osservazioni regionali:
+
+### `arpav_idro`
+
+- **Scopo**: Interroga in tempo reale la rete idrometrica della regione Veneto (ARPAV) per monitorare i livelli dei principali fiumi (Adige, Brenta, Bacchiglione, Po).
+- **Parametri**: `stationId` corrispondente alla stazione idro di interesse.
+
+### `meteo_reference_guidelines` (categoria: `aviation` o `portals`)
+
+- **Scopo**: Ottiene i metadati generali sulle reti regionali, inclusi endpoint secondari e codifiche per l'interazione con altre ARPA regionali (es. Piemonte, Toscana, Lazio, Campania, Emilia-Romagna).

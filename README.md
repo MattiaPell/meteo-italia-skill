@@ -91,8 +91,7 @@ La cartella `references/` contiene la knowledge base di supporto per l'agente:
 | File | Contenuto |
 |---|---|
 | [models.md](references/models.md) | Modelli meteo Open-Meteo — coverage, risoluzione, update |
-| [model_bias.md](references/model_bias.md) | Bias sistematici documentati per modello e stagione |
-| [italy_zones.md](references/italy_zones.md) | Macroaree italiane → set modelli + pesi configurabili |
+ | [model_tuning.md](references/model_tuning.md) | Calibrazione Modelli e Macroaree (pesi, bias, UHI) |
 | [arpa_network.md](references/arpa_network.md) | Rete ARPA/ARPAS — endpoint osservativi regionali |
 | [climatology.md](references/climatology.md) | Climatologia ERA5 1991-2020 — 32 città italiane, indici derivati, record storici |
 | [ensemble_spread.md](references/ensemble_spread.md) | Spread ensemble — incertezza probabilistica |

@@ -1,15 +1,23 @@
 ---
-source: "MCP-migrated"
+source: "MCP"
 last_verified: "2026-05-28"
 confidence: "high"
-verification_needed:
-  - "Nessuna (i dati e le regole sono migrate nel server MCP)"
 ---
 
-# Affidabilità Contestuale — Migrato su MCP
+# Affidabilità Contestuale (Forecast Reliability)
 
-⚠️ **SPOSTATO SU MCP SERVER**:
-Le informazioni di questo file sono state completamente migrate nel server MCP per ottimizzare la context window dell'agente.
+Questo file descrive la consultazione della matrice di accuratezza previsionale in base al tipo di evento meteorologico e alla distanza temporale.
 
-- **Usa il tool MCP**:
-  - `meteo_event_reliability` per ottenere la matrice di affidabilità dei forecast per tipo di evento e orizzonte temporale.
+## Strumento MCP di Riferimento
+
+Utilizza il tool dedicato per recuperare la matrice di accuratezza:
+
+### `meteo_event_reliability`
+
+- **Scopo**: Fornisce la matrice di affidabilità dei forecast suddivisa per tipologia di fenomeno e orizzonte temporale.
+- **Parametri**: Nessuno (restituisce la tabella statica validata).
+- **Classificazione degli Eventi**:
+  - **Precipitazioni frontali / Neve**: Alta affidabilità nel breve termine (0-48h), calo graduale.
+  - **Temporali convettivi**: Affidabilità medio-bassa anche a 24h, richiede tassativamente nowcasting (radar + fulmini) per precisione locale.
+  - **Ondate di calore / Freddo**: Elevata predicibilità anche a medio termine (fino a 5-7 giorni).
+  - **Nebbia**: Bassa predicibilità a medio termine, fortemente influenzata dalla microscala.

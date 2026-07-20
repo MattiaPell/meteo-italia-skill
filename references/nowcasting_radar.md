@@ -1,16 +1,23 @@
 ---
-source: "MCP-migrated"
+source: "MCP"
 last_verified: "2026-05-28"
 confidence: "high"
-verification_needed:
-  - "Nessuna (i dati e le regole sono migrate nel server MCP)"
 ---
 
-# Nowcasting Radar DPC — Migrato su MCP
+# Nowcasting Radar DPC (Dipartimento Protezione Civile)
 
-⚠️ **SPOSTATO SU MCP SERVER**:
-Le informazioni di questo file sono state completamente migrate nel server MCP per ottimizzare la context window dell'agente.
+Questo file descrive i riferimenti per il monitoraggio radar in tempo reale e le regole di blending temporale tra i dati radar e i modelli numerici (NWP).
 
-- **Usa i tool MCP**:
-  - `dpc_radar_vmi` per scaricare e ottenere l'URL dell'immagine radar VMI più recente della Protezione Civile.
-  - `meteo_reference_guidelines` (categoria: `nowcasting`) per ottenere la tabella di intensità dBZ del radar e le regole della matrice di blending temporale radar-NWP (ICON-D2).
+## Strumenti MCP di Riferimento
+
+Utilizza i seguenti tool per il monitoraggio e l'estrapolazione radar:
+
+### `dpc_radar_vmi`
+
+- **Scopo**: Ottiene l'URL dell'immagine radar VMI (Vertical Maximum Intensity) più recente elaborata dal Dipartimento della Protezione Civile Italiana per l'identificazione immediata delle aree di precipitazione attiva.
+
+### `meteo_reference_guidelines` (categoria: `nowcasting`)
+
+- **Scopo**: Fornisce le tabelle interpretative e le regole di blending:
+  - **Tabella Riflettività dBZ VMI**: Associa i valori di riflettività radar (dBZ) all'intensità qualitativa della pioggia (es. <20 dBZ pioviggine -> >55 dBZ temporale estremo con grandine).
+  - **Matrice di Blending Radar-NWP**: Definisce il peso progressivo tra osservazione radar ed evoluzione dei modelli (es. 0-15 min: 100% Radar, 15-45 min: 80% Radar / 20% NWP, 45-90 min: 40/60 con correzione temporale di anticipo/ritardo, oltre 120 min: 100% NWP).
