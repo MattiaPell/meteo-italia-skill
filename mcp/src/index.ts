@@ -3,6 +3,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerOpenMeteo } from "./open_meteo.js";
 import { registerItalianSources } from "./italian_sources.js";
 import { registerSummaries } from "./summaries.js";
+import {
+  registerClimatology,
+  registerBioclimaticIndices,
+  registerLocalPhenomena,
+  registerModelTuning,
+  registerEventReliability,
+} from "./reference_tools.js";
 import { startDebugServer } from "./debug.js";
 import { DEBUG_PORT } from "./http.js";
 
@@ -14,6 +21,11 @@ const server = new McpServer({
 registerOpenMeteo(server);
 registerItalianSources(server);
 registerSummaries(server);
+registerClimatology(server);
+registerBioclimaticIndices(server);
+registerLocalPhenomena(server);
+registerModelTuning(server);
+registerEventReliability(server);
 
 // Stdio transport for MCP clients.
 const transport = new StdioServerTransport();
