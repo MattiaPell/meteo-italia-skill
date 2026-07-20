@@ -1,7 +1,15 @@
 import { z } from "zod";
+import { MeteoError } from "./errors.js";
 
 export const DEBUG_PORT = Number(process.env.METEO_MCP_DEBUG_PORT ?? 3000);
 export const CHECKWX_API_KEY = process.env.CHECKWX_API_KEY ?? "";
+
+/** Default per-request timeout (ms). SKILL.md §Contratti: timeout > 10s → fallback. */
+export const HTTP_TIMEOUT_MS = 10_000;
+/** Max retry attempts after a timeout/5xx/429 (excludes the first try). */
+export const HTTP_MAX_RETRIES = 2;
+/** Base backoff (ms) for exponential retry. */
+export const HTTP_BACKOFF_BASE_MS = 500;
 
 export interface ApiResult {
   [key: string]: unknown;
@@ -15,6 +23,105 @@ export interface ApiResult {
   elapsedMs: number;
 }
 
+type RetriableOpts = {
+  headers?: Record<string, string>;
+  acceptText?: boolean;
+  method?: "GET" | "POST";
+  body?: string;
+};
+
+/**
+ * Core request primitive with timeout + bounded exponential-backoff retry.
+ * On timeout/5xx/429 it retries up to HTTP_MAX_RETRIES; after exhaustion it
+ * throws MeteoError so callers can surface an actionable message. Honors the
+ * Retry-After header on 429. Success/non-retriable HTTP statuses return an
+ * ApiResult (never throw) so tool output shape stays stable.
+ */
+async function requestWithRetry(
+  url: string,
+  opts: RetriableOpts
+): Promise<ApiResult> {
+  const start = Date.now();
+  let lastErr: unknown;
+
+  for (let attempt = 0; attempt <= HTTP_MAX_RETRIES; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), HTTP_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        method: opts.method ?? "GET",
+        headers: {
+          "User-Agent": "meteo-italia-mcp/1.0",
+          Accept: opts.acceptText ? "text/plain, */*" : "application/json, */*",
+          ...(opts.method === "POST"
+            ? { "Content-Type": "application/json" }
+            : {}),
+          ...(opts.headers ?? {}),
+        },
+        body: opts.body,
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+
+      const text = await res.text();
+      const elapsedMs = Date.now() - start;
+
+      if (res.ok) {
+        let data: unknown = text;
+        if (!opts.acceptText) {
+          try {
+            data = text.length ? JSON.parse(text) : null;
+          } catch {
+            data = text;
+          }
+        }
+        return { ok: true, url, status: res.status, data, elapsedMs };
+      }
+
+      // 429 or 5xx → retriable; 4xx (except 429) → terminal.
+      const retriable = res.status === 429 || res.status >= 500;
+      if (retriable && attempt < HTTP_MAX_RETRIES) {
+        const retryAfter = Number(res.headers.get("retry-after"));
+        const backoff = Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : HTTP_BACKOFF_BASE_MS * 2 ** attempt;
+        await new Promise((r) => setTimeout(r, backoff));
+        continue;
+      }
+      return {
+        ok: false,
+        url,
+        status: res.status,
+        data: text.slice(0, 2000),
+        error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
+        elapsedMs,
+      };
+    } catch (err) {
+      clearTimeout(timer);
+      lastErr = err;
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      if (attempt < HTTP_MAX_RETRIES) {
+        const backoff = HTTP_BACKOFF_BASE_MS * 2 ** attempt;
+        await new Promise((r) => setTimeout(r, backoff));
+        continue;
+      }
+      const elapsedMs = Date.now() - start;
+      const code = isAbort ? "TIMEOUT" : "NETWORK";
+      const message = isAbort
+        ? `Request to ${url} timed out after ${HTTP_TIMEOUT_MS}ms`
+        : `Network error contacting ${url}: ${err instanceof Error ? err.message : String(err)}`;
+      throw new MeteoError(code, message, err);
+    }
+  }
+
+  // Exhausted retries without resolving (shouldn't happen, but keeps TS happy).
+  throw new MeteoError(
+    "RETRY_EXHAUSTED",
+    `Request to ${url} failed after ${HTTP_MAX_RETRIES} retries`,
+    lastErr
+  );
+}
+
 /**
  * Perform a GET request and normalize the result so every tool returns a
  * consistent shape the MCP client and the debug web page can both consume.
@@ -25,47 +132,11 @@ export async function apiGet(
   opts: { headers?: Record<string, string>; acceptText?: boolean } = {}
 ): Promise<ApiResult> {
   const url = buildUrl(baseUrl, params);
-  const start = Date.now();
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": "meteo-italia-mcp/1.0",
-        Accept: opts.acceptText ? "text/plain, */*" : "application/json, */*",
-        ...(opts.headers ?? {}),
-      },
-    });
-    const elapsedMs = Date.now() - start;
-    const text = await res.text();
-    if (!res.ok) {
-      return {
-        ok: false,
-        url,
-        status: res.status,
-        data: text.slice(0, 2000),
-        error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
-        elapsedMs,
-      };
-    }
-    let data: unknown = text;
-    if (!opts.acceptText) {
-      try {
-        data = text.length ? JSON.parse(text) : null;
-      } catch {
-        data = text;
-      }
-    }
-    return { ok: true, url, status: res.status, data, elapsedMs };
-  } catch (err) {
-    return {
-      ok: false,
-      url,
-      status: 0,
-      data: null,
-      error: err instanceof Error ? err.message : String(err),
-      elapsedMs: Date.now() - start,
-    };
-  }
+  return requestWithRetry(url, {
+    headers: opts.headers,
+    acceptText: opts.acceptText,
+    method: "GET",
+  });
 }
 
 /** POST with a JSON body (used by DPC radar downloadProduct). */
@@ -74,47 +145,11 @@ export async function apiPostJson(
   body: unknown,
   opts: { headers?: Record<string, string> } = {}
 ): Promise<ApiResult> {
-  const start = Date.now();
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "User-Agent": "meteo-italia-mcp/1.0",
-        "Content-Type": "application/json",
-        Accept: "application/json, */*",
-        ...(opts.headers ?? {}),
-      },
-      body: JSON.stringify(body),
-    });
-    const elapsedMs = Date.now() - start;
-    const text = await res.text();
-    if (!res.ok) {
-      return {
-        ok: false,
-        url,
-        status: res.status,
-        data: text.slice(0, 2000),
-        error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
-        elapsedMs,
-      };
-    }
-    let data: unknown = text;
-    try {
-      data = text.length ? JSON.parse(text) : null;
-    } catch {
-      data = text;
-    }
-    return { ok: true, url, status: res.status, data, elapsedMs };
-  } catch (err) {
-    return {
-      ok: false,
-      url,
-      status: 0,
-      data: null,
-      error: err instanceof Error ? err.message : String(err),
-      elapsedMs: Date.now() - start,
-    };
-  }
+  return requestWithRetry(url, {
+    headers: opts.headers,
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function buildUrl(
@@ -145,6 +180,35 @@ export function toToolResult(result: ApiResult) {
     structuredContent: result,
     isError: !result.ok,
   };
+}
+
+/**
+ * Validate an ApiResult's payload against a zod schema. Throws MeteoError on
+ * a non-ok response or a shape mismatch so malformed upstream JSON surfaces as
+ * an actionable message instead of `undefined` fields downstream.
+ */
+export function validateApiData<T>(
+  result: ApiResult,
+  schema: import("zod").ZodType<T>,
+  source: string
+): T {
+  if (!result.ok) {
+    throw new MeteoError(
+      "UPSTREAM_ERROR",
+      `${source} returned an error (HTTP ${result.status}): ${result.error ?? "unknown"}`
+    );
+  }
+  const parsed = schema.safeParse(result.data);
+  if (!parsed.success) {
+    throw new MeteoError(
+      "BAD_RESPONSE",
+      `${source} returned an unexpected response shape: ${parsed.error.issues
+        .slice(0, 3)
+        .map((i) => i.path.join(".") || "<root>")
+        .join(", ")}`
+    );
+  }
+  return parsed.data;
 }
 
 /** Common query-string params shared by every Open-Meteo endpoint. */
