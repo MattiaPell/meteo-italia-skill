@@ -1,0 +1,27 @@
+{
+  "name": "meteo-italia-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server + debug web page wrapping Open-Meteo and Italian weather data APIs used by the meteo-italia skill",
+  "type": "module",
+  "bin": {
+    "meteo-italia-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^4.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

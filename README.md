@@ -40,6 +40,19 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 4. **Analisi contestuale** — bias noti, fenomeni locali, spread ensemble, climatologia
 5. **Report finale** — output strutturato con widget visuale
 
+## MCP Server (opzionale ma consigliato)
+
+Le chiamate API sono esposte anche come **MCP server** in [`mcp/`](mcp/):
+14 tool che wrappano Open-Meteo e tutte le fonti italiane, più una **pagina web
+di debug** (`METEO_MCP_DEBUG_PORT`, default 3000) per ispezionare richieste e
+risposte. Se il tuo agente supporta MCP, usa i tool al posto dei fetch grezzi
+(vedi `mcp/README.md`).
+
+```bash
+cd mcp && npm install && npm run build
+METEO_MCP_DEBUG_PORT=3000 node dist/index.js   # MCP stdio + debug web su :3000
+```
+
 ## Funzionalità
 
 | Funzionalità | Descrizione |

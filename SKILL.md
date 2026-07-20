@@ -48,6 +48,48 @@ Se non riesci a leggere un file [CORE], dichiara esplicitamente nel report:
 
 ---
 
+## MCP Server (meteo-italia-mcp-server)
+
+Tutte le chiamate API esterne sono esposte come **tool MCP**. Se l'ambiente
+fornisce questo server, USA I TOOL al posto dei fetch HTTP grezzi: gestiscono
+errori, rate-limit e parsing, e restituiscono `structuredContent` pronto
+all'uso (campi `ok`, `url`, `status`, `data`, `elapsedMs`).
+
+**Avvio / installazione** (vedi `mcp/README.md`):
+```bash
+cd mcp && npm install && npm run build
+# come server stdio (per client MCP):
+node dist/index.js
+# con pagina di debug web su http://localhost:3000 (porta via METEO_MCP_DEBUG_PORT):
+METEO_MCP_DEBUG_PORT=3000 node dist/index.js
+```
+`CHECKWX_API_KEY` va esposta come variabile d'ambiente per il tool `checkwx_metar_taf`.
+
+**Mappatura step → tool MCP:**
+
+| Step | Tool MCP | Servizio |
+|---|---|---|
+| Geocoding | `open_meteo_geocode` | Open-Meteo Geocoding |
+| A (forecast) | `open_meteo_forecast` / `open_meteo_forecast_summary` | Open-Meteo Forecast (raw / compact summary) |
+| B (ERA5) | `open_meteo_archive` | Open-Meteo Archive |
+| F (marine) | `open_meteo_marine` | Open-Meteo Marine |
+| H (CAMS) | `open_meteo_air_quality` | Open-Meteo Air-Quality |
+| J (ensemble) | `open_meteo_ensemble` | Open-Meteo Ensemble |
+| E (allerte) | `pc_allerte_wms` | PC WMS |
+| I (radar) | `dpc_radar_vmi` | Radar DPC |
+| K (METAR/TAF) | `checkwx_metar_taf` / `aviationweather_metar` | CheckWX / AviationWeather |
+| L (fulmini) | `dmi_lightning` | DMI Lightning |
+| M (idro TA-A) | `floods_it_monitoring` | floods.it |
+| M (idro Veneto) | `arpav_idro` | ARPAV |
+| N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
+
+I template `GET https://...` nei singoli step restano come **riferimento/override**:
+usali solo se il tool MCP non è disponibile o per debug nella pagina web.
+La logica di validazione (es. filtro Italia al geocoding, soglie fulmini,
+confronto METAR vs NWP) resta **responsabilità del report**, non dell'MCP.
+
+---
+
 ## Flusso di lavoro
 
 ### 1. Determina Parametri
@@ -64,6 +106,9 @@ Se non riesci a leggere un file [CORE], dichiara esplicitamente nel report:
 Identifica subito: **macroarea** (→ set modelli) + **regione amministrativa** (→ ARPA + allerte PC).
 
 ### 2. Geocoding
+
+> **Via MCP:** `open_meteo_geocode` (name, count, language). La logica di
+> validazione sotto resta a carico del report.
 
 ```http
 GET https://geocoding-api.open-meteo.com/v1/search
@@ -107,6 +152,10 @@ Esegui i passi seguendo l'ordine dei Tier:
 #### TIER 1 (Obbligatori sempre)
 
 #### A — Previsioni numeriche (Open-Meteo) — Strategia a 3 Livelli
+> **Via MCP:** `open_meteo_forecast` (latitude, longitude, models, hourly, daily, current, past_days, forecast_days) per il fetch raw (Livelli 2-3 / variabili avanzate).
+> **Per il report di sintesi usa `open_meteo_forecast_summary`**: ritorna solo max/min T, precip totale, probabilità pioggia max, CAPE max, raffica max e conteggio ore con temporale/precipitazione, per modello e per giorno — ~80-90% meno contesto del fetch raw. Usalo di default al posto del raw salvo servano serie orarie.
+> Nomi modello validi: `ecmwf_ifs04`, `ecmwf_ifs025`, `icon_seamless`, `gfs_seamless`, `metno_nordic`, `ukmo_seamless`, `gem_seamless`, `jma_seamless` (default `best_match`).
+
 Vedi `references/models.md` per il set corretto per macroarea.
 
 **Regola:** NON caricare variabili di livello superiore se il livello precedente non ne giustifica la necessità. Dichiara nel report quale livello è stato usato.
@@ -153,6 +202,7 @@ Includi la sezione UV nel report se: `uv_index_max` >5, use case spiaggia/montag
 Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 
 #### B — Climatologia ERA5
+> **Via MCP:** `open_meteo_archive` (start_date, end_date, daily/hourly).
 Per confrontare il forecast con la norma storica del periodo.
 ```http
 GET https://archive-api.open-meteo.com/v1/archive
@@ -166,6 +216,7 @@ GET https://archive-api.open-meteo.com/v1/archive
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
 
 #### E — Allerta (Dati Pubblici)
+> **Via MCP:** `pc_allerte_wms` (request, layer, bbox).
 ```http
 GET https://mappe.protezionecivile.gov.it/geowebcache/service/wms
   (vedi references/arpa_network.md per parametri corretti)
@@ -181,6 +232,7 @@ Recupera: T attuale, precipitazioni ultime 6/24h, vento, umidità dalla stazione
 Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
 
 #### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
+> **Via MCP:** `open_meteo_marine` (latitude, longitude, hourly, daily).
 Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo), oppure Macroarea Sicilia/Sud (per Lupa di mare).
 ```http
 GET https://marine-api.open-meteo.com/v1/marine
@@ -197,6 +249,7 @@ GET https://marine-api.open-meteo.com/v1/marine
 Vedi scala Beaufort e soglie operative in `references/uv_marine_recent.md`.
 
 #### H — Qualità aria CAMS (condizionale)
+> **Via MCP:** `open_meteo_air_quality` (latitude, longitude, hourly, current, domains=cams_europe).
 
 **Attiva sempre per:** Pianura Padana (ott–mar), use case salute/bambini/anziani/sport, scirocco con dust elevato, inversione termica prevista (vento <5 km/h + cielo sereno).
 **Attiva se AQI ≥ Moderato** per qualsiasi altra zona.
@@ -220,6 +273,7 @@ scenari accumulo/dispersione da dati meteo, flag dust sahariano vs PM antropico,
 pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili.
 
 #### J — Ensemble Spread (condizionale)
+> **Via MCP:** `open_meteo_ensemble` (models, hourly con `*_spread`, daily).
 
 **Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
 
@@ -248,6 +302,7 @@ Vedi soglie spread, gerarchia ensemble–deterministico e template in `reference
 #### TIER 3 (Condizionali a bassa priorità)
 
 #### I — Nowcasting Radar DPC (solo se condizioni attivanti)
+> **Via MCP:** `dpc_radar_vmi` (productType=VMI, download=true → restituisce URL immagine).
 
 **Attiva se almeno una di queste condizioni è vera:**
 - Allerta PC ≥ gialla per temporali (Step E)
@@ -282,6 +337,7 @@ Se l'immagine non è visualizzabile, non è interpretabile o le API falliscono:
 **Licenza**: citare sempre "Radar-DPC, Dipartimento di Protezione Civile (CC-BY-SA)"
 
 #### K — METAR/TAF (condizionale)
+> **Via MCP:** `checkwx_metar_taf` (icao, type) richiede `CHECKWX_API_KEY`; fallback `aviationweather_metar` (ids) senza auth.
 
 **Attiva sempre per:** use case aviazione/droni, città con aeroporto ICAO nella lista (`references/metar_taf.md`). **Attiva se:** l'utente chiede validazione forecast, oppure stazioni ARPA non disponibili per la zona, oppure divergenza >2°C tra NWP e ARPA.
 
@@ -329,6 +385,7 @@ Mappa i campi:
 Vedi `references/metar_taf.md` for lista completa ICAO, guida interpretazione campi decoded, e soglie di validazione.
 
 #### L — Lightning Detection (Nowcasting Temporali)
+> **Via MCP:** `dmi_lightning` (bbox, limit, observed_after).
 
 **Attiva sempre per:** allerta PC ≥ gialla per temporali (Step E), CAPE >800 J/kg da Step A, use case mare/nautica/montagna/events outdoor. **Altrimenti:** attiva se `weather_code` attuale 80-99 (rovesci/temporali in atto).
 
@@ -369,6 +426,8 @@ Mappa esplicita del monitoraggio:
 **Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico/idraulico (Step E), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in C), use case agricoltura/cantieri/viabilità/nautica. **Altrimenti:** disattiva.
 
 ### TIER A (API real-time)
+
+> **Via MCP:** `floods_it_monitoring` (sensor_id opzionale) per floods.it; `arpav_idro` (station_id, parametro, periodo) per ARPAV.
 
 **Trentino-Alto Adige (floods.it):**
 ```http
@@ -412,7 +471,8 @@ Segnala come: "Rischio Idraulico stimato via Nimbus (dati locali non disponibili
 
 Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, soglie interpretative, e fonti regionali alternative.
 
-#### N — Satellite Meteosat (Validazione Visiva)
+#### N — Satellite Meteosat
+> **Via MCP:** `eumetsat_satellite_info` (channel) — restituisce metadata collection (EO:EUM:DAT:MSG:HRSEVIRI) perché EUMETSAT richiede API key e dati binari; il fetch dell'immagine va fatto fuori dal MCP. (Validazione Visiva)
 
 **Attiva sempre per:** allerta PC ≥ gialla (Step E), divergenza >1.5σ tra modelli su precipitazioni (Step 4a), nebbia prevista (visibilità <500m da Step A), use case nautica/aeronautico. **Altrimenti:** disattiva (costo computazionale elevato).
 

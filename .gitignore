@@ -1,0 +1,7 @@
+# MCP server build artifacts
+mcp/node_modules/
+mcp/dist/
+*.log
+
+# Env / secrets
+.env
