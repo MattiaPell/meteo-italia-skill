@@ -1,7 +1,14 @@
 import express from "express";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { apiGet, apiPostJson, CHECKWX_API_KEY } from "./http.js";
 import { summarizeForecast } from "./summaries.js";
 import { parseAllerte } from "./italian_sources.js";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const publicDir = join(here, "public");
+let publicWarned = false;
 
 /** Split a comma-joined query value into a list (mirrors the MCP tools). */
 function list(v: string | undefined): string[] | undefined {
@@ -17,7 +24,12 @@ function list(v: string | undefined): string[] | undefined {
 export function startDebugServer(port: number) {
   const app = express();
   app.use(express.json());
-  app.use(express.static("public"));
+  if (existsSync(publicDir)) {
+    app.use(express.static(publicDir));
+  } else if (!publicWarned) {
+    publicWarned = true;
+    console.error(`[meteo-italia-mcp] debug public/ dir not found at ${publicDir}; serving API only`);
+  }
 
   const services: Record<string, (q: Record<string, string>) => Promise<unknown>> = {
     geocoding: (q) =>
