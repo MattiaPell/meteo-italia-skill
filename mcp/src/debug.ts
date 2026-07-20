@@ -2,7 +2,7 @@ import express from "express";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { apiGet, apiPostJson, CHECKWX_API_KEY } from "./http.js";
+import { apiGet, apiPostJson, CHECKWX_API_KEY, getMetrics, getCacheStats } from "./http.js";
 import { summarizeForecast } from "./summaries.js";
 import { parseAllerte } from "./italian_sources.js";
 
@@ -194,6 +194,28 @@ export function startDebugServer(port: number) {
   };
 
   app.get("/api/services", (_req, res) => res.json(Object.keys(services)));
+
+  app.get("/api/metrics", (_req, res) => {
+    const pct = (arr: number[], p: number) => {
+      if (!arr.length) return null;
+      const s = [...arr].sort((a, b) => a - b);
+      const i = Math.min(s.length - 1, Math.floor((p / 100) * s.length));
+      return s[i];
+    };
+    const metrics = getMetrics();
+    const perService = Object.fromEntries(
+      Object.entries(metrics).map(([host, m]) => [
+        host,
+        {
+          errors: m.errors,
+          samples: m.latenciesMs.length,
+          p50Ms: pct(m.latenciesMs, 50),
+          p95Ms: pct(m.latenciesMs, 95),
+        },
+      ])
+    );
+    res.json({ cache: getCacheStats(), perService });
+  });
 
   app.post("/api/debug", async (req, res) => {
     const { service, params } = req.body as { service: string; params?: Record<string, string> };

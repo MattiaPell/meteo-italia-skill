@@ -11,6 +11,15 @@ export const HTTP_MAX_RETRIES = 2;
 /** Base backoff (ms) for exponential retry. */
 export const HTTP_BACKOFF_BASE_MS = 500;
 
+const CACHE_TTL_MS: Record<string, number> = {
+  "geocoding-api.open-meteo.com": 3_600_000,
+  "api.open-meteo.com": 300_000,
+  "archive-api.open-meteo.com": 3_600_000,
+  "marine-api.open-meteo.com": 300_000,
+  "air-quality-api.open-meteo.com": 300_000,
+  "ensemble-api.open-meteo.com": 300_000,
+};
+
 export interface ApiResult {
   [key: string]: unknown;
   ok: boolean;
@@ -21,6 +30,48 @@ export interface ApiResult {
   error?: string;
   /** Timing in ms, useful for the debug page. */
   elapsedMs: number;
+  cached?: boolean;
+}
+
+export interface RequestMetrics {
+  hits: number;
+  misses: number;
+  errors: number;
+  latenciesMs: number[];
+}
+
+const metrics: Record<string, RequestMetrics> = {};
+function recordMetrics(host: string, ok: boolean, elapsedMs: number) {
+  const m = (metrics[host] ??= { hits: 0, misses: 0, errors: 0, latenciesMs: [] });
+  m.latenciesMs.push(elapsedMs);
+  if (m.latenciesMs.length > 100) m.latenciesMs.shift();
+  if (!ok) m.errors += 1;
+}
+export function getMetrics(): Record<string, RequestMetrics> {
+  return metrics;
+}
+export function getCacheStats(): { hits: number; misses: number } {
+  return { hits: cacheHits, misses: cacheMisses };
+}
+
+interface CacheEntry {
+  result: ApiResult;
+  expires: number;
+}
+const cache = new Map<string, CacheEntry>();
+let cacheHits = 0;
+let cacheMisses = 0;
+
+function cacheKey(url: string): string {
+  return url;
+}
+function cacheTtlFor(url: string): number {
+  try {
+    const host = new URL(url).host;
+    return CACHE_TTL_MS[host] ?? 60_000;
+  } catch {
+    return 60_000;
+  }
 }
 
 type RetriableOpts = {
@@ -28,6 +79,7 @@ type RetriableOpts = {
   acceptText?: boolean;
   method?: "GET" | "POST";
   body?: string;
+  noCache?: boolean;
 };
 
 /**
@@ -35,12 +87,32 @@ type RetriableOpts = {
  * On timeout/5xx/429 it retries up to HTTP_MAX_RETRIES; after exhaustion it
  * throws MeteoError so callers can surface an actionable message. Honors the
  * Retry-After header on 429. Success/non-retriable HTTP statuses return an
- * ApiResult (never throw) so tool output shape stays stable.
+ * ApiResult (never throw) so tool output shape stays stable. GET responses are
+ * served from an in-memory TTL cache (E2) to avoid duplicate upstream calls.
  */
 async function requestWithRetry(
   url: string,
   opts: RetriableOpts
 ): Promise<ApiResult> {
+  const host = (() => {
+    try {
+      return new URL(url).host;
+    } catch {
+      return "unknown";
+    }
+  })();
+
+  if (opts.method !== "POST" && !opts.noCache) {
+    const hit = cache.get(cacheKey(url));
+    if (hit && hit.expires > Date.now()) {
+      cacheHits += 1;
+      const m = (metrics[host] ??= { hits: 0, misses: 0, errors: 0, latenciesMs: [] });
+      m.hits += 1;
+      return { ...hit.result, cached: true };
+    }
+    cacheMisses += 1;
+  }
+
   const start = Date.now();
   let lastErr: unknown;
 
@@ -75,7 +147,12 @@ async function requestWithRetry(
             data = text;
           }
         }
-        return { ok: true, url, status: res.status, data, elapsedMs };
+        const result: ApiResult = { ok: true, url, status: res.status, data, elapsedMs };
+        recordMetrics(host, true, elapsedMs);
+        if (opts.method !== "POST" && !opts.noCache) {
+          cache.set(cacheKey(url), { result, expires: Date.now() + cacheTtlFor(url) });
+        }
+        return result;
       }
 
       // 429 or 5xx → retriable; 4xx (except 429) → terminal.
@@ -96,6 +173,15 @@ async function requestWithRetry(
         error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
         elapsedMs,
       };
+      recordMetrics(host, false, elapsedMs);
+      return {
+        ok: false,
+        url,
+        status: res.status,
+        data: text.slice(0, 2000),
+        error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
+        elapsedMs,
+      };
     } catch (err) {
       clearTimeout(timer);
       lastErr = err;
@@ -106,6 +192,7 @@ async function requestWithRetry(
         continue;
       }
       const elapsedMs = Date.now() - start;
+      recordMetrics(host, false, elapsedMs);
       const code = isAbort ? "TIMEOUT" : "NETWORK";
       const message = isAbort
         ? `Request to ${url} timed out after ${HTTP_TIMEOUT_MS}ms`
@@ -129,13 +216,14 @@ async function requestWithRetry(
 export async function apiGet(
   baseUrl: string,
   params: Record<string, string | number | boolean | undefined | string[]>,
-  opts: { headers?: Record<string, string>; acceptText?: boolean } = {}
+  opts: { headers?: Record<string, string>; acceptText?: boolean; noCache?: boolean } = {}
 ): Promise<ApiResult> {
   const url = buildUrl(baseUrl, params);
   return requestWithRetry(url, {
     headers: opts.headers,
     acceptText: opts.acceptText,
     method: "GET",
+    noCache: opts.noCache,
   });
 }
 

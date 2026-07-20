@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult, openMeteoCommon, latLon, validateApiData } from "./http.js";
+import { normalizeModelId } from "./reference_tools.js";
 
 const geocodeSchema = z.object({
   results: z
@@ -97,7 +98,7 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, models, hourly, daily, current, timezone, past_days, forecast_days, level }) => {
-      const chosenModels = models ? csv(models) : undefined;
+      const chosenModels = models ? csv(models).map(normalizeModelId) : undefined;
       const coreHourly = [
         "temperature_2m", "precipitation", "wind_speed_10m", "wind_gusts_10m",
         "weather_code", "cloud_cover", "precipitation_probability", "cape",
@@ -292,7 +293,7 @@ export function registerOpenMeteo(server: McpServer) {
       const r = await apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
         latitude,
         longitude,
-        models: models ? csv(models) : undefined,
+        models: models ? csv(models).map(normalizeModelId) : undefined,
         hourly: hourly ? csv(hourly) : undefined,
         daily: daily ? csv(daily) : undefined,
         timezone,

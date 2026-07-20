@@ -1060,7 +1060,11 @@ export function registerModelTuning(server: McpServer) {
         appennino: { ecmwf_ifs: 1.4, icon_eu: 1.2, italia_meteo_arpae_icon_2i: 1.0, icon_seamless: 1.0, meteofrance_seamless: 0.9, gfs_seamless: 0.8 },
       };
 
-      const matchedWeights = weights[macroarea] ?? {};
+      const rawWeights = weights[macroarea] ?? {};
+      const matchedWeights: Record<string, number> = {};
+      for (const [model, w] of Object.entries(rawWeights)) {
+        matchedWeights[normalizeModelId(model)] = w;
+      }
 
       // 2. Systematic model biases
       const biases: Array<{ model: string; zone: string; bias: string; entity: string; note: string }> = [

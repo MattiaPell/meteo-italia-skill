@@ -35,7 +35,7 @@ describe("apiGet resilience", () => {
         }
       });
     }) as unknown as typeof fetch;
-    const p = apiGet("https://example.com", {});
+    const p = apiGet("https://timeout.example.com", { unique: "timeout-case" }, { noCache: true });
     await vi.runAllTimersAsync();
     await expect(p).rejects.toBeInstanceOf(MeteoError);
     const err = await p.catch((e) => e);
