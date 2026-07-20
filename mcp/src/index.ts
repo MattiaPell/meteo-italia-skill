@@ -9,6 +9,7 @@ import {
   registerLocalPhenomena,
   registerModelTuning,
   registerEventReliability,
+  registerReferenceGuidelines,
 } from "./reference_tools.js";
 import { startDebugServer } from "./debug.js";
 import { DEBUG_PORT } from "./http.js";
@@ -26,6 +27,7 @@ registerBioclimaticIndices(server);
 registerLocalPhenomena(server);
 registerModelTuning(server);
 registerEventReliability(server);
+registerReferenceGuidelines(server);
 
 // Stdio transport for MCP clients.
 const transport = new StdioServerTransport();
