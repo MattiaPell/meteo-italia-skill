@@ -2,20 +2,105 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, apiPostJson, toToolResult, CHECKWX_API_KEY } from "./http.js";
 
+/** Map CheckWX decoded / AviationWeather shapes into a normalized station record. */
+function parseMetarStation(s: any, nwpTempC?: number): any {
+  const tempC = s.temp_c ?? s.temperature?.celsius ?? null;
+  const windKt = s.wind_speed_kt ?? s.wind_speed?.kts ?? null;
+  const windDir = s.wind_dir_degrees ?? s.wind_direction?.degrees ?? null;
+  const visMi = s.visibility_statute_mi ?? s.visibility?.statute_miles ?? null;
+  const visibilityM = visMi != null ? Math.round(visMi * 1609.34) : null;
+  const sky = Array.isArray(s.sky_condition)
+    ? s.sky_condition.map((c: any) => c.sky_cover).join("/")
+    : s.cloud_base ?? null;
+  const qnhHpa =
+    s.altim_in_hpa ?? (s.altim_in_hg != null ? Math.round(s.altim_in_hg * 33.8639) : null);
+  return {
+    icao: s.icaoId ?? s.station_id ?? s.icao ?? null,
+    tempC,
+    windKt,
+    windDir,
+    visibilityM,
+    skyCover: sky,
+    qnhHpa,
+    decodedVsNwp:
+      nwpTempC != null && tempC != null
+        ? { tempScarto: Math.round(Math.abs(tempC - nwpTempC) * 10) / 10, visFlag: visibilityM != null && visibilityM < 2000 }
+        : { tempScarto: null, visFlag: false },
+  };
+}
+
+/** Parse an AviationWeather raw METAR text into the same normalized shape. */
+function parseRawMetar(raw: string, _s: any): any {
+  const temp = raw.match(/(\d{2})\/(\d{2})/);
+  const wind = raw.match(/(\d{3})(\d{2})KT/);
+  const vis = raw.match(/(\d{4})/);
+  return {
+    raw_text: raw,
+    temp_c: temp ? parseInt(temp[1], 10) : null,
+    wind_speed_kt: wind ? parseInt(wind[2], 10) : null,
+    wind_dir_degrees: wind ? parseInt(wind[1], 10) : null,
+    visibility_statute_mi: vis ? parseInt(vis[1], 10) / 100 : null,
+  };
+}
+
+/** Normalize the PC bollettino JSON into a flat list of regional alert levels. */
+const LEVEL_BY_COLOR: Record<string, number> = {
+  verde: 0,
+  giallo: 1,
+  arancione: 2,
+  rosso: 3,
+};
+function parseAllerte(data: any, regione?: string): any {
+  const records: any[] = [];
+  const push = (reg: string, livello: string, tipo: string) => {
+    const color = livello?.toLowerCase()?.trim();
+    records.push({
+      regione: reg,
+      livello,
+      colore: color,
+      livelloCodice: LEVEL_BY_COLOR[color] ?? -1,
+      tipo_rischio: tipo,
+    });
+  };
+  // Shape 1: { regioni: [{nome, allerte:[{livello, rischio}]}] }
+  const regioni = data?.regioni ?? data?.regioni_allerta ?? [];
+  if (Array.isArray(regioni)) {
+    for (const r of regioni) {
+      const nome = r.nome ?? r.regione;
+      const liste = r.allerte ?? r.rischi ?? [];
+      for (const a of liste) push(nome, a.livello ?? a.colore, a.rischio ?? a.tipo);
+    }
+  }
+  // Shape 2: flat array of {regione, livello, rischio}
+  if (!records.length && Array.isArray(data)) {
+    for (const a of data) push(a.regione ?? a.nome, a.livello ?? a.colore, a.rischio ?? a.tipo);
+  }
+  const filtered = regione ? records.filter((x) => x.regione?.toLowerCase().includes(regione.toLowerCase())) : records;
+  const maxLevel = filtered.reduce((m, x) => Math.max(m, x.livelloCodice), -1);
+  return {
+    source: "bollettino_protezionecivile",
+    allertaMax: maxLevel,
+    count: filtered.length,
+    alerts: filtered,
+    raw: data,
+  };
+}
+
 export function registerItalianSources(server: McpServer) {
-  // --- Protezione Civile allerte (WMS) (Step E) ------------------------
+  // --- Protezione Civile allerte (Step E) ------------------------
   server.registerTool(
     "pc_allerte_wms",
     {
-      title: "Protezione Civile Allerte (WMS)",
+      title: "Protezione Civile Allerte",
       description:
-        "Fetch the PC civil-protection alert WMS (GetCapabilities / GetMap). NOTE: this endpoint is often network-restricted or returns XML; if it fails, use the human portal https://mappe.protezionecivile.gov.it for the bollettino. Used by skill Step E.",
+        "Fetch the PC civil-protection alert level per region. Tries the public bollettino JSON API first; falls back to the WMS endpoint if needed. Returns a normalized list of {regione, livello, colore, tipo_rischio}. Used by skill Step E.",
       inputSchema: {
-        service: z.string().default("WMS").describe("OGC service, default WMS"),
-        request: z.string().default("GetCapabilities").describe("WMS request: GetCapabilities | GetMap"),
+        regione: z.string().optional().describe("Filter by region name (e.g. 'Lombardia'). Omit for all."),
+        service: z.string().default("WMS").describe("OGC service for fallback, default WMS"),
+        request: z.string().default("GetCapabilities").describe("WMS request when falling back"),
         version: z.string().default("1.3.0").describe("WMS version"),
-        layer: z.string().optional().describe("Layer name for GetMap"),
-        bbox: z.string().optional().describe("Bounding box for GetMap: minx,miny,maxx,maxy"),
+        layer: z.string().optional().describe("Layer name for WMS GetMap"),
+        bbox: z.string().optional().describe("Bounding box for WMS GetMap"),
         width: z.coerce.number().int().default(800).optional(),
         height: z.coerce.number().int().default(600).optional(),
         format: z.string().default("application/json").describe("Output format"),
@@ -23,7 +108,17 @@ export function registerItalianSources(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ service, request, version, layer, bbox, width, height, format }) => {
+    async ({ regione, service, request, version, layer, bbox, width, height, format }) => {
+      // 1) Try the public bollettino di criticità JSON API (real alert data).
+      const bulletin = await apiGet(
+        "https://api.protezionecivile.gov.it/bollettini/allerte/ultimo",
+        {}
+      );
+      if (bulletin.ok) {
+        const parsed = parseAllerte(bulletin.data, regione);
+        return toToolResult({ ...bulletin, data: parsed });
+      }
+      // 2) Fallback to WMS.
       const r = await apiGet("https://mappe.protezionecivile.gov.it/geowebcache/service/wms", {
         service,
         request,
@@ -84,11 +179,12 @@ export function registerItalianSources(server: McpServer) {
       inputSchema: {
         icao: z.string().describe("Comma-separated ICAO codes, e.g. LIRF,LIMC,LIPE"),
         type: z.enum(["metar", "taf"]).default("metar").describe("Product type"),
+        nwpTempC: z.coerce.number().optional().describe("Optional NWP forecast temperature (°C) for scarto comparison"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ icao, type }) => {
+    async ({ icao, type, nwpTempC }) => {
       if (!CHECKWX_API_KEY) {
         return toToolResult({
           ok: false,
@@ -104,7 +200,10 @@ export function registerItalianSources(server: McpServer) {
       const r = await apiGet(`https://api.checkwx.com/v2/${type}/${codes}/decoded`, {}, {
         headers: { "X-API-KEY": CHECKWX_API_KEY },
       });
-      return toToolResult(r);
+      if (!r.ok) return toToolResult(r);
+      const arr = Array.isArray((r.data as any)?.data) ? (r.data as any).data : [(r.data as any)?.data];
+      const stations = arr.filter(Boolean).map((s: any) => parseMetarStation(s, nwpTempC));
+      return toToolResult({ ...r, data: { stations, raw: r.data } });
     }
   );
 
@@ -118,16 +217,27 @@ export function registerItalianSources(server: McpServer) {
       inputSchema: {
         ids: z.string().describe("Comma-separated ICAO codes, e.g. LIRF,LIMC,LIPE"),
         format: z.string().default("json").describe("Response format, default json"),
+        nwpTempC: z.coerce.number().optional().describe("Optional NWP forecast temperature (°C) for scarto comparison"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ ids, format }) => {
+    async ({ ids, format, nwpTempC }) => {
       const r = await apiGet("https://aviationweather.gov/api/data/metar", {
         ids,
         format,
       });
-      return toToolResult(r);
+      if (!r.ok) return toToolResult(r);
+      // aviationweather returns either an array or {data: [...]} / {features: [...]}
+      const payload = r.data as any;
+      const list = Array.isArray(payload)
+        ? payload
+        : payload?.data ?? payload?.features ?? [payload];
+      const stations = list.filter(Boolean).map((s: any) => {
+        if (s.raw_text) return parseMetarStation(parseRawMetar(s.raw_text, s), nwpTempC);
+        return parseMetarStation(s, nwpTempC);
+      });
+      return toToolResult({ ...r, data: { stations, raw: r.data } });
     }
   );
 
@@ -142,11 +252,13 @@ export function registerItalianSources(server: McpServer) {
         bbox: z.string().describe("Bounding box minLon,minLat,maxLon,maxLat (e.g. 6.5,44.0,14.0,47.0)"),
         limit: z.coerce.number().int().min(1).max(5000).default(1000).describe("Max records"),
         observed_after: z.string().optional().describe("ISO timestamp to fetch trend vs a previous window"),
+        lat: z.coerce.number().optional().describe("Reference latitude to compute nearest strike distance (km)"),
+        lon: z.coerce.number().optional().describe("Reference longitude to compute nearest strike distance (km)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ bbox, limit, observed_after }) => {
+    async ({ bbox, limit, observed_after, lat, lon }) => {
       const r = await apiGet(
         "https://opendataapi.dmi.dk/v2/lightningdata/collections/observation/items",
         {
@@ -155,7 +267,33 @@ export function registerItalianSources(server: McpServer) {
           observed: observed_after,
         }
       );
-      return toToolResult(r);
+      if (!r.ok) return toToolResult(r);
+      const fc = (r.data as any)?.features ?? [];
+      const strikes = fc.map((f: any) => {
+        const [lonS, latS] = f.geometry?.coordinates ?? [];
+        const observed = f.properties?.observed ?? null;
+        const hour = observed ? new Date(observed).getUTCHours() : null;
+        let distKm: number | null = null;
+        if (lat != null && lon != null && latS != null && lonS != null) {
+          const R = 6371;
+          const dLat = ((latS - lat) * Math.PI) / 180;
+          const dLon = ((lonS - lon) * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos((lat * Math.PI) / 180) *
+              Math.cos((latS * Math.PI) / 180) *
+              Math.sin(dLon / 2) ** 2;
+          distKm = Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10;
+        }
+        return { lat: latS, lon: lonS, observed, hour, distKm };
+      });
+      const byHour: Record<number, number> = {};
+      for (const s of strikes) if (s.hour != null) byHour[s.hour] = (byHour[s.hour] ?? 0) + 1;
+      const nearest = lat != null ? strikes.filter((s: any) => s.distKm != null).sort((a: any, b: any) => a.distKm - b.distKm)[0] ?? null : null;
+      return toToolResult({
+        ...r,
+        data: { count: strikes.length, byHour, nearestKm: nearest?.distKm ?? null, strikes, raw: r.data },
+      });
     }
   );
 

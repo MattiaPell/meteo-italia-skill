@@ -33,8 +33,8 @@ export function summarizeForecast(raw: any, models?: string[]): {
   const hourly = raw?.hourly;
   const dates: string[] = (daily?.time as string[]) ?? [];
 
-  // Open-Meteo appends `_<model>` to every variable when multiple models are
-  // requested. Model ids contain underscores (e.g. ecmwf_ifs04), so we match
+       // Open-Meteo appends `_<model>` to every variable when multiple models are
+       // requested. Model ids contain underscores (e.g. ecmwf_ifs025), so we match
   // the known model ids against the end of each key instead of naive splitting.
   const modelList = models && models.length ? models : inferModels(daily, hourly);
   const splitKey = (key: string): { base: string; model: string } | null => {
@@ -82,6 +82,36 @@ export function summarizeForecast(raw: any, models?: string[]): {
     return { date, models: modelsOut };
   });
 
+  // Score 0-100 (100 = condizioni ideali). Penalizza pioggia, temporali,
+  // vento forte e caldo/freddo estremo. Calcolato per giorno su media modelli.
+  const scoreDay = (d: { models: Record<string, any> }): { score: number; flags: string[] } => {
+    const vals = Object.values(d.models);
+    if (!vals.length) return { score: 50, flags: [] };
+    const avg = (sel: (m: any) => number | undefined) => {
+      const xs = vals.map(sel).filter((v): v is number => v != null);
+      return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : undefined;
+    };
+    const psum = avg((m) => m.precip_sum);
+    const pprob = avg((m) => m.precip_prob_max);
+    const gust = avg((m) => m.gust_max);
+    const cape = avg((m) => m.cape_max);
+    const tmax = avg((m) => m.temp_max);
+    const tmin = avg((m) => m.temp_min);
+    const thun = Math.max(...vals.map((m) => m.thunderstorm_hours ?? 0));
+    let score = 100;
+    const flags: string[] = [];
+    if (psum != null && psum > 0) { score -= Math.min(40, psum * 4); if (psum >= 10) flags.push("pioggia_forte"); }
+    if (pprob != null && pprob > 50) score -= (pprob - 50) * 0.3;
+    if (gust != null && gust > 40) { score -= Math.min(25, (gust - 40) * 0.6); if (gust >= 70) flags.push("vento_forte"); }
+    if (thun > 0) { score -= Math.min(25, thun * 2); flags.push("temporale"); }
+    if (cape != null && cape > 800) flags.push("instabile");
+    if (tmax != null && tmax >= 34) { score -= (tmax - 34) * 2; flags.push("caldo_estremo"); }
+    if (tmin != null && tmin <= 0) { score -= Math.min(15, (0 - tmin) * 1.5); if (tmin <= -5) flags.push("gelo"); }
+    score = Math.max(0, Math.min(100, Math.round(score)));
+    return { score, flags };
+  };
+
+
   // Hourly event counts (per model, over the whole window).
   if (hourly?.time) {
     const times = hourly.time as string[];
@@ -103,6 +133,11 @@ export function summarizeForecast(raw: any, models?: string[]): {
     }
   }
 
+  const scoredDays = days.map((d) => {
+    const { score, flags } = scoreDay(d);
+    return { ...d, score, flags };
+  });
+
   return {
     location: {
       latitude: raw?.latitude,
@@ -110,7 +145,7 @@ export function summarizeForecast(raw: any, models?: string[]): {
       elevation: raw?.elevation,
       timezone: raw?.timezone ?? "unknown",
     },
-    days,
+    days: scoredDays,
   };
 }
 
@@ -144,7 +179,7 @@ export function registerSummaries(server: McpServer) {
       inputSchema: {
         ...latLon,
         ...openMeteoCommon,
-        models: z.string().optional().describe("Comma-separated model list, e.g. ecmwf_ifs04,icon_seamless,gfs_seamless"),
+        models: z.string().optional().describe("Comma-separated model list, e.g. ecmwf_ifs025,icon_seamless,gfs_seamless"),
         hourly: z.string().optional().describe("Comma-separated hourly variables (need weather_code + precipitation for event counts)"),
         daily: z.string().optional().describe("Comma-separated daily variables"),
         current: z.string().optional().describe("Comma-separated current variables"),

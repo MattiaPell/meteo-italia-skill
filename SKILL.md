@@ -107,22 +107,13 @@ Identifica subito: **macroarea** (→ set modelli) + **regione amministrativa** 
 
 ### 2. Geocoding
 
-> **Via MCP:** `open_meteo_geocode` (name, count, language). La logica di
-> validazione sotto resta a carico del report.
+> **Via MCP:** `open_meteo_geocode` (name, count, language).
+> Il tool filtra già per `country_code == "IT"`, restituisce `chosen` (primo risultato IT), `candidates[]`, `needsDisambiguation` (>3 IT) e `fallbackSuggestion` (se nessun IT).
 
-```http
-GET https://geocoding-api.open-meteo.com/v1/search
-  ?name={CITTA}&count=10&language=it&format=json
-```
-
-**Logica di validazione obbligatoria:**
-1.  **Filtro Italia**: Scorri `results` e seleziona il primo con `country_code == "IT"`. Se `results[0]` non è "IT", scarta e passa ai successivi.
-2.  **Fallback Estero**: Se nessun risultato ha `country_code == "IT"`, chiedi conferma all'utente:
-    *"Non ho trovato {CITTA} in Italia. Intendevi {risultato_più_vicino} ({regione})?"*
-3.  **Disambiguazione**: Se trovi >3 risultati con `country_code == "IT"`, mostra una scelta all'utente prima di procedere:
-    *"{CITTA} ({admin1}) o {CITTA} ({admin2})?"*
-
-Annota lat, lon, quota (`elevation`) del risultato scelto — serve per neve e mountain bias.
+Usa la risposta:
+1. Se `chosen` è null → chiedi conferma all'utente con `fallbackSuggestion`.
+2. Se `needsDisambiguation` è true → mostra `candidates` all'utente prima di procedere.
+3. Annota lat, lon, `elevation` di `chosen` — serve per neve e mountain bias.
 
 ### 3. Fetch sequenziale prioritizzato
 
@@ -152,44 +143,14 @@ Esegui i passi seguendo l'ordine dei Tier:
 #### TIER 1 (Obbligatori sempre)
 
 #### A — Previsioni numeriche (Open-Meteo) — Strategia a 3 Livelli
-> **Via MCP:** `open_meteo_forecast` (latitude, longitude, models, hourly, daily, current, past_days, forecast_days) per il fetch raw (Livelli 2-3 / variabili avanzate).
-> **Per il report di sintesi usa `open_meteo_forecast_summary`**: ritorna solo max/min T, precip totale, probabilità pioggia max, CAPE max, raffica max e conteggio ore con temporale/precipitazione, per modello e per giorno — ~80-90% meno contesto del fetch raw. Usalo di default al posto del raw salvo servano serie orarie.
-> Nomi modello validi: `ecmwf_ifs04`, `ecmwf_ifs025`, `icon_seamless`, `gfs_seamless`, `metno_nordic`, `ukmo_seamless`, `gem_seamless`, `jma_seamless` (default `best_match`).
+> **Via MCP:** `open_meteo_forecast` (latitude, longitude, models, hourly, daily, current, past_days, forecast_days, **level**).
+> Il tool gestisce internamente la strategia a 3 livelli: con `level="auto"` (default) decide da solo se salire a Livello 2 (trigger `weather_code` 80-99, CAPE >500, precip >10mm, vento >50km/h) o Livello 3 (use case specializzato). La risposta include `levelUsed` e `triggerActivated`.
+> **Per il report di sintesi usa `open_meteo_forecast_summary`**: ritorna max/min T, precip totale, probabilità pioggia max, CAPE max, raffica max, conteggio ore temporale/precipitazione, **score 0-100 e flag** per giorno e modello — ~80-90% meno contesto del raw. Usalo di default.
+> Nomi modello validi: `ecmwf_ifs`, `ecmwf_ifs025`, `icon_seamless`, `gfs_seamless`, `metno_nordic`, `ukmo_seamless`, `gem_seamless`, `jma_seamless` (default `best_match`).
 
 Vedi `references/models.md` per il set corretto per macroarea.
 
-**Regola:** NON caricare variabili di livello superiore se il livello precedente non ne giustifica la necessità. Dichiara nel report quale livello è stato usato.
-
-**LIVELLO 1 — Always (Query iniziale leggera)**
-Usa solo daily + 8 variabili orarie core + 3 modelli macroarea-default.
-- `forecast_days=7`, `past_days=0`
-- **Variabili orarie**: `temperature_2m, precipitation, wind_speed_10m, wind_gusts_10m, weather_code, cloud_cover, precipitation_probability, cape`
-- **Daily**: `temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,weather_code,uv_index_max,et0_fao_evapotranspiration`
-
-**LIVELLO 2 — Condizionale (Eventi significativi)**
-Attiva se il Livello 1 indica: `weather_code` 80-99, `cape` > 500, `precipitation` > 10mm, o `wind_speed_10m` > 50km/h.
-- Seconda chiamata con variabili avanzate: `temperature_850hPa, temperature_500hPa, lifted_index, convective_inhibition, freezing_level_height, visibility, boundary_layer_height`.
-- `past_days=7`.
-- Aggiungi modelli secondari solo se LIVELLO 1 mostra divergenza >1.5°C tra i modelli core.
-
-**LIVELLO 3 — Specializzato (Use case espliciti)**
-Attiva solo se richiesto esplicitamente un use case specializzato:
-- `{GRUPPO_ENERGY}`: `wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,shortwave_radiation,direct_radiation,diffuse_radiation,direct_normal_irradiance,terrestrial_radiation`
-- `{GRUPPO_AGRO}`: `soil_temperature_6cm,soil_temperature_18cm,soil_moisture_1_to_3cm,et0_fao_evapotranspiration`
-- `{GRUPPO_PRO}`: `wet_bulb_temperature_2m,geopotential_height_1000hPa,geopotential_height_925hPa,geopotential_height_700hPa`
-- `forecast_days=16`.
-
-**Fetch Template:**
-```http
-GET https://api.open-meteo.com/v1/forecast
-  ?latitude={LAT}&longitude={LON}
-  &models={SET_MODELLI_LIVELLO}
-  &hourly={SET_VARIABILI_LIVELLO}
-  &daily={SET_DAILY}
-  &timezone=Europe/Rome
-  &past_days={0|7}
-  &forecast_days={7|16}
-```
+**Regola:** NON chiedere livelli superiori se non necessari — il tool lo fa automaticamente. Dichiara nel report `levelUsed` restituito dalla risposta.
 
 #### C — Storico recente (ultimi 7gg)
 Analisi disponibile solo se **LIVELLO 2** di Step A è attivato (`past_days=7`).
@@ -216,13 +177,9 @@ GET https://archive-api.open-meteo.com/v1/archive
 Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
 
 #### E — Allerta (Dati Pubblici)
-> **Via MCP:** `pc_allerte_wms` (request, layer, bbox).
-```http
-GET https://mappe.protezionecivile.gov.it/geowebcache/service/wms
-  (vedi references/arpa_network.md per parametri corretti)
-```
-Oppure consulta il bollettino informativo su `mappe.protezionecivile.gov.it`.
-Estrai: livello allerta attivo per la regione, tipo (idrogeologico, temporali, neve, vento, ecc.).
+> **Via MCP:** `pc_allerte_wms` (regione opzionale).
+> Il tool prova l'API JSON del bollettino (`api.protezionecivile.gov.it/bollettini/allerte/ultimo`), con fallback al WMS se irraggiungibile. Restituisce `alerts[]` (regione, livello, colore, livelloCodice 0-3, tipo_rischio) e `allertaMax`.
+Estrai da `alerts`: livello allerta per la regione target e tipo di rischio (idrogeologico, temporali, neve, vento). Se `allertaMax` ≥1 (gialla) segnala nel report e attiva gli Step condizionali (I, L, M, N).
 
 #### TIER 2 (Condizionali ad alta priorità)
 
@@ -355,66 +312,36 @@ GET https://api.checkwx.com/v2/taf/{ICAO}/decoded
 Headers: X-API-KEY: {YOUR_API_KEY}
 ```
 
-**Fallback (aviationweather.gov — raw, no auth):**
-```http
-GET https://aviationweather.gov/api/data/metar?ids=LIRF,LIMC,LIPE&format=json
-```
-**Parsing JSON nativo aviationweather.gov:**
-Mappa i campi:
-- `raw_text` → decodifica manuale
-- `temp_c` → temperatura
-- `wind_speed_kt` → vento
-- `wind_dir_degrees` → direzione
-- `visibility_statute_mi` → visibilità (converti in km: ×1.609)
-- `sky_condition[].sky_cover` → copertura nuvolosa
-- `altim_in_hg` → QNH (converti in hPa: ×33.864)
+**Fallback (aviationweather.gov — raw, no auth):** `aviationweather_metar` (ids, format, nwpTempC).
 
-**Nota**: Se il JSON non ha il campo decodificato, usa regex su `raw_text`: temperatura = `/(\d{2})\/(\d{2})/`, vento = `/(\d{3})(\d{2})KT/`.
+Il tool normalizza entrambe le sorgenti in `stations[]` (tempC, windKt, windDir, visibilityM, skyCover, qnhHpa) e, se passi `nwpTempC`, calcola `decodedVsNwp.tempScarto` e `decodedVsNwp.visFlag` (<2000m). Usa questi campi per il confronto.
 
-**Interpretazione — confronto forecast vs osservato:**
-1. **Temperatura**: METAR T osservata vs NWP T prevista. Scarto >2°C → modello sovrastima/sottostima. Scarto >4°C → modello inaffidabile per questa zona/giornata
-2. **Vento**: METAR vento osservato vs NWP previsto. Scarto velocità >10kt → modello sottostima il vento. Raffiche osservate >20kt ma non previste → attenzione per strutture temporanee
-3. **Visibilità/Nebbia**: METAR visibilità <2000m ma NWP >5000m → nebbia non risolta dal modello. Critico per use case viabilità
-4. **Copertura nuvolosa**: METAR OVC ma NWP weather_code ≤2 → modello sottostima nuvolosità
-5. **Pressione**: METAR QNH (altimeter.hpa) vs NWP pressure_msl — verifica coerenza sinottica
+**Interpretazione — confronto forecast vs osservato (soglie già applicate dal tool):**
+1. **Temperatura**: scarto >2°C → modello fuori; >4°C → inaffidabile per la zona
+2. **Vento**: scarto >10kt → modello sottostima vento; raffiche >20kt non previste → attenzione strutture
+3. **Visibilità/Nebbia**: `visFlag` true ma NWP sereno → nebbia non risolta (critico viabilità)
+4. **Copertura**: OVC ma NWP weather_code ≤2 → nuvolosità sottostimata
+5. **Pressione**: QNH vs NWP pressure_msl — coerenza sinottica
 
-**Gerarchia validazione:** TAF > NWP per orizzonte 0-6h su aeroporti. TAF è specifico per il punto, NWP è grigliato. Per zone senza aeroporto → usa stazioni ARPA (Step D).
+**Gerarchia validazione:** TAF > NWP per 0-6h su aeroporti. Per zone senza aeroporto → stazioni ARPA (Step D).
 
-**Nota:** CheckWX free tier: 3.000 req/giorno. Per uso intensivo, ruota su aviationweather.gov (formato raw, decodifica manuale).
-
-Vedi `references/metar_taf.md` for lista completa ICAO, guida interpretazione campi decoded, e soglie di validazione.
+Vedi `references/metar_taf.md` for lista completa ICAO e soglie di validazione.
 
 #### L — Lightning Detection (Nowcasting Temporali)
-> **Via MCP:** `dmi_lightning` (bbox, limit, observed_after).
+> **Via MCP:** `dmi_lightning` (bbox, limit, observed_after, **lat**, **lon**).
 
-**Attiva sempre per:** allerta PC ≥ gialla per temporali (Step E), CAPE >800 J/kg da Step A, use case mare/nautica/montagna/events outdoor. **Altrimenti:** attiva se `weather_code` attuale 80-99 (rovesci/temporali in atto).
+**Attiva sempre per:** allerta PC ≥ gialla per temporali (Step E), CAPE >800 J/kg da Step A, use case mare/nautica/montagna/events outdoor. **Altrimenti:** attiva se `weather_code` attuale 80-99.
 
-**Fetch DMI Open Data (GeoJSON, no auth):**
-```http
-GET https://opendataapi.dmi.dk/data/observations/lightning
-  ?limit=1000
-  &bbox={BBOX}
-```
-Dove BBOX varia per macroarea (usa `references/italy_zones.md` per determinare quale):
-- Nord Italia: `bbox=6.5,44.0,14.0,47.0`
-- Centro Italia: `bbox=9.0,41.0,14.5,44.5`
-- Sud Italia e Isole: `bbox=7.5,36.5,18.5,42.0`
-- Italia intera: `bbox=6.5,36.5,18.5,47.0`
+Il tool raggruppa gli strike per ora (`byHour`), calcola `nearestKm` (distanza Haversine dal punto target se passi lat/lon) e restituisce il conteggio totale. Usa questi campi:
+1. **Densità**: >10 fulmini/50km² = temporale attivo, >20 = severo
+2. **Trend**: seconda chiamata con `observed_after` (finestra precedente) → confronta `count`
+3. **Integrazione Step A (CAPE)**: CAPE >1500 + fulmini >10/15min → supercella probabile
+4. **Integrazione Step I (radar)**: nuclei >45 dBZ + fulmini → grandine probabile (>70%)
+5. **Dry lightning**: fulmini ma precip <1mm → rischio incendi (segnala)
 
-**Fetch comparativo per trend (opzionale):** seconda chiamata con `&observed_after={NOW-15MIN}` per valutare intensificazione/dissolvimento.
+**Distanza:** `nearestKm` <5km = pericolo immediato.
 
-**Interpretazione:**
-1. **Conta fulmini** nell'area entro 50km dal punto target. Soglie: >10 fulmini in 50km² = temporale attivo, >20 = temporale severo
-2. **Verifica trend**: confronto con fetch 15 min precedente. +50% = intensificazione, -50% = dissolvimento
-3. **Integrazione con Step A (CAPE/LI)**: CAPE >1500 + fulmini >10/15min → supercella probabile
-4. **Integrazione con Step I (radar DPC)**: nuclei intensi (>45 dBZ) in Vision + fulmini → grandine probabile (>70%)
-5. **Dry lightning**: fulmini >5/15min ma precipitazioni osservate <1mm → rischio incendi (segnala esplicitamente)
-
-**Distanza e movimento:** calcola distanza dal punto target (Haversine). <5km = pericolo immediato. Confronta posizione fulmini t-15min vs t-30min per stimare direzione e velocità di movimento.
-
-**Nota:** DMI API pubblica, nessuna autenticazione. Rate limit: ~60 req/min stimato. Precisione localizzazione ±1-5km.
-
-Vedi `references/lightning.md` per guida nowcasting completa, densità fulmini, integrazione con radar, e alternative API.
+Vedi `references/lightning.md` per guida completa e alternative API.
 
 #### M — Dati Idrologici (Trentino real-time + bacini nazionali via soglie)
 

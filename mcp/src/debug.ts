@@ -241,12 +241,12 @@ function htmlPage(): string {
 <script>
 const FIELDS = {
   geocoding: { name:"Roma", count:"10", language:"it" },
-  forecast: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs04,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum", timezone:"Europe/Rome", forecast_days:"3", past_days:"0" },
+  forecast: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum", timezone:"Europe/Rome", forecast_days:"3", past_days:"0" },
   archive: { latitude:"41.9", longitude:"12.5", start_date:"2016-07-19", end_date:"2025-07-18", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum", timezone:"Europe/Rome" },
   marine: { latitude:"44.0", longitude:"12.3", hourly:"wave_height,wave_direction,wave_period,sea_surface_temperature", daily:"wave_height_max", timezone:"Europe/Rome" },
   air_quality: { latitude:"45.5", longitude:"9.2", hourly:"pm10,pm2_5,european_aqi,ozone,dust", current:"european_aqi,pm10,pm2_5", domains:"cams_europe", timezone:"Europe/Rome" },
   ensemble: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025_ensemble_mean,gfs025_ensemble_mean", hourly:"temperature_2m,temperature_2m_spread,precipitation_mean,precipitation_spread", daily:"temperature_2m_max,temperature_2m_min", timezone:"Europe/Rome", forecast_days:"7" },
-  forecast_summary: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs04,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code,cape,wind_gusts_10m", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max", timezone:"Europe/Rome", forecast_days:"7" },
+  forecast_summary: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code,cape,wind_gusts_10m", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max", timezone:"Europe/Rome", forecast_days:"7" },
   pc_allerte: { service:"WMS", request:"GetCapabilities", version:"1.3.0", layer:"", bbox:"", width:"800", height:"600", format:"application/json" },
   dpc_radar: { productType:"VMI", download:"false" },
   checkwx: { icao:"LIRF,LIMC,LIPE", type:"metar" },

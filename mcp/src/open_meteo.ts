@@ -27,7 +27,36 @@ export function registerOpenMeteo(server: McpServer) {
         language,
         format: "json",
       });
-      return toToolResult(r);
+      if (!r.ok) return toToolResult(r);
+      const results = (r.data as any)?.results ?? [];
+      const itResults = results.filter(
+        (x: any) => x.country_code === "IT"
+      );
+      const chosen = itResults[0] ?? null;
+      const candidates = itResults.map((x: any) => ({
+        name: x.name,
+        admin1: x.admin1,
+        admin2: x.admin2,
+        lat: x.latitude,
+        lon: x.longitude,
+        elevation: x.elevation,
+      }));
+      const nonIt = results.find((x: any) => x.country_code !== "IT");
+      const enriched = {
+        ...r,
+        data: {
+          countryFiltered: itResults.length > 0,
+          chosen,
+          needsDisambiguation: itResults.length > 3,
+          candidates,
+          fallbackSuggestion:
+            chosen === null && nonIt
+              ? `${nonIt.name} (${nonIt.admin1 ?? nonIt.country_code})`
+              : null,
+          raw: r.data,
+        },
+      };
+      return toToolResult(enriched);
     }
   );
 
@@ -41,27 +70,93 @@ export function registerOpenMeteo(server: McpServer) {
       inputSchema: {
         ...latLon,
         ...openMeteoCommon,
-        models: z.string().optional().describe("Comma-separated model list, e.g. ecmwf,icon_seamless,gfs025"),
+        models: z.string().optional().describe("Comma-separated model list, e.g. ecmwf_ifs025,icon_seamless,gfs_seamless"),
         hourly: z.string().optional().describe("Comma-separated hourly variables"),
         daily: z.string().optional().describe("Comma-separated daily variables"),
         current: z.string().optional().describe("Comma-separated current variables"),
+        level: z.enum(["1", "2", "3", "auto"]).default("auto").describe("Fetch detail level: 1=core, 2=event-driven advanced, 3=use-case specialized, auto=decide from Level-1 triggers"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ latitude, longitude, models, hourly, daily, current, timezone, past_days, forecast_days }) => {
-      const r = await apiGet("https://api.open-meteo.com/v1/forecast", {
-        latitude,
-        longitude,
-        models: models ? csv(models) : undefined,
-        hourly: hourly ? csv(hourly) : undefined,
-        daily: daily ? csv(daily) : undefined,
+    async ({ latitude, longitude, models, hourly, daily, current, timezone, past_days, forecast_days, level }) => {
+      const chosenModels = models ? csv(models) : undefined;
+      const coreHourly = [
+        "temperature_2m", "precipitation", "wind_speed_10m", "wind_gusts_10m",
+        "weather_code", "cloud_cover", "precipitation_probability", "cape",
+      ];
+      const coreDaily = [
+        "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max",
+        "apparent_temperature_min", "precipitation_sum", "snowfall_sum",
+        "precipitation_probability_max", "wind_speed_10m_max", "wind_gusts_10m_max",
+        "weather_code", "uv_index_max", "et0_fao_evapotranspiration",
+      ];
+
+      const l1 = await apiGet("https://api.open-meteo.com/v1/forecast", {
+        latitude, longitude,
+        models: chosenModels,
+        hourly: hourly ? csv(hourly) : coreHourly,
+        daily: daily ? csv(daily) : coreDaily,
         current: current ? csv(current) : undefined,
-        timezone,
-        past_days,
-        forecast_days,
+        timezone, past_days: past_days ?? 0, forecast_days: forecast_days ?? 7,
       });
-      return toToolResult(r);
+      if (!l1.ok) return toToolResult(l1);
+
+      const l1Data = l1.data as any;
+      const codes = (l1Data?.hourly?.weather_code ?? []).flatMap((a: any) => (Array.isArray(a) ? a : [a]));
+      const capes = (l1Data?.hourly?.cape ?? []).flatMap((a: any) => (Array.isArray(a) ? a : [a]));
+      const precs = (l1Data?.hourly?.precipitation ?? []).flatMap((a: any) => (Array.isArray(a) ? a : [a]));
+      const winds = (l1Data?.hourly?.wind_speed_10m ?? []).flatMap((a: any) => (Array.isArray(a) ? a : [a]));
+      const triggered =
+        codes.some((c: number) => c >= 80 && c <= 99) ||
+        capes.some((c: number) => c > 500) ||
+        precs.some((p: number) => p > 10) ||
+        winds.some((w: number) => w > 50);
+
+      let levelUsed: "1" | "2" | "3" = "1";
+      let finalRes = l1;
+      if (level === "3") {
+        levelUsed = "3";
+        finalRes = await apiGet("https://api.open-meteo.com/v1/forecast", {
+          latitude, longitude, models: chosenModels,
+          hourly: hourly ? csv(hourly) : [
+            "temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m",
+            "wind_speed_80m", "wind_direction_80m", "wind_speed_120m", "wind_direction_120m",
+            "shortwave_radiation", "direct_radiation", "diffuse_radiation",
+            "direct_normal_irradiance", "terrestrial_radiation",
+            "soil_temperature_6cm", "soil_temperature_18cm", "soil_moisture_1_to_3cm",
+            "wet_bulb_temperature_2m", "geopotential_height_1000hPa",
+            "geopotential_height_925hPa", "geopotential_height_700hPa",
+          ],
+          daily: daily ? csv(daily) : coreDaily,
+          current: current ? csv(current) : undefined,
+          timezone, past_days: past_days ?? 0, forecast_days: 16,
+        });
+      } else if (level === "2" || (level === "auto" && triggered)) {
+        levelUsed = "2";
+        finalRes = await apiGet("https://api.open-meteo.com/v1/forecast", {
+          latitude, longitude, models: chosenModels,
+          hourly: hourly ? csv(hourly) : [
+            ...coreHourly,
+            "temperature_850hPa", "temperature_500hPa", "lifted_index",
+            "convective_inhibition", "freezing_level_height", "visibility",
+            "boundary_layer_height",
+          ],
+          daily: daily ? csv(daily) : coreDaily,
+          current: current ? csv(current) : undefined,
+          timezone, past_days: 7, forecast_days: forecast_days ?? 7,
+        });
+      }
+
+      const enriched = {
+        ...finalRes,
+        data: {
+          levelUsed,
+          triggerActivated: triggered,
+          raw: finalRes.data,
+        },
+      };
+      return toToolResult(enriched);
     }
   );
 
