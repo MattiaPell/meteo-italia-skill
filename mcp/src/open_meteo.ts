@@ -1,6 +1,22 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { apiGet, toToolResult, openMeteoCommon, latLon } from "./http.js";
+import { apiGet, toToolResult, openMeteoCommon, latLon, validateApiData } from "./http.js";
+
+const geocodeSchema = z.object({
+  results: z
+    .array(
+      z.object({
+        name: z.string(),
+        country_code: z.string().optional(),
+        admin1: z.union([z.string(), z.null()]).optional(),
+        admin2: z.union([z.string(), z.null()]).optional(),
+        latitude: z.number(),
+        longitude: z.number(),
+        elevation: z.number().optional(),
+      })
+    )
+    .optional(),
+});
 
 const csv = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
@@ -28,7 +44,8 @@ export function registerOpenMeteo(server: McpServer) {
         format: "json",
       });
       if (!r.ok) return toToolResult(r);
-      const results = (r.data as any)?.results ?? [];
+      const parsed = validateApiData(r, geocodeSchema, "Open-Meteo Geocoding");
+      const results = parsed.results ?? [];
       const itResults = results.filter(
         (x: any) => x.country_code === "IT"
       );
