@@ -1,21 +1,12 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { toToolResult, latLon, ApiResult } from "./http.js";
+import { getDistance } from "./geo.js";
 import { climatologyData } from "./climatology_data.js";
 
-// Compute distance between two lat/lon coordinates (Haversine formula)
-function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+/** Unify dash/underscore model ids so `icon-eu` and `icon_eu` match. */
+export function normalizeModelId(id: string): string {
+  return id.trim().toLowerCase().replace(/-/g, "_");
 }
 
 // --- 1. CLIMATOLOGY TOOL ----------------------------------------------------
@@ -27,8 +18,8 @@ export function registerClimatology(server: McpServer) {
       description:
         "Query climatological normals (1991-2020 ERA5) for over 100 Italian cities/stations. Matches by closest lat/lon or city name. Can return single month or full year, and estimates anomalies / sigma categorization.",
       inputSchema: {
-        latitude: z.coerce.number().optional().describe("Latitude of the target location"),
-        longitude: z.coerce.number().optional().describe("Longitude of the target location"),
+        latitude: z.coerce.number().min(-90).max(90).optional().describe("Latitude of the target location"),
+        longitude: z.coerce.number().min(-180).max(180).optional().describe("Longitude of the target location"),
         cityName: z.string().optional().describe("Filter by city name (e.g. 'Milano', 'Roma')"),
         region: z.string().optional().describe("Filter by region name (e.g. 'lombardia')"),
         month: z.coerce.number().int().min(1).max(12).optional().describe("Month number (1=Gen, 12=Dic)"),
@@ -835,9 +826,9 @@ export function registerLocalPhenomena(server: McpServer) {
       description:
         "Run algorithmic checks on hourly weather forecast parameters to automatically identify typical Italian phenomena (Bora, Foehn, Scirocco, Nebbia Padana, Gelicidio, etc.).",
       inputSchema: {
-        latitude: z.coerce.number().describe("Latitude of target"),
-        longitude: z.coerce.number().describe("Longitude of target"),
-        temp2m: z.coerce.number().describe("Temperature at 2m (°C)"),
+        latitude: z.coerce.number().min(-90).max(90).describe("Latitude of target"),
+        longitude: z.coerce.number().min(-180).max(180).describe("Longitude of target"),
+        temp2m: z.coerce.number().min(-90).max(60).describe("Temperature at 2m (°C)"),
         relHum2m: z.coerce.number().min(0).max(100).describe("Relative Humidity at 2m (%)"),
         windSpeed10m: z.coerce.number().min(0).describe("Wind speed at 10m (km/h)"),
         windDir10m: z.coerce.number().min(0).max(360).describe("Wind direction at 10m (degrees)"),
@@ -1086,8 +1077,9 @@ export function registerModelTuning(server: McpServer) {
         { model: "gfs_seamless", zone: "Centro-Sud", bias: "Caldo eccessivo in estate", entity: "+1-2°C T max", note: "Bias caldo sistematico in estate al Sud" },
       ];
 
-      const filteredBiases = modelId
-        ? biases.filter((b) => b.model.toLowerCase().includes(modelId.toLowerCase()))
+      const normalizedModelId = modelId ? normalizeModelId(modelId) : undefined;
+      const filteredBiases = normalizedModelId
+        ? biases.filter((b) => normalizeModelId(b.model).includes(normalizedModelId))
         : biases;
 
       // 3. UHI Correction Matrix

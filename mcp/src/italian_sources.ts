@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, apiPostJson, toToolResult, CHECKWX_API_KEY } from "./http.js";
+import { haversine } from "./geo.js";
 
 /** Map CheckWX decoded / AviationWeather shapes into a normalized station record. */
 function parseMetarStation(s: any, nwpTempC?: number): any {
@@ -30,16 +31,22 @@ function parseMetarStation(s: any, nwpTempC?: number): any {
 }
 
 /** Parse an AviationWeather raw METAR text into the same normalized shape. */
-function parseRawMetar(raw: string, _s: any): any {
-  const temp = raw.match(/(\d{2})\/(\d{2})/);
-  const wind = raw.match(/(\d{3})(\d{2})KT/);
-  const vis = raw.match(/(\d{4})/);
+export function parseRawMetar(raw: string, _s: any): any {
+  const temp = raw.match(/(\d{2})\/(\d{2})\//);
+  const wind = raw.match(/(\d{3})(\d{2})(?:G(\d{2}))?KT/);
+  // Visibility: CAVOK → unlimited; otherwise the 4-digit field that follows
+  // the wind group (VVVV in meters for Italian METARs, 9999 = ≥10km).
+  const cavok = /CAVOK/.test(raw);
+  const visMatch = raw.match(/\s(\d{4})(?=\s|$)/);
+  const visibilityM = cavok ? null : visMatch ? parseInt(visMatch[1], 10) : null;
   return {
     raw_text: raw,
     temp_c: temp ? parseInt(temp[1], 10) : null,
     wind_speed_kt: wind ? parseInt(wind[2], 10) : null,
+    wind_gust_kt: wind && wind[3] ? parseInt(wind[3], 10) : null,
     wind_dir_degrees: wind ? parseInt(wind[1], 10) : null,
-    visibility_statute_mi: vis ? parseInt(vis[1], 10) / 100 : null,
+    visibility_statute_mi: visibilityM != null ? visibilityM / 1609.34 : cavok ? null : null,
+    cavok,
   };
 }
 
@@ -275,15 +282,8 @@ export function registerItalianSources(server: McpServer) {
         const hour = observed ? new Date(observed).getUTCHours() : null;
         let distKm: number | null = null;
         if (lat != null && lon != null && latS != null && lonS != null) {
-          const R = 6371;
-          const dLat = ((latS - lat) * Math.PI) / 180;
-          const dLon = ((lonS - lon) * Math.PI) / 180;
-          const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos((lat * Math.PI) / 180) *
-              Math.cos((latS * Math.PI) / 180) *
-              Math.sin(dLon / 2) ** 2;
-          distKm = Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10;
+          const d = haversine({ lat, lon }, { lat: latS, lon: lonS });
+          distKm = Math.round(d * 10) / 10;
         }
         return { lat: latS, lon: lonS, observed, hour, distKm };
       });
