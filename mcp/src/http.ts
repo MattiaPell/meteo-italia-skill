@@ -27,6 +27,8 @@ const CACHE_TTL_MS: Record<string, number> = {
   "api.arpa.veneto.it": 300_000,
   "www.arpa.veneto.it": 300_000,
   "dati.meteotrentino.it": 300_000,
+  "apimeteo.regione.marche.it": 300_000,
+  "www.dati.lombardia.it": 300_000,
   "www.floods.it": 300_000,
   "aviationweather.gov": 120_000,
   "api.checkwx.com": 120_000,

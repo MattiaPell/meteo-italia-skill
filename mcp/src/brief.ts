@@ -7,6 +7,8 @@ import { parseMetarStation } from "./italian_sources.js";
 import { fetchLatestBulletin, fetchRadarLatest } from "./dpc.js";
 import { parseArpavIdroXml } from "./regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "./regioni/meteotrentino.js";
+import type { ArpaMarcheStation } from "./regioni/arpa-marche.js";
+import type { ArpaLombardiaStation, ArpaLombardiaObs } from "./regioni/arpa-lombardia.js";
 
 // Aeroporti italiani con reporting METAR attivo (coordinate ARP). Usati per
 // scegliere le stazioni di nowcasting più vicine al punto richiesto.
@@ -181,9 +183,57 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
             osservazioni: obs.ok ? parseMeteoTrentinoObs(String(obs.data)) : null,
           };
         }
+        if (regioneNorm.includes("marche")) {
+          const stazioniR = await apiGet("https://apimeteo.regione.marche.it/Stazioni", { attive: true });
+          if (!stazioniR.ok) return { ok: false, agenzia: "ARPA Marche (AMAP)", error: stazioniR.error };
+          const items: any[] = (stazioniR.data as any)?.lista ?? [];
+          let best: any = null;
+          for (const s of items) {
+            const slat = s.latitudine ?? 0;
+            const slon = s.longitudine ?? 0;
+            if (!slat || !slon) continue;
+            const d = haversine({ lat: lat!, lon: lon! }, { lat: slat, lon: slon });
+            if (!best || d < best.distKm) best = { codice: s.codice, nome: s.nome, comune: s.comune, provincia: s.provincia, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10, ultimoAgg: s.fine };
+          }
+          if (!best) return { ok: false, agenzia: "ARPA Marche (AMAP)", error: "nessuna stazione vicina" };
+          const dettaglio = await apiGet(`https://apimeteo.regione.marche.it/Stazione/${best.codice}`, {});
+          return {
+            ok: true, agenzia: "ARPA Marche / AMAP Agrometeo",
+            stazioneVicina: best,
+            sensori: dettaglio.ok ? ((dettaglio.data as any)?.listaSensori?.lista ?? []).map((sen: any) => ({
+              id: sen.idSensoreStazione, tipo: sen.descrizioneClasse, giornalieri: sen.haGiornalieri,
+            })) : [],
+          };
+        }
+        if (regioneNorm.includes("lombardia")) {
+          const [stazioniR, obsR] = await Promise.allSettled([
+            apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "200" }),
+            apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
+              $where: `data >= '${new Date(Date.now() - 7200 * 1000).toISOString().replace(/\.\d{3}Z$/, "")}'`,
+              $order: "data DESC", $limit: "50",
+            }),
+          ]);
+          const stazioni: any[] = stazioniR.status === "fulfilled" && stazioniR.value.ok ? (stazioniR.value.data as any[]) ?? [] : [];
+          let bestObs: any = null;
+          for (const s of stazioni) {
+            const slat = parseFloat(s.lat) || 0;
+            const slon = parseFloat(s.lng) || 0;
+            if (!slat || !slon) continue;
+            const d = haversine({ lat: lat!, lon: lon! }, { lat: slat, lon: slon });
+            if (!bestObs || d < bestObs.distKm) bestObs = { idsensore: s.idsensore, nome: s.nomestazione, provincia: s.provincia, tipologia: s.tipologia, quota: s.quota, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10 };
+          }
+          const osservazioni: any[] = obsR.status === "fulfilled" && obsR.value.ok ? ((obsR.value.data as any[]) ?? []).filter((o: any) => o.valore !== "-999") : [];
+          return {
+            ok: true, agenzia: "ARPA Lombardia (dati.lombardia.it)",
+            stazioneVicina: bestObs,
+            osservazioniRecenti: osservazioni.slice(0, 10).map((o: any) => ({
+              data: o.data, valore: o.valore, stato: o.stato,
+            })),
+          };
+        }
         return {
           ok: false, agenzia: null,
-          nonCoperto: `Nessun adapter ARPA real-time verificato per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino). Usa METAR + radar come osservazioni.`,
+          nonCoperto: `Nessun adapter ARPA real-time per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino), Marche (AMAP), Lombardia (ARPA Lombardia). Usa METAR + radar come osservazioni.`,
         };
       })();
 
