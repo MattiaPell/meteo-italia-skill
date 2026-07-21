@@ -1,10 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { alertLevelFromText, extractZoneRegionMap } from "../dpc.js";
-import {
-  parseArpavIdroXml,
-  parseMeteoTrentinoStations,
-  parseMeteoTrentinoObs,
-} from "../arpa.js";
+import { parseArpavIdroXml } from "../regioni/arpav.js";
+import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
 
 describe("alertLevelFromText", () => {

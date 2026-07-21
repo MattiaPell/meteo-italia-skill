@@ -5,11 +5,8 @@ import { haversine } from "./geo.js";
 import { summarizeForecast } from "./summaries.js";
 import { parseMetarStation } from "./italian_sources.js";
 import { fetchLatestBulletin, fetchRadarLatest } from "./dpc.js";
-import {
-  parseArpavIdroXml,
-  parseMeteoTrentinoStations,
-  parseMeteoTrentinoObs,
-} from "./arpa.js";
+import { parseArpavIdroXml } from "./regioni/arpav.js";
+import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "./regioni/meteotrentino.js";
 
 // Aeroporti italiani con reporting METAR attivo (coordinate ARP). Usati per
 // scegliere le stazioni di nowcasting più vicine al punto richiesto.
