@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { dmsToDecimal, parseStationList, parseStationDetail } from "../regioni/arpa-marche.js";
 import { parseStation } from "../regioni/arpa-lombardia.js";
+import { formatGiorno } from "../regioni/arpae.js";
+import { parsePrevisioniXml, parseWfsStazioni, parseStazioneXml } from "../regioni/arpa-fvg.js";
 
 // ---------------------------------------------------------------------------
 // ARPA Marche
@@ -315,5 +317,228 @@ describe("parseStation (ARPA Lombardia / Socrata)", () => {
     const station = parseStation(row);
     expect(station.lat).toBe(0);
     expect(station.lon).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ARPAE Emilia-Romagna
+// ---------------------------------------------------------------------------
+
+describe("formatGiorno (ARPAE)", () => {
+  it("extracts regionale + tabellare + provinciale for a day", () => {
+    const data = {
+      oggi: {
+        bollettino: {
+          validita: "2026-07-21",
+          emissione: "2026-07-21T12:00:00",
+          regionale: {
+            testo: { cielo: "Sereno", temperatura: "28-32", vento: "Debole", mare: "Calmo" },
+            dati_tabellari: {
+              costa: { tmin_previ: 20, tmax_previ: 30, precipitazioni: "0" },
+              pianura: { tmin_previ: 18, tmax_previ: 34, precipitazioni: "0" },
+            },
+          },
+          provinciale: {
+            BO: { testo_previsione: "Sereno", temperatura_minima: 18, temperatura_massima: 32 },
+          },
+        },
+      },
+    };
+    const g = formatGiorno("oggi", data);
+    expect(g).toHaveProperty("validita", "2026-07-21");
+    expect(g).toHaveProperty("emissione", "2026-07-21T12:00:00");
+    expect((g as any).regionale.cielo).toBe("Sereno");
+    expect((g as any).dati_tabellari.costa.tmin).toBe(20);
+    expect((g as any).provinciale.BO.testo).toBe("Sereno");
+  });
+
+  it("returns empty object for missing day", () => {
+    expect(formatGiorno("oggi", {})).toEqual({});
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ARPA FVG / OSMER
+// ---------------------------------------------------------------------------
+
+describe("parsePrevisioniXml (ARPA FVG)", () => {
+  it("parses emissione, situazione generale, and scadenze with zone", () => {
+    const xml = `<previsioni>
+      <emissione>2026-07-21T12:00:00</emissione>
+      <lingua>it</lingua>
+      <SITUAZIONEGENERALE_TESTO>Alta pressione sul Nord Italia</SITUAZIONEGENERALE_TESTO>
+      <scadenze>
+        <scadenza id="1" data_validita="2026-07-21" giorno="oggi">
+          <zona id="10" nome="REGIONE" descrizione="Tutto il FVG">
+            <ATTENDIBILITA>90</ATTENDIBILITA>
+            <TESTO>Cielo sereno o poco nuvoloso</TESTO>
+            <PROBABILITAPRECIPITAZIONI>5</PROBABILITAPRECIPITAZIONI>
+            <PROBABILITATEMPORALI>0</PROBABILITATEMPORALI>
+            <QUOTANEVICATA>2000</QUOTANEVICATA>
+            <EVOLUZIONE00_SIMBOLO>1</EVOLUZIONE00_SIMBOLO>
+            <EVOLUZIONE00_DESCRIZIONE>Sereno</EVOLUZIONE00_DESCRIZIONE>
+            <EVOLUZIONE12_SIMBOLO>2</EVOLUZIONE12_SIMBOLO>
+            <EVOLUZIONE12_DESCRIZIONE>Poco nuvoloso</EVOLUZIONE12_DESCRIZIONE>
+            <EVOLUZIONE24_SIMBOLO>4</EVOLUZIONE24_SIMBOLO>
+            <EVOLUZIONE24_DESCRIZIONE>Coperto</EVOLUZIONE24_DESCRIZIONE>
+          </zona>
+        </scadenza>
+      </scadenze>
+    </previsioni>`;
+    const p = parsePrevisioniXml(xml) as any;
+    expect(p.emissione).toBe("2026-07-21T12:00:00");
+    expect(p.situazione_generale).toBe("Alta pressione sul Nord Italia");
+    expect(p.scadenze).toHaveLength(1);
+    expect(p.scadenze[0].id).toBe("1");
+    expect(p.scadenze[0].giorno).toBe("oggi");
+    expect(p.scadenze[0].zone).toHaveLength(1);
+    expect(p.scadenze[0].zone[0].nome).toBe("REGIONE");
+    expect(p.scadenze[0].zone[0].descrizione).toBe("Tutto il FVG");
+    expect(p.scadenze[0].zone[0].attendibilita_perc).toBe("90");
+    expect(p.scadenze[0].zone[0].mattina_simbolo).toBe("1");
+    expect(p.scadenze[0].zone[0].mattina_descrizione).toBe("Sereno");
+    expect(p.scadenze[0].zone[0].pomeriggio_simbolo).toBe("2");
+    expect(p.scadenze[0].zone[0].sera_descrizione).toBe("Coperto");
+  });
+});
+
+describe("parseWfsStazioni (ARPA FVG)", () => {
+  it("parses active stations with sensor flags", () => {
+    const xml = `<?xml version="1.0"?>
+      <wfs:FeatureCollection>
+        <wfs:member>
+          <MONIT_AMB:STAZIONI_METEOROLOGICHE>
+            <MONIT_AMB:CODICE_FVG>G201</MONIT_AMB:CODICE_FVG>
+            <MONIT_AMB:DENOMINAZIONE>Adegliacco</MONIT_AMB:DENOMINAZIONE>
+            <MONIT_AMB:ATTIVA>S</MONIT_AMB:ATTIVA>
+            <MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>N</MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>
+            <MONIT_AMB:TERMOMETRO>S</MONIT_AMB:TERMOMETRO>
+            <MONIT_AMB:PLUVIOMETRO>S</MONIT_AMB:PLUVIOMETRO>
+            <MONIT_AMB:ANEMOMETRO>N</MONIT_AMB:ANEMOMETRO>
+            <gml:pos>5149191.718375 357337.373125</gml:pos>
+          </MONIT_AMB:STAZIONI_METEOROLOGICHE>
+        </wfs:member>
+        <wfs:member>
+          <MONIT_AMB:STAZIONI_METEOROLOGICHE>
+            <MONIT_AMB:CODICE_FVG>C551</MONIT_AMB:CODICE_FVG>
+            <MONIT_AMB:DENOMINAZIONE>Cividale</MONIT_AMB:DENOMINAZIONE>
+            <MONIT_AMB:ATTIVA>S</MONIT_AMB:ATTIVA>
+            <MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>N</MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>
+            <MONIT_AMB:TERMOMETRO>S</MONIT_AMB:TERMOMETRO>
+            <MONIT_AMB:PLUVIOMETRO>S</MONIT_AMB:PLUVIOMETRO>
+            <MONIT_AMB:ANEMOMETRO>S</MONIT_AMB:ANEMOMETRO>
+            <MONIT_AMB:IGROMETRO>S</MONIT_AMB:IGROMETRO>
+            <gml:pos>5000000.0 350000.0</gml:pos>
+          </MONIT_AMB:STAZIONI_METEOROLOGICHE>
+        </wfs:member>
+      </wfs:FeatureCollection>`;
+    const stations = parseWfsStazioni(xml);
+    expect(stations).toHaveLength(2);
+    expect(stations[0].codice).toBe("G201");
+    expect(stations[0].nome).toBe("Adegliacco");
+    expect(stations[0].sensori).toContain("temperatura");
+    expect(stations[0].sensori).toContain("pioggia");
+    expect(stations[0].sensori).not.toContain("vento");
+    expect(stations[1].codice).toBe("C551");
+    expect(stations[1].sensori).toContain("vento");
+    expect(stations[1].sensori).toContain("umidita");
+  });
+
+  it("skips inactive or sospese stations", () => {
+    const xml = `<?xml version="1.0"?>
+      <wfs:FeatureCollection>
+        <wfs:member>
+          <MONIT_AMB:STAZIONI_METEOROLOGICHE>
+            <MONIT_AMB:CODICE_FVG>G001</MONIT_AMB:CODICE_FVG>
+            <MONIT_AMB:DENOMINAZIONE>Inattiva</MONIT_AMB:DENOMINAZIONE>
+            <MONIT_AMB:ATTIVA>N</MONIT_AMB:ATTIVA>
+            <MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>N</MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>
+            <gml:pos>5140000.0 357000.0</gml:pos>
+          </MONIT_AMB:STAZIONI_METEOROLOGICHE>
+        </wfs:member>
+        <wfs:member>
+          <MONIT_AMB:STAZIONI_METEOROLOGICHE>
+            <MONIT_AMB:CODICE_FVG>G002</MONIT_AMB:CODICE_FVG>
+            <MONIT_AMB:DENOMINAZIONE>Sospesa</MONIT_AMB:DENOMINAZIONE>
+            <MONIT_AMB:ATTIVA>S</MONIT_AMB:ATTIVA>
+            <MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>S</MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>
+            <gml:pos>5140000.0 358000.0</gml:pos>
+          </MONIT_AMB:STAZIONI_METEOROLOGICHE>
+        </wfs:member>
+        <wfs:member>
+          <MONIT_AMB:STAZIONI_METEOROLOGICHE>
+            <MONIT_AMB:CODICE_FVG>G003</MONIT_AMB:CODICE_FVG>
+            <MONIT_AMB:DENOMINAZIONE>Attiva</MONIT_AMB:DENOMINAZIONE>
+            <MONIT_AMB:ATTIVA>S</MONIT_AMB:ATTIVA>
+            <MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>N</MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>
+            <gml:pos>5140000.0 359000.0</gml:pos>
+          </MONIT_AMB:STAZIONI_METEOROLOGICHE>
+        </wfs:member>
+      </wfs:FeatureCollection>`;
+    expect(parseWfsStazioni(xml)).toHaveLength(1);
+  });
+
+  it("sets lat/lon to 0 (projected coords, no conversion)", () => {
+    const xml = `<wfs:FeatureCollection>
+      <wfs:member>
+        <MONIT_AMB:STAZIONI_METEOROLOGICHE>
+          <MONIT_AMB:CODICE_FVG>G201</MONIT_AMB:CODICE_FVG>
+          <MONIT_AMB:DENOMINAZIONE>Test</MONIT_AMB:DENOMINAZIONE>
+          <MONIT_AMB:ATTIVA>S</MONIT_AMB:ATTIVA>
+          <MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>N</MONIT_AMB:SOSPENSIONE_OSSERVAZIONE>
+          <gml:pos>5149191.718375 357337.373125</gml:pos>
+        </MONIT_AMB:STAZIONI_METEOROLOGICHE>
+      </wfs:member>
+    </wfs:FeatureCollection>`;
+    const s = parseWfsStazioni(xml);
+    expect(s[0].lat).toBe(0);
+    expect(s[0].lon).toBe(0);
+  });
+});
+
+describe("parseStazioneXml (ARPA FVG)", () => {
+  it("parses a station with all sensor fields", () => {
+    const xml = `<meteo>
+      <station_id>G201</station_id>
+      <station_name>Adegliacco</station_name>
+      <station_altitude>185</station_altitude>
+      <observation_time>2026-07-21T12:00:00</observation_time>
+      <meteo_data>
+        <t unit="°C">24.5</t>
+        <t_feel unit="°C">23.0</t_feel>
+        <rr unit="mm">0.0</rr>
+        <hu unit="%">65</hu>
+        <pa unit="hPa">1013.2</pa>
+        <ff unit="km/h">12.5</ff>
+        <ff_max unit="km/h">18.3</ff_max>
+        <dd>SO</dd>
+        <cloudiness descrizione="poco nuvoloso">2</cloudiness>
+        <to unit="°C">12.3</to>
+        <gl unit="kJ/m2">1250</gl>
+        <hs unit="cm">0</hs>
+        <hns unit="cm">0</hns>
+      </meteo_data>
+    </meteo>`;
+    const s = parseStazioneXml(xml) as any;
+    expect(s.stazione).toBe("Adegliacco");
+    expect(s.codice).toBe("G201");
+    expect(s.temperatura_c).toBe(24.5);
+    expect(s.temperatura_percepita).toBe(23.0);
+    expect(s.precipitazioni_mm).toBe(0.0);
+    expect(s.umidita_perc).toBe(65);
+    expect(s.pressione_hPa).toBe(1013.2);
+    expect(s.vento_kmh).toBe(12.5);
+    expect(s.vento_raffica_kmh).toBe(18.3);
+    expect(s.vento_direzione).toBe("SO");
+    expect(s.nuvolosita).toBe("poco nuvoloso");
+    expect(s.dew_point).toBe(12.3);
+    expect(s.radiazione_kjm2).toBe(1250);
+    expect(s.neve_cm).toBe(0);
+    expect(s.neve_fresca_cm).toBe(0);
+  });
+
+  it("returns null when no meteo_data block", () => {
+    const xml = `<meteo><station_id>G201</station_id></meteo>`;
+    expect(parseStazioneXml(xml)).toBeNull();
   });
 });

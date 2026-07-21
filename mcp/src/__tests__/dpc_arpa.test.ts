@@ -37,6 +37,26 @@ describe("parseArpavIdroXml", () => {
     expect(s[0].livello6hFaM).toBe(0.5);
     expect(s[0].trend).toBe("salita");
   });
+
+  it("marks trend as stabile when delta < 0.01", () => {
+    const mk = (h: string, v: string) => `<DATI ISTANTE="${h}"><VM>${v}</VM></DATI>`;
+    const dati = Array.from({ length: 40 }, (_, i) => mk(`2026072100${String(i).padStart(2, "0")}`, "1.00")).join("");
+    const xml = `<CONTENITORE><STAZIONE><IDSTAZ>1</IDSTAZ><NOME>Staz Stabile</NOME><X>11.0</X><Y>45.0</Y><QUOTA>50</QUOTA><PROVINCIA>VI</PROVINCIA><COMUNE>Comune</COMUNE>${dati}</STAZIONE></CONTENITORE>`;
+    const s = parseArpavIdroXml(xml);
+    expect(s[0].trend).toBe("stabile");
+  });
+
+  it("handles CDATA in nome and comune", () => {
+    const xml = `<CONTENITORE><STAZIONE><IDSTAZ>12</IDSTAZ><NOME><![CDATA[Adige a Boara Pisani]]></NOME><X>11.8</X><Y>45.1</Y><PROVINCIA>PD</PROVINCIA><COMUNE><![CDATA[BOARA PISANI]]></COMUNE><DATI ISTANTE="202607211200"><VM>1.23</VM></DATI></STAZIONE></CONTENITORE>`;
+    const s = parseArpavIdroXml(xml);
+    expect(s[0].nome).toBe("Adige a Boara Pisani");
+    expect(s[0].comune).toBe("BOARA PISANI");
+  });
+
+  it("skips stations with no DATI blocks", () => {
+    const xml = `<CONTENITORE><STAZIONE><IDSTAZ>99</IDSTAZ><NOME>Empty</NOME><X>11.0</X><Y>45.0</Y><PROVINCIA>VR</PROVINCIA><COMUNE>VERONA</COMUNE></STAZIONE></CONTENITORE>`;
+    expect(parseArpavIdroXml(xml)).toHaveLength(0);
+  });
 });
 
 describe("parseMeteoTrentinoStations", () => {
@@ -48,6 +68,33 @@ describe("parseMeteoTrentinoStations", () => {
     const s = parseMeteoTrentinoStations(xml);
     expect(s).toHaveLength(1);
     expect(s[0].codice).toBe("T0383");
+  });
+
+  it("skips stations with missing lat/lon", () => {
+    const xml = `<ArrayOfAnagrafica>
+      <anagrafica><codice>T001</codice><nome>No Coord</nome><latitudine></latitudine><longitudine></longitudine></anagrafica>
+      <anagrafica><codice>T002</codice><nome>Ok</nome><latitudine>46.0</latitudine><longitudine>11.0</longitudine></anagrafica>
+    </ArrayOfAnagrafica>`;
+    const s = parseMeteoTrentinoStations(xml);
+    expect(s).toHaveLength(1);
+    expect(s[0].codice).toBe("T002");
+  });
+
+  it("uses nomebreve when available, falls back to nome", () => {
+    const xml = `<ArrayOfAnagrafica>
+      <anagrafica><codice>T001</codice><nome>Ala (Convento) lungo</nome><nomebreve>Ala</nomebreve><latitudine>45.75</latitudine><longitudine>10.99</longitudine></anagrafica>
+      <anagrafica><codice>T002</codice><nome>NomeSolo</nome><latitudine>46.0</latitudine><longitudine>11.0</longitudine></anagrafica>
+    </ArrayOfAnagrafica>`;
+    const s = parseMeteoTrentinoStations(xml);
+    expect(s[0].nome).toBe("Ala");
+    expect(s[1].nome).toBe("NomeSolo");
+  });
+
+  it("returns empty array when no active stations", () => {
+    const xml = `<ArrayOfAnagrafica>
+      <anagrafica><codice>T001</codice><nome>Closed</nome><latitudine>46.0</latitudine><longitudine>11.0</longitudine><fine>22/06/2005</fine></anagrafica>
+    </ArrayOfAnagrafica>`;
+    expect(parseMeteoTrentinoStations(xml)).toHaveLength(0);
   });
 });
 
@@ -68,6 +115,23 @@ describe("parseMeteoTrentinoObs", () => {
     expect(o.tmax).toBe(24);
     expect(o.lastTempC).toBe(16.1);
     expect(o.precipSumMm).toBeCloseTo(0.8, 5);
+  });
+
+  it("returns nulls when XML is empty", () => {
+    const o = parseMeteoTrentinoObs("<datiOggi></datiOggi>");
+    expect(o.tmin).toBeNull();
+    expect(o.tmax).toBeNull();
+    expect(o.rainMm).toBeNull();
+    expect(o.lastTempC).toBeNull();
+    expect(o.precipSumMm).toBeNull();
+  });
+
+  it("handles missing temperature blocks", () => {
+    const xml = `<datiOggi><tmin>10</tmin><tmax>20</tmax><rain>0</rain></datiOggi>`;
+    const o = parseMeteoTrentinoObs(xml);
+    expect(o.tmin).toBe(10);
+    expect(o.lastTempC).toBeNull();
+    expect(o.precipSumMm).toBeNull();
   });
 });
 

@@ -20,7 +20,7 @@ export interface FvgStation {
 }
 
 /** Parse WFS response per lista stazioni. */
-function parseWfsStazioni(xml: string): FvgStation[] {
+export function parseWfsStazioni(xml: string): FvgStation[] {
   const out: FvgStation[] = [];
   const members = xml.match(/<wfs:member>[\s\S]*?<\/wfs:member>/g) ?? [];
   for (const m of members) {
@@ -59,7 +59,7 @@ function parseWfsStazioni(xml: string): FvgStation[] {
 }
 
 /** Parse stazione XML (ultimi dati). */
-function parseStazioneXml(xml: string): Record<string, unknown> | null {
+export function parseStazioneXml(xml: string): Record<string, unknown> | null {
   const get = (tag: string) => {
     const m = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
     return m ? m[1].trim() : null;
@@ -97,7 +97,7 @@ function parseStazioneXml(xml: string): Record<string, unknown> | null {
 }
 
 /** Parse previsioni XML. */
-function parsePrevisioniXml(xml: string): Record<string, unknown> {
+export function parsePrevisioniXml(xml: string): Record<string, unknown> {
   const get = (tag: string) => {
     const m = xml.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`));
     return m ? m[1].trim() : null;
@@ -156,6 +156,23 @@ function parsePrevisioniXml(xml: string): Record<string, unknown> {
     lingua,
     situazione_generale: situazGenerale,
     scadenze,
+  };
+}
+
+// --- Adapter per brief.ts (FVG) ---------------------------------------------
+export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+  const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const r = await apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${today}.xml`, {}, { acceptText: true, noCache: true });
+  if (r.ok) {
+    return { ok: true, agenzia: "ARPA FVG / OSMER (dev.meteo.fvg.it)", ...parsePrevisioniXml(String(r.data)) };
+  }
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10).replace(/-/g, "");
+  const fb = await apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${yesterday}.xml`, {}, { acceptText: true, noCache: true });
+  if (!fb.ok) return { ok: false, agenzia: "ARPA FVG / OSMER", error: fb.error };
+  return {
+    ok: true, agenzia: "ARPA FVG / OSMER (dev.meteo.fvg.it)",
+    note: "Bollettino di ieri (quello di oggi non ancora disponibile)",
+    ...parsePrevisioniXml(String(fb.data)),
   };
 }
 

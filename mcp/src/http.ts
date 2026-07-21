@@ -59,7 +59,7 @@ function recordMetrics(host: string, ok: boolean, elapsedMs: number) {
   const m = (metrics[host] ??= { hits: 0, misses: 0, errors: 0, latenciesMs: [] });
   m.latenciesMs.push(elapsedMs);
   if (m.latenciesMs.length > 100) m.latenciesMs.shift();
-  if (ok) m.misses += 1;
+  if (ok) m.hits += 1;
   else m.errors += 1;
 }
 export function getMetrics(): Record<string, RequestMetrics> {

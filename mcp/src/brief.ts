@@ -9,6 +9,8 @@ import { runBriefArpa as arpaVeneto } from "./regioni/arpav.js";
 import { runBriefArpa as arpaTrentino } from "./regioni/meteotrentino.js";
 import { runBriefArpa as arpaMarche } from "./regioni/arpa-marche.js";
 import { runBriefArpa as arpaLombardia } from "./regioni/arpa-lombardia.js";
+import { runBriefArpa as arpaFvg } from "./regioni/arpa-fvg.js";
+import { runBriefArpa as arpaEr } from "./regioni/arpae.js";
 
 // Aeroporti italiani con reporting METAR attivo (coordinate ARP). Usati per
 // scegliere le stazioni di nowcasting più vicine al punto richiesto.
@@ -79,6 +81,8 @@ const ARPA_ADAPTERS: ArpaAdapter[] = [
   { keywords: ["trentino"], execute: arpaTrentino },
   { keywords: ["marche"], execute: arpaMarche },
   { keywords: ["lombardia"], execute: arpaLombardia },
+  { keywords: ["friuli", "fvg"], execute: arpaFvg },
+  { keywords: ["emilia", "romagna"], execute: arpaEr },
 ];
 
 export interface BriefParams {

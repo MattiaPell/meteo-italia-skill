@@ -18,7 +18,7 @@ type Provincia = (typeof PROVINCE)[number];
 const GIORNI = ["oggi", "domani", "dopodomani", "quartogiorno"] as const;
 
 /** Estrai il testo regionale o provinciale in formato compatto. */
-function formatGiorno(day: string, data: any): Record<string, unknown> {
+export function formatGiorno(day: string, data: any): Record<string, unknown> {
   const b = data?.[day]?.bollettino;
   if (!b) return {};
 
@@ -75,6 +75,26 @@ function formatGiorno(day: string, data: any): Record<string, unknown> {
   }
 
   return out;
+}
+
+// --- Adapter per brief.ts (Emilia-Romagna) -----------------------------------
+export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+  const list = await apiGet(`${BOLLETTINO_BASE}/?sort=-_id&max_results=1`, {});
+  if (!list.ok) return { ok: false, agenzia: "ARPAE Emilia-Romagna", error: list.error };
+  const items: any[] = (list.data as any)?._items ?? [];
+  if (!items.length) return { ok: false, agenzia: "ARPAE Emilia-Romagna", error: "nessun bollettino" };
+  const id = items[0]._id;
+  const full = await apiGet(`${BOLLETTINO_BASE}/${id}`, {});
+  if (!full.ok) return { ok: false, agenzia: "ARPAE Emilia-Romagna", error: full.error };
+  const raw = full.data as any;
+  return {
+    ok: true, agenzia: "ARPAE Emilia-Romagna (dati.arpae.it)",
+    bollettino: {
+      emissione: items[0]?.emissione ?? null,
+      oggi: formatGiorno("oggi", raw),
+      domani: formatGiorno("domani", raw),
+    },
+  };
 }
 
 export function registerArpae(server: McpServer) {

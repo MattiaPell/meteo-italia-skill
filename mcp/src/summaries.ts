@@ -149,7 +149,7 @@ export function summarizeForecast(raw: any, models?: string[]): {
  * normalize keys and match exact id or `_<id>` suffix against a canonical list.
  */
 const KNOWN_MODELS = new Set([
-  "ecmwf_ifs",
+  // `ecmwf_ifs` escluso: Open-Meteo usa `ecmwf_ifs025`.
   "ecmwf_ifs025",
   "ecmwf_ifs025_ensemble_mean",
   "ecmwf_aifs025",
@@ -182,13 +182,18 @@ export function inferModels(daily: any, hourly: any): string[] {
     for (const rawKey of Object.keys(obj)) {
       if (rawKey === "time") continue;
       const key = normalizeModelId(rawKey);
+      // Matcha il modello col suffisso più lungo (evita falsi match:
+      // key ending _meteoswiss_icon_seamless matcherebbe _icon_seamless).
+      let bestMatch: string | null = null;
       for (const model of KNOWN_MODELS) {
         const norm = normalizeModelId(model);
         if (key === norm || key.endsWith(`_${norm}`)) {
-          found.add(norm);
-          break;
+          if (!bestMatch || norm.length > bestMatch.length) {
+            bestMatch = norm;
+          }
         }
       }
+      if (bestMatch) found.add(bestMatch);
     }
   };
   scan(daily);
