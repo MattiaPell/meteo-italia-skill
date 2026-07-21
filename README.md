@@ -42,16 +42,87 @@ L'agente AI segue il flusso definito in `SKILL.md`:
 
 ## MCP Server (opzionale ma consigliato)
 
-Le chiamate API sono esposte anche come **MCP server** in [`mcp/`](mcp/):
-14 tool che wrappano Open-Meteo e tutte le fonti italiane, più una **pagina web
-di debug** (`METEO_MCP_DEBUG_PORT`, default 3000) per ispezionare richieste e
-risposte. Se il tuo agente supporta MCP, usa i tool al posto dei fetch grezzi
-(vedi `mcp/README.md`).
+Le chiamate API e la knowledge base meteorologica sono esposte anche come **MCP server**
+in [`mcp/`](mcp/): **21 tool** (15 API esterne + 6 locali di climatologia/indici/bias)
+più una **pagina web di debug** (`METEO_MCP_DEBUG_PORT`, default 3000) per ispezionare
+richieste e risposte. Se il tuo agente supporta MCP, usa i tool al posto dei fetch
+grezzi e dei file di reference — risparmi fino al 95% di context window.
+
+### Installazione rapida
 
 ```bash
 cd mcp && npm install && npm run build
-METEO_MCP_DEBUG_PORT=3000 node dist/index.js   # MCP stdio + debug web su :3000
 ```
+
+### Esecuzione
+
+```bash
+# Solo MCP stdio (per client MCP)
+node mcp/dist/index.js
+
+# MCP stdio + debug web su http://localhost:3000
+METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
+```
+
+### Configurazione client
+
+**OpenCode** (`.opencode.json` o `opencode.jsonc`):
+```json
+{
+  "mcpServers": {
+    "meteo-italia": {
+      "command": "node",
+      "args": ["mcp/dist/index.js"],
+      "env": { "CHECKWX_API_KEY": "${CHECKWX_API_KEY}" }
+    }
+  }
+}
+```
+
+**Claude Desktop** (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "meteo-italia": {
+      "command": "node",
+      "args": ["/percorso/assoluto/meteo-italia-skill/mcp/dist/index.js"],
+      "env": { "CHECKWX_API_KEY": "tua_chiave" }
+    }
+  }
+}
+```
+
+> `CHECKWX_API_KEY` è opzionale (per METAR/TAF). Ottienila gratis su [checkwxapi.com](https://www.checkwxapi.com/).
+
+### Tool MCP
+
+| Tool | Servizio | Tipo |
+|---|---|---|
+| `open_meteo_geocode` | Open-Meteo Geocoding | API |
+| `open_meteo_forecast` | Open-Meteo Forecast (raw) | API |
+| `open_meteo_forecast_summary` | Open-Meteo Forecast (compact, ~85% meno contesto) | API |
+| `open_meteo_archive` | Open-Meteo Archive (ERA5) | API |
+| `open_meteo_marine` | Open-Meteo Marine | API |
+| `open_meteo_air_quality` | Open-Meteo Air-Quality (CAMS) | API |
+| `open_meteo_ensemble` | Open-Meteo Ensemble | API |
+| `pc_allerte_wms` | Protezione Civile WMS + Bollettino JSON | API |
+| `dpc_radar_vmi` | Radar DPC (nowcasting) | API |
+| `checkwx_metar_taf` | CheckWX METAR/TAF (richiede key) | API |
+| `aviationweather_metar` | AviationWeather METAR (fallback, no auth) | API |
+| `dmi_lightning` | DMI Lightning (fulmini) | API |
+| `floods_it_monitoring` | floods.it (idro Trentino-Alto Adige) | API |
+| `arpav_idro` | ARPAV idrometria (Veneto) | API |
+| `eumetsat_satellite_info` | EUMETSAT (metadata satellite) | API |
+| `meteo_climatology` | Climatologia ERA5 (110 città, anomalie/σ) | Locale |
+| `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, quota neve, incendi | Locale |
+| `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Nebbia | Locale |
+| `meteo_model_tuning` | Pesi zone, bias modelli, correzione UHI | Locale |
+| `meteo_event_reliability` | Matrice affidabilità forecast | Locale |
+| `meteo_reference_guidelines` | Tabelle statiche di riferimento | Locale |
+
+Ogni tool ritorna `{ ok, url, status, data, elapsedMs }`.
+
+Per dettagli su build, test, MCP Inspector e debug API → [`mcp/README.md`](mcp/README.md).
 
 ## Funzionalità
 
