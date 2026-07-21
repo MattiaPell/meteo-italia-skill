@@ -9,6 +9,7 @@ import { registerArpae } from "./regioni/arpae.js";
 import { registerArpaFvg } from "./regioni/arpa-fvg.js";
 import { registerArpaMarche } from "./regioni/arpa-marche.js";
 import { registerArpaLombardia } from "./regioni/arpa-lombardia.js";
+import { registerArpaPiemonte } from "./regioni/arpa-piemonte.js";
 import { registerBrief } from "./brief.js";
 import { registerSummaries } from "./summaries.js";
 import {
@@ -36,6 +37,7 @@ registerArpae(server);
 registerArpaFvg(server);
 registerArpaMarche(server);
 registerArpaLombardia(server);
+registerArpaPiemonte(server);
 registerBrief(server);
 registerSummaries(server);
 registerClimatology(server);
