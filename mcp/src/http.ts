@@ -165,14 +165,6 @@ async function requestWithRetry(
         await new Promise((r) => setTimeout(r, backoff));
         continue;
       }
-      return {
-        ok: false,
-        url,
-        status: res.status,
-        data: text.slice(0, 2000),
-        error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
-        elapsedMs,
-      };
       recordMetrics(host, false, elapsedMs);
       return {
         ok: false,

@@ -1,9 +1,14 @@
 ---
 slug: meteo-mcp-audit-optimize
-status: drafting
+status: superseded
 intent: unclear
-pending-action: write .omo/plans/meteo-mcp-audit-optimize.md
-approach: Audit completo del server MCP (13 tool) + knowledge base, raccolta finding verificati, poi piano di ottimizzazione/resilienza + evolutive. Nessuna implementazione in questo stage — output è un work plan eseguibile da worker separato.
+pending-action: none
+superseded_by: .omo/plans/meteo-mcp-audit-optimize.md
+approach: >-
+  Questo draft è stato promosso a piano ufficiale in .omo/plans/meteo-mcp-audit-optimize.md.
+  Il piano non è stato eseguito; molti dei suoi finding (resilient HTTP, geo.ts, tests,
+  zod bounds, MeteoError, model aliases) sono stati comunque risolti nel piano
+  meteo-mcp-fat-tools. Non usare più questo draft come riferimento attivo.
 ---
 
 # Draft: meteo-mcp-audit-optimize

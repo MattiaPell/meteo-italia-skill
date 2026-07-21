@@ -5,22 +5,27 @@ import { normalizeModelId } from "../reference_tools.js";
 
 describe("parseRawMetar", () => {
   it("parses 4-digit visibility in meters", () => {
-    const m = parseRawMetar("LIRF 201500Z 12015KT 6000 SCT020 BKN030 15/11", {});
+    const m = parseRawMetar("LIRF 201500Z 12015KT 6000 SCT020 BKN030 15/11");
     expect(m.visibility_statute_mi).toBeCloseTo(6000 / 1609.34, 2);
     expect(m.wind_speed_kt).toBe(15);
     expect(m.wind_dir_degrees).toBe(120);
   });
 
   it("CAVOK → unlimited visibility (null)", () => {
-    const m = parseRawMetar("LIML 201500Z 24010KT CAVOK 18/12", {});
+    const m = parseRawMetar("LIML 201500Z 24010KT CAVOK 18/12");
     expect(m.cavok).toBe(true);
     expect(m.visibility_statute_mi).toBeNull();
   });
 
   it("does NOT treat wind digits as visibility", () => {
-    const m = parseRawMetar("LIPE 201500Z 35022KT 9999 BKN020 21/15", {});
+    const m = parseRawMetar("LIPE 201500Z 35022KT 9999 BKN020 21/15");
     expect(m.wind_speed_kt).toBe(22);
     expect(m.visibility_statute_mi).toBeCloseTo(9999 / 1609.34, 1);
+  });
+
+  it("passes nwpTempC through so decodedVsNwp can compute the delta", () => {
+    const m = parseRawMetar("LIRF 201500Z 12015KT 6000 SCT020 BKN030 15/11", 13.5);
+    expect(m.temp_c).toBe(15);
   });
 });
 

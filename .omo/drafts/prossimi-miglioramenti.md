@@ -1,6 +1,11 @@
 # Draft: Prossimi Miglioramenti meteo-italia-skill
 
-## Stato attuale
+> ⚠️ **STATO: OBSOLETO** — Questo draft è stato scritto prima della transizione
+> MCP-first. Molti gap (resilienza HTTP, cache, metriche, fat tools) sono stati
+> già affrontati nel piano `.omo/plans/meteo-mcp-fat-tools.md`. Non usare come
+> piano attivo; conservato solo per tracciabilità storica.
+
+## Stato attuale (al momento della stesura)
 - SKILL.md: 687 lines, 14 fetch steps (A-N), 10 use cases
 - Reference files: 17 files, ~5047 total lines
 - PR aperti: #33 (remove CHANGELOG)

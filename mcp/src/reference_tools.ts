@@ -526,7 +526,10 @@ export function registerReferenceGuidelines(server: McpServer) {
             { id: "italia_meteo_arpae_icon_2i", name: "ItaliaMeteo ARPAE ICON 2I", resolution: "2.2 km", coverage: "Italia", update: "1h", forecastDays: 5, weight: 1.5 },
             { id: "meteofrance_seamless", name: "Météo-France Seamless", resolution: "1.3–40 km", coverage: "Globale+EU", update: "1-6h", forecastDays: "4–15", weight: 0.9 },
             { id: "arpege_europe", name: "Météo-France ARPEGE Europe", resolution: "11 km", coverage: "Europa", update: "3h", forecastDays: 4, weight: 0.9 },
-            { id: "arome_france", name: "Météo-France AROME France", resolution: "2.5 km", coverage: "Francia+vicini", update: "1h", forecastDays: 2, weight: 0.8 }
+            { id: "arome_france", name: "Météo-France AROME France", resolution: "2.5 km", coverage: "Francia+vicini", update: "1h", forecastDays: 2, weight: 0.8 },
+            { id: "meteoswiss_icon_seamless", name: "MeteoSwiss ICON Seamless", resolution: "1–11 km", coverage: "Svizzera+Alpi", update: "1-3h", forecastDays: 5, weight: 1.2 },
+            { id: "geosphere_seamless", name: "GeoSphere Austria Seamless", resolution: "1–25 km", coverage: "Alpi Centrale+EU", update: "1-6h", forecastDays: 5, weight: 1.0 },
+            { id: "knmi_seamless", name: "KNMI Harmonie/Seamless", resolution: "1–11 km", coverage: "Olanda+Mar del Nord", update: "1-3h", forecastDays: 2, weight: 0.9 }
           ],
           globalModels: [
             { id: "gfs_seamless", name: "NCEP GFS Seamless", resolution: "11–22 km", coverage: "Globale", update: "1h", forecastDays: 16, weight: 0.8 },
@@ -1038,7 +1041,7 @@ export function registerModelTuning(server: McpServer) {
         cityName: z.string().optional().describe("Filter/Apply UHI correction for a city (Milano, Roma, Torino, Napoli, Bologna, Firenze, Bari, Palermo)"),
         cloudCover: z.coerce.number().min(0).max(100).optional().describe("Cloud cover (%) to evaluate UHI conditions"),
         windSpeedKmH: z.coerce.number().min(0).optional().describe("Wind speed (km/h) to evaluate UHI conditions"),
-        modelId: z.string().optional().describe("Filter biases for a specific model (e.g. ecmwf_ifs, icon_d2, arpae_icon_2i, gfs)"),
+        modelId: z.string().optional().describe("Filter biases for a specific model (e.g. ecmwf_ifs, icon_d2, italia_meteo_arpae_icon_2i, gfs_seamless)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -1127,11 +1130,11 @@ export function registerModelTuning(server: McpServer) {
           biases: filteredBiases,
           uhiCorrection: uhiApplied,
           dynamicWeightingScenarios: {
-            convective: "Se CAPE > 500 o weather_code 80-99, aumenta peso (+0.3) di icon_d2, arome_france, arpae_icon_2i; riduci gfs, ecmwf.",
-            frontal: "Se pioggia diffusa, aumenta peso (+0.3) di ecmwf_ifs, arpege.",
-            fog: "Se nebbia padana, aumenta peso (+0.4) di arpae_icon_2i; riduci gfs (-0.3).",
-            orographic_wind: "Se Bora/Foehn, aumenta peso (+0.3) di icon_d2, meteoswiss; riduci ecmwf (-0.2).",
-            snow: "Se nevicate, aumenta peso (+0.4) di icon_d2, meteoswiss, geosphere; riduci gfs (-0.2).",
+            convective: "Se CAPE > 500 o weather_code 80-99, aumenta peso (+0.3) di icon_d2, arome_france, italia_meteo_arpae_icon_2i; riduci gfs_seamless, ecmwf_ifs.",
+            frontal: "Se pioggia diffusa, aumenta peso (+0.3) di ecmwf_ifs, arpege_europe.",
+            fog: "Se nebbia padana, aumenta peso (+0.4) di italia_meteo_arpae_icon_2i; riduci gfs_seamless (-0.3).",
+            orographic_wind: "Se Bora/Foehn, aumenta peso (+0.3) di icon_d2, meteoswiss_icon_seamless; riduci ecmwf_ifs (-0.2).",
+            snow: "Se nevicate, aumenta peso (+0.4) di icon_d2, meteoswiss_icon_seamless, geosphere_seamless; riduci gfs_seamless (-0.2).",
           },
         },
         elapsedMs: Date.now() - start,

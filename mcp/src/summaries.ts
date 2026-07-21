@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult, openMeteoCommon, latLon, ApiResult } from "./http.js";
+import { normalizeModelId } from "./reference_tools.js";
 
 /**
  * Compute a compact per-model summary from a raw Open-Meteo forecast/ensemble
@@ -36,15 +37,7 @@ export function summarizeForecast(raw: any, models?: string[]): {
        // Open-Meteo appends `_<model>` to every variable when multiple models are
        // requested. Model ids contain underscores (e.g. ecmwf_ifs025), so we match
   // the known model ids against the end of each key instead of naive splitting.
-  const modelList = models && models.length ? models : inferModels(daily, hourly);
-  const splitKey = (key: string): { base: string; model: string } | null => {
-    for (const m of modelList) {
-      if (key === m) continue;
-      if (key.endsWith(`_${m}`)) return { base: key.slice(0, key.length - m.length - 1), model: m };
-    }
-    // Single-model response: no suffix.
-    return { base: key, model: modelList[0] ?? "default" };
-  };
+  const modelList = (models && models.length ? models : inferModels(daily, hourly)).map(normalizeModelId);
 
   const pickDaily = (model: string, base: string): number[] | undefined => {
     const arr =
@@ -149,19 +142,34 @@ export function summarizeForecast(raw: any, models?: string[]): {
   };
 }
 
-/** Best-effort model discovery when the caller didn't pass the list. */
+/** Best-effort model discovery when the caller didn't pass the list.
+ *
+ * Open-Meteo suffixes every variable with `_<model>` when multiple models are
+ * requested. Model ids contain underscores (e.g. `ecmwf_ifs025`), so we
+ * normalize keys and match exact id or `_<id>` suffix against a canonical list.
+ */
 const KNOWN_MODELS = new Set([
+  "ecmwf_ifs",
   "ecmwf_ifs025",
   "ecmwf_ifs025_ensemble_mean",
-  "iconeu",
+  "ecmwf_aifs025",
   "icon_seamless",
+  "icon_global",
+  "icon_eu",
   "icon_d2",
+  "italia_meteo_arpae_icon_2i",
+  "meteofrance_seamless",
+  "arpege_europe",
+  "arome_france",
   "gfs_seamless",
   "gfs025",
   "gfs025_ensemble_mean",
-  "gefs",
-  "arpege",
-  "arome",
+  "gfs_graphcast025",
+  "gem_seamless",
+  "jma_seamless",
+  "meteoswiss_icon_seamless",
+  "geosphere_seamless",
+  "knmi_seamless",
   "metno_nve",
   "ukmo_seamless",
   "ukmo_ukdeterministic_2km",
@@ -171,12 +179,13 @@ export function inferModels(daily: any, hourly: any): string[] {
   const found = new Set<string>();
   const scan = (obj: any) => {
     if (!obj || typeof obj !== "object") return;
-    for (const k of Object.keys(obj)) {
-      if (k === "time") continue;
-      // Match a known model token anywhere in the key (handles multi-underscore ids).
+    for (const rawKey of Object.keys(obj)) {
+      if (rawKey === "time") continue;
+      const key = normalizeModelId(rawKey);
       for (const model of KNOWN_MODELS) {
-        if (k.toLowerCase().includes(model)) {
-          found.add(model);
+        const norm = normalizeModelId(model);
+        if (key === norm || key.endsWith(`_${norm}`)) {
+          found.add(norm);
           break;
         }
       }
@@ -231,7 +240,7 @@ export function registerSummaries(server: McpServer) {
         forecast_days,
       });
       if (!raw.ok) return toToolResult(raw);
-      const modelList = models ? models.split(",").map((x) => x.trim()).filter(Boolean) : undefined;
+      const modelList = models ? models.split(",").map((x) => x.trim()).filter(Boolean).map(normalizeModelId) : undefined;
       const summary = summarizeForecast(raw.data, modelList);
       const result: ApiResult = { ...raw, data: summary };
       return toToolResult(result);

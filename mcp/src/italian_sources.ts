@@ -30,22 +30,25 @@ function parseMetarStation(s: any, nwpTempC?: number): any {
   };
 }
 
-/** Parse an AviationWeather raw METAR text into the same normalized shape. */
-export function parseRawMetar(raw: string, _s: any): any {
-  const temp = raw.match(/(\d{2})\/(\d{2})\//);
+/** Parse an AviationWeather raw METAR text into the same normalized shape.
+ *
+ * Visibility is parsed from the first standalone 4-digit metre field (9999
+ * means ≥10 km). CAVOK sets unlimited visibility. If `nwpTempC` is provided,
+ * `parseMetarStation` will compute the forecast-vs-observed temperature delta.
+ */
+export function parseRawMetar(raw: string, nwpTempC?: number): any {
+  const temp = raw.match(/\b(\d{2})\/(\d{2})\b/);
   const wind = raw.match(/(\d{3})(\d{2})(?:G(\d{2}))?KT/);
-  // Visibility: CAVOK → unlimited; otherwise the 4-digit field that follows
-  // the wind group (VVVV in meters for Italian METARs, 9999 = ≥10km).
   const cavok = /CAVOK/.test(raw);
-  const visMatch = raw.match(/\s(\d{4})(?=\s|$)/);
-  const visibilityM = cavok ? null : visMatch ? parseInt(visMatch[1], 10) : null;
+  const visMatch = cavok ? null : raw.match(/\b(\d{4})\b/);
+  const visibilityM = visMatch ? parseInt(visMatch[1], 10) : null;
   return {
     raw_text: raw,
     temp_c: temp ? parseInt(temp[1], 10) : null,
     wind_speed_kt: wind ? parseInt(wind[2], 10) : null,
     wind_gust_kt: wind && wind[3] ? parseInt(wind[3], 10) : null,
     wind_dir_degrees: wind ? parseInt(wind[1], 10) : null,
-    visibility_statute_mi: visibilityM != null ? visibilityM / 1609.34 : cavok ? null : null,
+    visibility_statute_mi: visibilityM != null ? visibilityM / 1609.34 : null,
     cavok,
   };
 }
@@ -241,7 +244,7 @@ export function registerItalianSources(server: McpServer) {
         ? payload
         : payload?.data ?? payload?.features ?? [payload];
       const stations = list.filter(Boolean).map((s: any) => {
-        if (s.raw_text) return parseMetarStation(parseRawMetar(s.raw_text, s), nwpTempC);
+        if (s.raw_text) return parseMetarStation(parseRawMetar(s.raw_text, nwpTempC), nwpTempC);
         return parseMetarStation(s, nwpTempC);
       });
       return toToolResult({ ...r, data: { stations, raw: r.data } });

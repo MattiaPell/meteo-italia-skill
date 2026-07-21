@@ -1,15 +1,14 @@
 ---
 slug: meteo-mcp-fat-tools
-status: approved
+status: superseded
 intent: clear
 review_required: false
-pending-action: write .omo/plans/meteo-mcp-fat-tools.md
+pending-action: none
+superseded_by: .omo/plans/meteo-mcp-fat-tools.md
 approach: >-
-  Spostare la logica oggi prompt-side in SKILL.md dentro tool MCP "fat" (opzione B),
-  dopo aver sistato i bug di compilazione bloccanti. Tool restituiscono dati gia
-  strutturati/normalizzati (geocoding filtrato Italia, forecast a 3 livelli,
-  METAR confrontato col NWP, fulmini conteggiati, ensemble spread calcolato,
-  allerte PC parsate da HTML). SKILL.md si assottiglia a orchestrazione + report.
+  Questo draft è stato promosso a piano ufficiale in .omo/plans/meteo-mcp-fat-tools.md.
+  Il piano è in esecuzione: T1-T7 e T9 implementati in mcp/src/; T8 (trim SKILL.md)
+  risulta non completato. Non usare più questo draft come riferimento attivo.
 ---
 
 # Draft: meteo-mcp-fat-tools

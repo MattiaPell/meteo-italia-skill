@@ -144,17 +144,7 @@ Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 
 #### B — Climatologia ERA5
 > **Via MCP:** `open_meteo_archive` (start_date, end_date, daily/hourly).
-Per confrontare il forecast con la norma storica del periodo.
-```http
-GET https://archive-api.open-meteo.com/v1/archive
-  ?latitude={LAT}&longitude={LON}
-  &start_date={STESSO_GIORNO_-10_ANNI}&end_date={STESSO_GIORNO_-1_ANNO}
-  &daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,
-         apparent_temperature_min,precipitation_sum,wind_speed_10m_max,
-         et0_fao_evapotranspiration
-  &timezone=Europe/Rome
-```
-Calcola media e σ su 10 anni → usala come baseline "nella norma / sopra / sotto".
+Confronta il forecast con la norma storica del periodo. Calcola media e σ su 10 anni → baseline "nella norma / sopra / sotto".
 
 #### E — Allerta (Dati Pubblici)
 > **Via MCP:** `pc_allerte_wms` (regione opzionale).
@@ -168,73 +158,17 @@ Consulta `references/arpa_network.md` per endpoint e stazioni della regione targ
 Recupera: T attuale, precipitazioni ultime 6/24h, vento, umidità dalla stazione più vicina.
 Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
 
-#### F — Dati marini (solo se coordinata costiera o use case mare/nautica)
+#### F — Dati marini (solo se costa o use case mare/nautica)
 > **Via MCP:** `open_meteo_marine` (latitude, longitude, hourly, daily).
-Attiva se: coordinate a <20km dalla costa, oppure use case "mare/spiaggia/nautica", oppure macroarea con costa adriatica (per ASE), oppure Macroarea Nord-Ovest (per Maccaja/Caligo), oppure Macroarea Sicilia/Sud (per Lupa di mare).
-```http
-GET https://marine-api.open-meteo.com/v1/marine
-  ?latitude={LAT}&longitude={LON}
-  &hourly=wave_height,wave_direction,wave_period,
-          wind_wave_height,wind_wave_direction,wind_wave_period,
-          swell_wave_height,swell_wave_direction,
-          swell_wave_period,
-          sea_surface_temperature
-  &daily=wave_height_max,wind_wave_height_max,swell_wave_height_max
-  &timezone=Europe/Rome
-  &forecast_days={N}
-```
-Vedi scala Beaufort e soglie operative in `references/uv_marine_recent.md`.
+Attiva se: coordinate a <20km dalla costa, use case mare/spiaggia/nautica, macroarea costiera adriatica (ASE), Nord-Ovest (Maccaja/Caligo), Sicilia/Sud (Lupa di mare). Usa variabili `wave_height`, `wave_direction`, `wave_period`, `sea_surface_temperature`, `wind_wave_*`, `swell_wave_*`. Vedi scale Beaufort/Douglas in `references/uv_marine_recent.md`.
 
 #### H — Qualità aria CAMS (condizionale)
 > **Via MCP:** `open_meteo_air_quality` (latitude, longitude, hourly, current, domains=cams_europe).
-
-**Attiva sempre per:** Pianura Padana (ott–mar), use case salute/bambini/anziani/sport, scirocco con dust elevato, inversione termica prevista (vento <5 km/h + cielo sereno).
-**Attiva se AQI ≥ Moderato** per qualsiasi altra zona.
-
-```http
-GET https://air-quality-api.open-meteo.com/v1/air-quality
-  ?latitude={LAT}&longitude={LON}
-  &hourly=pm10,pm2_5,pm10_wildfires,carbon_monoxide,nitrogen_dioxide,ozone,sulphur_dioxide,
-          dust,ammonia,european_aqi,european_aqi_pm2_5,
-          european_aqi_pm10,european_aqi_no2,european_aqi_o3,
-          alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,
-          olive_pollen,ragweed_pollen
-  &current=european_aqi,pm10,pm2_5,pm10_wildfires,nitrogen_dioxide,ozone,dust
-  &domains=cams_europe
-  &timezone=Europe/Rome
-  &forecast_days=5
-```
-
-Interpreta con `references/air_quality.md`: scala AQI EEA (0-20 buono → >100 pessimo),
-scenari accumulo/dispersione da dati meteo, flag dust sahariano vs PM antropico,
-pollini stagionali, zone critiche Italia, raccomandazioni per soggetti sensibili.
+**Attiva sempre per:** Pianura Padana (ott–mar), use case salute/bambini/anziani/sport, scirocco con dust, inversione termica. **Attiva se AQI ≥ Moderato** per altre zone. Variabili utili: `european_aqi`, `pm10`, `pm2_5`, `ozone`, `dust`, `pollen_*`. Interpreta con `references/air_quality.md`.
 
 #### J — Ensemble Spread (condizionale)
 > **Via MCP:** `open_meteo_ensemble` (models, hourly con `*_spread`, daily).
-
-**Attiva sempre per:** orizzonte >3 giorni, eventi potenzialmente significativi, allerta PC ≥ gialla, divergenza tra modelli deterministici (σ >2°C su T o >50% su precipitazioni).
-
-```http
-GET https://ensemble-api.open-meteo.com/v1/ensemble
-  ?latitude={LAT}&longitude={LON}
-  &models=ecmwf_ifs025_ensemble_mean,icon_seamless_ensemble_mean,gfs025_ensemble_mean
-  &hourly=temperature_2m,temperature_2m_spread,
-          apparent_temperature,apparent_temperature_spread,
-          precipitation_mean,precipitation_spread,
-          wind_gusts_10m_mean,wind_gusts_10m_spread,
-          cape_mean,cape_spread,
-          snowfall_mean,snowfall_spread,
-          precipitation_probability_mean
-  &daily=temperature_2m_max,temperature_2m_min,
-         apparent_temperature_max,apparent_temperature_min,
-         precipitation_sum,wind_speed_10m_max
-  &timezone=Europe/Rome
-  &forecast_days=16
-```
-
-`spread` = σ tra i membri. p90-p10 ≈ spread × 2.56 (gaussiana, valido per T; non per precipitazioni).
-Per probabilità specifiche (P(pioggia >20mm)) usa Ensemble API con tutti i membri raw.
-Vedi soglie spread, gerarchia ensemble–deterministico e template in `references/ensemble_spread.md`.
+**Attiva sempre per:** orizzonte >3 giorni, eventi significativi, allerta PC ≥ gialla, divergenza modelli deterministici (σ >2°C T o >50% precipitazioni). Variabili utili: `temperature_2m_spread`, `precipitation_mean/spread`, `wind_gusts_10m_*`, `cape_*`. `spread` = σ tra membri; p90-p10 ≈ spread × 2.56 per T. Per probabilità specifiche usa membri raw. Vedi `references/ensemble_spread.md`.
 
 #### TIER 3 (Condizionali a bassa priorità)
 
@@ -247,18 +181,7 @@ Vedi soglie spread, gerarchia ensemble–deterministico e template in `reference
 - `weather_code` corrente 80–99 (rovesci/temporali in atto)
 - Utente chiede situazione nelle prossime 1-3h ("sta arrivando?", "tra quanto finisce?")
 
-**Step 1 — Verifica disponibilità e fetch VMI:**
-```http
-GET https://radar-api.protezionecivile.it/findLastProductByType?type=VMI
-```
-Salva `time` (epoch ms UTC) come `T`. Se disponibile:
-```http
-POST https://radar-api.protezionecivile.it/downloadProduct
-{"productType": "VMI", "productDate": T}
-```
-Recupera l'URL dell'immagine dal campo `url` della risposta.
-
-**Step 2 — Analisi Vision (Qualitativa):**
+**Analisi Vision (Qualitativa):**
 Se l'agente ha capacità Vision, deve analizzare l'immagine VMI per identificare:
 1. **Presenza di nuclei**: individuare macchie colorate (riflettività).
 2. **Intensità (dBZ)**: stimare l'intensità in base alla scala colori (giallo/arancio = forte, rosso/viola = estremo).
@@ -278,21 +201,7 @@ Se l'immagine non è visualizzabile, non è interpretabile o le API falliscono:
 
 **Attiva sempre per:** use case aviazione/droni, città con aeroporto ICAO nella lista (`references/metar_taf.md`). **Attiva se:** l'utente chiede validazione forecast, oppure stazioni ARPA non disponibili per la zona, oppure divergenza >2°C tra NWP e ARPA.
 
-**Fetch primario (CheckWX — JSON decoded):**
-Richiede `CHECKWX_API_KEY` (vedi README).
-```http
-GET https://api.checkwx.com/v2/metar/{ICAO1},{ICAO2},{ICAO3}/decoded
-Headers: X-API-KEY: {YOUR_API_KEY}
-```
-Esempio: `GET https://api.checkwx.com/v2/metar/LIRF,LIMC,LIPE/decoded`
-
-**Fetch TAF (previsioni aeroportuali):**
-```http
-GET https://api.checkwx.com/v2/taf/{ICAO}/decoded
-Headers: X-API-KEY: {YOUR_API_KEY}
-```
-
-**Fallback (aviationweather.gov — raw, no auth):** `aviationweather_metar` (ids, format, nwpTempC).
+**Fallback:** se `checkwx_metar_taf` fallisce per key assente o errore, usa `aviationweather_metar` (ids, format, nwpTempC).
 
 Il tool normalizza entrambe le sorgenti in `stations[]` (tempC, windKt, windDir, visibilityM, skyCover, qnhHpa) e, se passi `nwpTempC`, calcola `decodedVsNwp.tempScarto` e `decodedVsNwp.visFlag` (<2000m). Usa questi campi per il confronto.
 
@@ -336,20 +245,10 @@ Mappa esplicita del monitoraggio:
 
 > **Via MCP:** `floods_it_monitoring` (sensor_id opzionale) per floods.it; `arpav_idro` (station_id, parametro, periodo) per ARPAV.
 
-**Trentino-Alto Adige (floods.it):**
-```http
-GET https://www.floods.it/api/v1/monitoring/index.json
-# Se sensor_id trovato:
-GET https://www.floods.it/api/v1/monitoring/{sensor_id}.json
-```
+**Trentino-Alto Adige:** `floods_it_monitoring` (sensor_id opzionale).
+**Veneto:** `arpav_idro` (station_id, parametro, periodo). Vedi `references/arpa_network.md` per ID stazioni.
 
 ### TIER B (soglie manuali + ARPA)
-
-**Veneto (ARPAV API):**
-```http
-GET https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{ID_STAZIONE}/dati?parametro=livello_idrometrico&periodo=ultimo-giorno
-```
-*(Vedi references/arpa_network.md per ID stazioni: Verona 124, Vicenza 108, Bassano 105, ecc. — Stazioni: Verona 124, Boara Pisani 142, Bassano 105, Vicenza 108, Ariano 132)*
 
 **Interpretazione e Dati Manuali (Po, Adige, Arno, Tevere, Reno, Volturno):**
 Consulta `references/hydro_italia.md` e incrocia con le osservazioni ARPA (Step D) per le soglie critiche di:
@@ -383,12 +282,7 @@ Vedi `references/hydro_italia.md` per endpoint completi, stazioni principali, so
 
 **Attiva sempre per:** allerta PC ≥ gialla (Step E), divergenza >1.5σ tra modelli su precipitazioni (Step 4a), nebbia prevista (visibilità <500m da Step A), use case nautica/aeronautico. **Altrimenti:** disattiva (costo computazionale elevato).
 
-**Fetch EUMETView (immagini pre-renderizzate, no auth):**
-```http
-GET https://eumetview.eumetsat.int/static-images/latest/IR108.jpg
-GET https://eumetview.eumetsat.int/static-images/latest/VIS06.jpg
-GET https://eumetview.eumetsat.int/static-images/latest/WV062.jpg
-```
+**Immagini pre-renderizzate (fallback visivo):** se disponibili, EUMETView fornisce `IR108.jpg`, `VIS06.jpg`, `WV062.jpg`; altrimenti usa il portale linkato dal tool.
 
 **Interpretazione qualitativa (l'agente AI descrive l'immagine):**
 1. **Fronti atlantici**: bande nuvolose continue IR10.8 → fronte in arrivo, confronta posizione con NWP
@@ -405,68 +299,13 @@ Vedi `references/satellite.md` per canali SEVIRI, guida interpretazione pattern,
 
 ### 4. Analisi Comparativa
 
-#### 4a. Consensus modelli numerici (Massima Accuratezza)
-- Per ogni variabile e slot orario: media, min, max, σ tra i modelli.
-- **Dynamic Weighting**: Applica i correttivi di peso basati sullo scenario meteo (Temporali, Fronti, Nebbia, Venti) come definito in `references/model_tuning.md`.
-- **Outlier**: modelli che scostano >1.5σ → segnala e applica bias noto (vedi `references/model_tuning.md`).
-- **Scenari probabilistici**: "X/Y modelli prevedono precipitazioni >5mm".
-- Usa pesi ponderati da `references/model_tuning.md` e dettagli modelli da `references/models.md`.
-
-#### 4b. Affidabilità contestuale per evento
-Non usare solo l'orizzonte temporale — usa la matrice evento × orizzonte in `references/event_reliability.md`:
-
-| Tipo evento | 0-24h | 1-3gg | 4-7gg | >7gg |
-|---|---|---|---|---|
-| Fronte atlantico / neve frontale | Alta | Buona | Media | Bassa |
-| Temporale convettivo | Media | Bassa | Molto bassa | No |
-| Ondata di calore / freddo | Alta | Alta | Media | Bassa |
-| Vento sinottico (Bora, Tramontana) | Alta | Buona | Media | Bassa |
-| Nebbia | Media | Bassa | Molto bassa | No |
-| Foehn | Alta | Buona | Bassa | No |
-
-Segnala sempre il tipo di evento riconosciuto e la sua affidabilità contestuale.
-
-#### 4c. Confronto con climatologia e Raffinamenti (Accuracy+)
-Vedi `references/climatology.md` per valori di riferimento e classificazione anomalie.
-- "T max prevista: 28°C | media storica 15 maggio: 22°C → **+6°C anomalia positiva**"
-- "Precipitazioni attese: 25mm | media maggio: 65mm/mese → **evento sopra norma**"
-- Usa σ climatologica per classificare: dentro norma (±1σ), anomalo (1-2σ), estremo (>2σ)
-
-**Raffinamenti di Accuratezza obbligatori:**
-1.  **Quota Neve (Snow-Line)**: Non usare solo lo Zero Termico. Applica i correttivi per intensità e orografia (valli strette) definiti in `references/mountain.md#raffinamento-quota-neve`.
-2.  **Isola di Calore Urbana (UHI)**: Se il target è una grande città (MI, RM, NA, TO, BO, FI), correggi le temperature minime notturne in condizioni di cielo sereno e vento calmo (vedi `references/model_tuning.md`).
-3.  **Rischio Mareggiata (Traversia)**: Se il target è costiero, verifica se vento/onde colpiscono perpendicolarmente la costa (Traversia) usando la matrice in `references/uv_marine_recent.md#traversia`.
-
-#### 4d. Confronto forecast vs osservato (se dati ARPA disponibili)
-- "Stazione di {NOME}: T attuale {X}°C, ICON D2 prevedeva {Y}°C → scarto {Z}°C"
-- Se scarto sistematico > 2°C → applica correzione locale al forecast pomeridiano
-
-#### 4e. Fenomeni locali italiani
-Verifica automaticamente i pattern in `references/local_phenomena.md` e `references/model_tuning.md` → flag se attivi.
-
-#### 4f. Analisi Ensemble Spread
-Quando il fetch J è attivo:
-1. Confronta **ensemble mean** con il **consensus deterministico** (fetch A)
-2. Classifica lo spread per variabile (soglie in `references/ensemble_spread.md`)
-3. Calcola probabilità da ensemble: P(pioggia >5/20/50mm), P(gelo), P(vento >70 km/h)
-4. Applica la gerarchia ensemble–deterministico:
-   - Spread basso + accordo → alta fiducia
-   - Spread alto + accordo → situazione genuinamente incerta
-   - Spread basso + divergenza → fidati dell'ensemble
-   - Spread alto + divergenza → solo tendenze generali affidabili
-5. Includi sempre scenario p10, mediana e p90 nel report per eventi significativi
-
-#### 4g. Integrazione nowcasting + NWP (Blending Matrix)
-Quando il nowcasting radar (Step I) o i fulmini (Step L) sono attivi, segui rigorosamente la **Matrice di Transizione** in `references/nowcasting_radar.md#matrice-di-transizione-radar-nwp-blending`:
-- **0-15 min**: 100% Radar (Estrapolazione).
-- **15-45 min**: 80% Radar / 20% NWP.
-- **45-90 min**: 40% Radar / 60% NWP.
-- **90-150 min**: 10% Radar / 90% NWP.
-- **>150 min**: 100% NWP.
-
-Se radar e NWP divergono sullo scenario a 1-3h → applica la **Logica di correzione temporale** (delay/advance) descritta in `references/nowcasting_radar.md`.
-
-Se radar e NWP divergono sullo scenario a 1-3h → segnala esplicitamente l'incertezza.
+#### Consensus, affidabilità e raffinamenti
+- **Consensus modelli**: per ogni variabile calcola media/min/max/σ tra i modelli; applica dynamic weighting e outlier >1.5σ usando `meteo_model_tuning` (o `references/model_tuning.md` senza MCP).
+- **Affidabilità contestuale**: usa la matrice evento × orizzonte in `references/event_reliability.md` (es. temporali convettivi affidabili solo 0-24h).
+- **Climatologia**: confronta con ERA5 via `meteo_climatology`/`open_meteo_archive`; classifica anomalie in σ.
+- **Raffinamenti**: quota neve (`meteo_bioclimatic_indices`), UHI (`meteo_model_tuning`), traversia costiera (`references/uv_marine_recent.md`), fenomeni locali (`meteo_local_phenomena`).
+- **Ensemble**: quando attivo Step J, confronta ensemble mean vs deterministico, calcola p10/mediana/p90, probabilità eventi e applica la gerarchia ensemble–deterministico.
+- **Nowcasting + NWP blending**: 0-15min radar, 15-45min 80/20, 45-90min 40/60, 90-150min 10/90, >150min NWP. Se divergenze a 1-3h, segnala incertezza.
 
 ### 5. Output
 
@@ -485,106 +324,50 @@ Se radar e NWP divergono sullo scenario a 1-3h → segnala esplicitamente l'ince
 
 Riconosci automaticamente il contesto dall'input e adatta il report:
 
-### 🏔️ Montagna / Escursionismo / Sci (Uso personale e informativo)
-Trigger: "montagna", "escursione", "trekking", "sci", "alpinismo", "rifugio"
-Focus: quota neve (`freezing_level_height`), visibilità, temporali pomeridiani (orario picco 14-17),
-vento in quota (stima: +50% rispetto 10m ogni 1000m), temperature a quota target.
-**Mountain Intelligence**: Includi sempre la **Qualità della Neve** (Farinosa, Crostosa, Pesante, Marcia) se applicabile. (Vedi `references/mountain.md`).
-Aggiungi: `elevation={quota_target}` nella chiamata API.
-**UV obbligatorio**: in quota UV aumenta ~10% ogni 1000m — includi sempre sezione UV (Vedi `references/uv_marine_recent.md`, Step G).
-**Fulmini**: rischio elevato in cresta/esposto se lightning density >5 in 50km² — verifica trend ore 12-18 per temporali pomeridiani (Step L).
-**Satellite per nuvolosità in quota**: immagini IR10.8 per valutazione temporali in formazione sui rilievi e copertura nuvolosa generale (Step N).
+### 🏔️ Montagna / Escursionismo / Sci
+Trigger: montagna, escursione, trekking, sci, alpinismo, rifugio.
+Focus: quota neve, temporali pomeridiani, vento in quota, UV (aumenta ~10%/1000m), fulmini in cresta. Usa `elevation`, `meteo_bioclimatic_indices` (snow-line/qualità neve), `meteo_local_phenomena`.
 
 ### 🐝 Apicoltura / Impollinazione
-Focus: Finestre di volo (T > 10°C, vento < 25 km/h), secrezione nettarifero (T notturna > 12°C e UR > 60%),
-rischio gelate tardive su fioriture (Acacia, Castagno, Agrumi), rischio grandine e piogge battenti.
-**Storico recente**: giorni di volo nell'ultima settimana e piogge pregresse per stato vegetativo (Step C).
-Vedi soglie specifiche in `references/climatology.md`.
+Focus: finestre di volo, secrezione nettarifero, gelate tardive, grandine. Usa `meteo_bioclimatic_indices`.
 
 ### ⚽ Evento sportivo / All'aperto
-Trigger: "partita", "evento", "concerto", "gara", "sagra", orario specifico citato
-Focus: fascia oraria dell'evento (±2h), probabilità pioggia in quella finestra, vento (soglia 50 km/h per strutture), temperatura percepita.
-**UV se evento diurno**: includi picco UV e orario (Step G).
-**Fulmini**: se fulmini entro 20km → sospensione evento. Ripresa >30 min dall'ultimo fulmine rilevato (Step L).
+Trigger: partita, evento, concerto, gara, sagra, orario specifico.
+Focus: fascia oraria (±2h), probabilità pioggia, vento >50 km/h per strutture, temperatura percepita, UV, fulmini entro 20km.
 
 ### 🌾 Agricoltura / Campagna
-Trigger: "raccolto", "vendemmia", "irrigazione", "gelo", "grandine", "campi", "agricoltura", "peronospora", "viticoltura", "olivicoltura"
-Focus: gelate (T <0°C, specie notturna), gelicidio (pioggia congelantesi), grandine (CAPE + LI),
-bilancio idrologico (Precipitazioni vs ET0), umidità del suolo (soil_moisture_0_to_1cm),
-Somma Termica (GDD) per maturazione, Rischio Peronospora (Regola dei 3-10),
-siccità (precipitazioni ultimi 30gg vs norma), vento per irrorazione (>20 km/h = stop),
-umidità fogliare (UR >90% = rischio funghi/oidio), gelate tardive (T < -1°C in primavera).
-**Rischio allagamento campi**: se livello fiumi > soglia gialla + pioggia prevista >20mm/24h.
-**Ristagno idrico**: se `soil_moisture_0_to_1cm` >0.35 + livello falda in salita (dati idrologici Step M).
-**Storico recente**: precipitazioni 7gg e giorni senza pioggia sono critici per questo use case (Step C).
+Trigger: raccolto, vendemmia, irrigazione, gelo, grandine, campi, agricoltura, peronospora, viticoltura, olivicoltura.
+Focus: gelate/gelicidio, grandine, bilancio idrico, umidità suolo, GDD, peronospora, vento per irrorazione. Usa `meteo_bioclimatic_indices` e Step C/M.
 
 ### 🏗️ Cantiere / Lavori all'aperto
-Trigger: "cantiere", "lavori", "operai", "gru", "ponteggio"
-Focus: vento >50 km/h (stop gru), pioggia cumulata (calcestruzzo), gelate notturne (ghiaccio su superfici), visibilità.
-**METAR per visibilità**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità orizzontale — utile per lavoro in quota (gru, ponteggi) (Step K).
-**Rischio allagamento scavi**: se livello falda in salita (Step M) + precipitazioni previste >20mm/24h.
-**UV se estate**: rischio colpo di calore per i lavoratori (Step G).
+Trigger: cantiere, lavori, operai, gru, ponteggio.
+Focus: vento >50 km/h, pioggia cumulata, gelate notturne, visibilità METAR, rischio allagamento scavi, UV estivo.
 
 ### 🚗 Viabilità / Trasporti
-Trigger: "viaggio", "autostrada", "strada", "guida", "treno", "volo"
-Focus: neve (quota e accumulo stimato), nebbia (visibilità <200m), gelicidio (black ice),
-acquaplaning (pioggia intensa), vento laterale (>70 km/h su ponti e tratti esposti).
-**METAR per nebbia aeroportuale**: se aeroporto ICAO nelle vicinanze, usa METAR per visibilità RVR e ceiling — indicatore precoce di nebbia in pianura (Step K).
-**Satellite per nebbia in Val Padana**: immagini VIS0.6 (diurno) e IR3.9 (notturno) per estensione nebbia (Step N).
-**Rischio allagamento strade**: se livello fiume > soglia rossa per ponte/guado sul percorso (Step M), o pioggia >50mm/24h + dati ISPRA dissesto → rischio interruzione.
+Trigger: viaggio, autostrada, strada, guida, treno, volo.
+Focus: neve, nebbia, gelicidio, acquaplaning, vento laterale >70 km/h, allagamenti. Usa METAR Step K, satellite Step N, idrologia Step M.
 
-### 🏖️ Mare / Spiaggia / Nautica (Uso personale e informativo)
-Trigger: "mare", "spiaggia", "barca", "vela", "nautica", "bagno"
-Focus: stato del mare (Douglas Scale), vento (Beaufort), swell (mare lungo), temporali costieri, UV index.
-**Marine API obbligatoria**: attiva fetch F per dati onde completi (wave_height, swell, periodo).
-**UV obbligatorio**: includi sempre per questo use case (Step G).
-**Fulmini**: se fulmini entro 10km dalla costa (Step L) → evacuazione spiaggia, rientro imbarcazioni immediate.
-**Satellite per copertura nuvolosa costiera**: immagini IR10.8 per valutazione sistemi temporaleschi in avvicinamento dal mare (Step N).
-Vedi scale Douglas/Beaufort e soglie in `references/uv_marine_recent.md`.
+### 🏖️ Mare / Spiaggia / Nautica
+Trigger: mare, spiaggia, barca, vela, nautica, bagno.
+Focus: stato del mare (Douglas/Beaufort), swell, temporali costieri, UV, fulmini entro 10km. Usa Marine API Step F, UV Step G, fulmini Step L.
 
 ### 🌡️ Salute / Caldo estremo / Allergie
-Trigger: "caldo", "afa", "anziani", "bambini", "salute", "allergie", "polline", "asma"
-Focus: T percepita (Heat Index), Notti Tropicali (T min >20°C), ondata di calore (T >35°C per 3+ giorni), UV index, qualità aria.
-**UV obbligatorio**: includi picco, orario e raccomandazioni SPF (Step G).
-**Qualità aria obbligatoria**: AQI + PM2.5 + O3 + pollini stagionali + raccomandazioni soggetti sensibili (Step H).
-**Storico recente**: segnala se ondata calore già in corso da giorni (Step C).
+Trigger: caldo, afa, anziani, bambini, salute, allergie, polline, asma.
+Focus: Heat Index, Notti Tropicali, ondate di calore, UV, qualità aria (AQI, PM2.5, O3, pollini). Usa Step G, H, C.
 
 ### 🚲 Ciclismo / Sport su strada
-Focus: Vento (intensità e direzione), T percepita (comfort), rischio pioggia (grip), qualità aria.
-**Soglie Operative**:
-- **Vento**: >25 km/h = disturbo significativo (laterale/frontale), >40 km/h = rischio sicurezza.
-- **Comfort**: T percepita 15-25°C = ideale, <10°C = rischio ipotermia (abbigliamento tecnico), >30°C = rischio disidratazione/colpo di calore.
-- **Sicurezza**: probabilità pioggia >30% = rischio asfalto viscido/perdita grip.
-- **Qualità Aria**: AQI >60 (Scarso) = sconsigliato sforzo intenso (Vedi `references/air_quality.md`).
-**UV Index**: includi sempre per uscite diurne (Vedi `references/uv_marine_recent.md`, Step G).
+Trigger: bici, ciclismo, gara ciclistica, Granfondo, MTB.
+Focus: vento laterale (>25 km/h, rischio >40 km/h), temperatura percepita, pioggia (grip/asfalto viscido), qualità aria, UV diurno.
 
 ### ⚡ Energia — Eolico e Solare
-Trigger: "eolico", "solare", "fotovoltaico", "energia", "produzione", "impianto", "turbina", "pannelli", "grid"
-Focus:
-**Eolico**: velocità e direzione vento a 80m e 120m (altezze hub turbine), raffiche (>90 km/h = stop sicurezza). Produzione stimata: vento 5-25 m/s = zona operativa, <3 m/s = cut-in (nessuna produzione), >25 m/s = cut-out (stop).
-**Solare**: `shortwave_radiation`, `direct_normal_irradiance` (DNI), `direct_radiation`, `diffuse_radiation`, `terrestrial_radiation`, `cloud_cover`. Produzione stimata: DNI > 600 W/m² = produzione ottimale, < 200 W/m² = produzione bassa. Rapporto `direct/diffuse` per valutazione efficienza impianti fissi vs inseguimento.
-**Forecast vs climatologia**: confronta irraggiamento e vento previsti con la norma del periodo per valutare se la produzione sarà sopra/sotto media.
-**Fulmini (Step L)**: se fulmini entro 10km da impianto eolico → stop preventivo turbine.
-**METAR (Step K)**: se aeroporto vicino, usa METAR per validazione vento osservato vs previsto.
+Trigger: eolico, solare, fotovoltaico, energia, produzione, impianto, turbina, pannelli, grid.
+Focus: vento a 80m/120m (cut-in/cut-out ~3-25 m/s), raffiche >90 km/h, irraggiamento e cloud cover (DNI), rapporto diretto/diffuso, confronto climatologico, fulmini per stop turbine (Step L), METAR per validazione (Step K).
 
 ### 🏖️ Turismo — Beach Index e Ski Index
-Trigger: "spiaggia", "bagno", "mare vacanza", "sci", "neve pista", "ski resort", "vacanza", "weekend fuori porta"
+Trigger: spiaggia, bagno, mare vacanza, sci, neve pista, ski resort, vacanza, weekend fuori porta.
 Focus:
-**Beach Index** (trigger: mare, spiaggia, bagno, vacanza estiva):
-- SST (Sea Surface Temperature) da Marine API (Step F): >22°C = confortevole, 18-22°C = fresco, <18°C = freddo
-- UV Index: picco + orario + raccomandazione SPF (Step G)
-- Vento: <15 km/h = ideale, 15-30 km/h = ventilato (piacevole), >30 km/h = vento forte (sabbia)
-- Pioggia: probabilità nella fascia 10-18h
-- Stato del mare: Douglas 0-2 = calmo, 3-4 = mosso, ≥5 = agitato (sconsigliato bagno)
-- **Score**: 0-100 basato su T mare (30%), UV (20%), vento (20%), pioggia (20%), mare (10%)
-
-**Ski Index** (trigger: sci, neve pista, ski resort, vacanza in montagna):
-- Neve fresca prevista (`snowfall_sum`): >10cm = ottimo, 5-10cm = buono, <5cm = scarso
-- Temperatura in quota: -5 a 0°C = ideale (neve farinosa), >2°C = neve pesante/marcia, <-10°C = molto freddo
-- Vento in quota (stima: `wind_speed_10m × 2` per 2000m): >60 km/h = impianti chiusi
-- Visibilità: >5km = ottimo, 1-5km = foschia, <1km = nebbia (impianti rallentati)
-- **Snow depth** (`snow_depth`): >50cm = ottima copertura, 20-50cm = sufficiente, <20cm = scarsa
-- **Score**: 0-100 basato su neve fresca (30%), T (20%), vento (20%), visibilità (15%), snow depth (15%)
+- **Beach Index**: SST (Step F), UV, vento, pioggia fascia 10-18h, stato mare (Douglas). Score 0-100 ponderato.
+- **Ski Index**: neve fresca, temperatura in quota, vento >60 km/h, visibilità, snow_depth. Score 0-100 ponderato.
 
 ---
 
