@@ -46,18 +46,21 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 
 | Step / Riferimento | Tool MCP | Servizio / Funzione |
 |---|---|---|
+| **0 (default, SEMPRE)** | `meteo_brief` | Aggrega in 1 chiamata: NWP multi-modello + allerte PC + radar + METAR + ARPA regionale + ensemble, con divergenze calcolate |
 | Geocoding | `open_meteo_geocode` | Open-Meteo Geocoding |
 | A (forecast) | `open_meteo_forecast` / `open_meteo_forecast_summary` | Open-Meteo Forecast (raw / compact summary) |
 | B (Climatologia ERA5) | `meteo_climatology` / `open_meteo_archive` | Query norme ERA5 di capoluoghi italiani / Archive raw |
-| E (allerte) | `pc_allerte_wms` | PC WMS & Bollettino JSON |
+| E (allerte) | `pc_allerte` | Bollettino criticità DPC (GitHub pcm-dpc), filtro per comune/regione |
 | F (marine) | `open_meteo_marine` | Open-Meteo Marine |
 | H (CAMS) | `open_meteo_air_quality` | Open-Meteo Air-Quality |
 | J (ensemble) | `open_meteo_ensemble` | Open-Meteo Ensemble |
-| I (radar) | `dpc_radar_vmi` | Radar DPC |
+| I (radar) | `dpc_radar` | Radar-DPC REST (22 prodotti, pre-signed GeoTIFF) |
 | K (METAR/TAF) | `checkwx_metar_taf` / `aviationweather_metar` | CheckWX / AviationWeather |
 | L (fulmini) | `dmi_lightning` | DMI Lightning |
 | M (idro TA-A) | `floods_it_monitoring` | floods.it |
-| M (idro Veneto) | `arpav_idro` | ARPAV |
+| M (idro Veneto) | `arpav_idro` | ARPAV livelli idrometrici 103 stazioni (XML 48h) |
+| D (ARPA Veneto) | `arpav_bollettino` | Previsione ARPAV per 15 zone (Centro Meteorologico) |
+| D (ARPA Trentino) | `meteotrentino_osservazioni` | Osservazioni stazioni P.A. Trento (open data XML) |
 | N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
 | **Ref: Climatologia** | `meteo_climatology` | Ottieni medie e anomalie storiche per 110 città italiane |
 | **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, Quota Neve, Rischio Incendi (NFR) |
@@ -67,6 +70,13 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 | **Ref: Linee Guida e Scale** | `meteo_reference_guidelines` | Tabelle statiche per categorie: `models`, `marine`, `air_quality`, `mountain`, `hydro`, `nowcasting`, `satellite`, `lightning`, `aviation`, `portals` |
 
 I template `GET https://...` nei singoli step restano come **riferimento/override**: usali solo se il tool MCP non è disponibile.
+
+> ⚠️ **Breaking changes (2026-07)** — Tool rinominati/riscritti:
+> - `pc_allerte_wms` → **`pc_allerte`**: l'host `api.protezionecivile.gov.it` non esiste più (DNS morto). Nuova fonte: bollettino ufficiale DPC dal repo GitHub pcm-dpc, con filtro per comune esatto (non solo regione).
+> - `dpc_radar_vmi` → **`dpc_radar`**: la risposta di `findLastProductByType` è cambiata dopo l'aggiornamento piattaforma del 12-01-2026 (`lastProducts[0].time`, non più `time` top-level — il vecchio tool non scaricava mai nulla). Ora 22 prodotti, header `origin` obbligatorio, download GeoTIFF pre-signed.
+> - `arpav_idro`: nuova firma (provincia/nome/lat-lon). Il vecchio path `/rest/v1/meteo/stazioni/{id}/dati` risponde 404.
+> - Nuovi: `meteo_brief` (aggregatore multi-fonte, STEP 0), `arpav_bollettino`, `meteotrentino_osservazioni`.
+> - Fix: `aviationweather_metar` — il parser ignorava i campi JSON reali (`temp`, `rawOb`, `visib`): le stazioni uscivano vuote.
 
 ---
 
@@ -96,6 +106,8 @@ Usa la risposta:
 3. Annota lat, lon, `elevation` di `chosen` — serve per neve e mountain bias.
 
 ### 3. Fetch sequenziale prioritizzato
+
+**STEP 0 (OBBLIGATORIO, SEMPRE): `meteo_brief`** — Prima di qualsiasi analisi su una località italiana, chiama `meteo_brief` (nome o lat/lon). Il tool interroga in parallelo TUTTE le fonti pertinenti (NWP multi-modello, allerte PC per il comune, radar DPC, METAR delle 3 stazioni più vicine, ARPA regionale se coperta, ensemble spread) e restituisce per ciascuna lo stato (ok/errore/non coperta) più le **divergenze** tra fonti già calcolate. Questo garantisce il confronto multi-fonte di default: non serve che l'utente lo chieda. Usa poi i tool singoli solo per approfondire ciò che il brief segnala come anomalo o mancante.
 
 L'esecuzione del workflow segue una sequenza prioritizzata suddivisa in 3 Tier. L'agente deve completare il **TIER 1** prima di procedere al **TIER 2**.
 
@@ -147,15 +159,15 @@ Vedi scala UV e raccomandazioni in `references/uv_marine_recent.md`.
 Confronta il forecast con la norma storica del periodo. Calcola media e σ su 10 anni → baseline "nella norma / sopra / sotto".
 
 #### E — Allerta (Dati Pubblici)
-> **Via MCP:** `pc_allerte_wms` (regione opzionale).
-> Il tool prova l'API JSON del bollettino (`api.protezionecivile.gov.it/bollettini/allerte/ultimo`), con fallback al WMS se irraggiungibile. Restituisce `alerts[]` (regione, livello, colore, livelloCodice 0-3, tipo_rischio) e `allertaMax`.
-Estrai da `alerts`: livello allerta per la regione target e tipo di rischio (idrogeologico, temporali, neve, vento). Se `allertaMax` ≥1 (gialla) segnala nel report e attiva gli Step condizionali (I, L, M, N).
+> **Via MCP:** `pc_allerte` (comune, regione, day).
+> Fonte ufficiale: bollettino di criticità nazionale DPC dal repository GitHub pcm-dpc (pubblicato ~14:30 + aggiornamenti). Il vecchio host `api.protezionecivile.gov.it` non esiste più. Il tool mappa il **comune esatto** sulla sua zona di allerta (156 zone, 7.904 comuni) e restituisce per oggi e domani i livelli 0-3 per rischio idraulico / temporali / idrogeologico.
+Se `allertaMaxOggi` ≥1 (gialla) segnala nel report e attiva gli Step condizionali (I, L, M, N). Se il comune non è trovato (`comuneTrovato: false`), riprova con il nome esatto dell'anagrafica o filtra per regione.
 
 #### TIER 2 (Condizionali ad alta priorità)
 
 #### D — Osservazioni ARPA
-Consulta `references/arpa_network.md` per endpoint e stazioni della regione target.
-Recupera: T attuale, precipitazioni ultime 6/24h, vento, umidità dalla stazione più vicina.
+> **Via MCP (già incluse in `meteo_brief`):** `arpav_bollettino` (Veneto, previsione Centro Meteorologico per 15 zone), `meteotrentino_osservazioni` (Trentino, dati stazione più vicina), `arpav_idro` (Veneto, livelli idrometrici).
+Copertura API real-time verificata oggi: **Veneto (ARPAV)** e **Trentino (Meteotrentino)**. Per le altre regioni il brief dichiara `nonCoperto` e le osservazioni di riferimento diventano METAR (Step K) + radar DPC (Step I): dichiaralo nel report. Non inventare dati ARPA per regioni non coperte.
 Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
 
 #### F — Dati marini (solo se costa o use case mare/nautica)
@@ -173,7 +185,7 @@ Attiva se: coordinate a <20km dalla costa, use case mare/spiaggia/nautica, macro
 #### TIER 3 (Condizionali a bassa priorità)
 
 #### I — Nowcasting Radar DPC (solo se condizioni attivanti)
-> **Via MCP:** `dpc_radar_vmi` (productType=VMI, download=true → restituisce URL immagine).
+> **Via MCP:** `dpc_radar` (product=VMI, download=true → restituisce pre-signed URL del GeoTIFF, valida ~5 min: scaricarla subito). Prodotti disponibili: VMI (riflettività, 5min), SRI (mm/h al suolo, 5min), SRT1/CUM3-24 (cumulate), IR_108 (satellite), TEMP (temperature suolo, oraria), VIL/ETM/POH (grandine), CAPPI_1..10, SITES (stato rete radar). Il tool riporta `ageMinutes` e `stale` (>30min): se stale, dichiaralo nel report.
 
 **Attiva se almeno una di queste condizioni è vera:**
 - Allerta PC ≥ gialla per temporali (Step E)
@@ -246,7 +258,7 @@ Mappa esplicita del monitoraggio:
 > **Via MCP:** `floods_it_monitoring` (sensor_id opzionale) per floods.it; `arpav_idro` (station_id, parametro, periodo) per ARPAV.
 
 **Trentino-Alto Adige:** `floods_it_monitoring` (sensor_id opzionale).
-**Veneto:** `arpav_idro` (station_id, parametro, periodo). Vedi `references/arpa_network.md` per ID stazioni.
+**Veneto:** `arpav_idro` (provincia / nome / latitude+longitude, limit). Restituisce livello attuale, livello 6h fa e trend per le stazioni della rete idrometrica ARPAV (Adige, Piave, Brenta, Bacchiglione, Po...). Filtra per nome fiume o stazione più vicina alle coordinate.
 
 ### TIER B (soglie manuali + ARPA)
 

@@ -19,8 +19,9 @@ Usa i seguenti tool per monitorare i fiumi e confrontare i livelli con le soglie
 
 ### `arpav_idro`
 
-- **Scopo**: Interroga la rete di monitoraggio idrologico del Veneto in tempo reale.
-- **Parametri**: `stationId` della stazione (es. Verona 124 per Adige, Vicenza 108 per Bacchiglione).
+- **Scopo**: Livelli idrometrici delle 103 stazioni ARPAV (Adige, Piave, Brenta, Bacchiglione, Po...) dalle ultime 48h, con trend a 6h. Fonte XML open data ARPAV aggiornata in continuo.
+- **Parametri**: `provincia` (BL/PD/RO/TV/VE/VR/VI), `nome` (match fiume/stazione/comune), oppure `latitude`+`longitude` per la stazione più vicina, `limit`.
+- **Nota 2026-07**: il vecchio endpoint `/rest/v1/meteo/stazioni/{id}/dati` risponde 404; il tool ora usa `https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml`.
 
 ### `meteo_reference_guidelines` (categoria: `hydro`)
 

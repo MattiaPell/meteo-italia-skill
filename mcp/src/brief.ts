@@ -1,0 +1,395 @@
+import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { apiGet, toToolResult } from "./http.js";
+import { haversine } from "./geo.js";
+import { summarizeForecast } from "./summaries.js";
+import { parseMetarStation } from "./italian_sources.js";
+import { fetchLatestBulletin, fetchRadarLatest } from "./dpc.js";
+import {
+  parseArpavIdroXml,
+  parseMeteoTrentinoStations,
+  parseMeteoTrentinoObs,
+} from "./arpa.js";
+
+// Aeroporti italiani con reporting METAR attivo (coordinate ARP). Usati per
+// scegliere le stazioni di nowcasting più vicine al punto richiesto.
+const ICAO_STATIONS: Array<{ icao: string; nome: string; lat: number; lon: number }> = [
+  { icao: "LIRF", nome: "Roma Fiumicino", lat: 41.8, lon: 12.25 },
+  { icao: "LIRA", nome: "Roma Ciampino", lat: 41.8, lon: 12.6 },
+  { icao: "LIMC", nome: "Milano Malpensa", lat: 45.63, lon: 8.72 },
+  { icao: "LIML", nome: "Milano Linate", lat: 45.44, lon: 9.28 },
+  { icao: "LIME", nome: "Bergamo Orio al Serio", lat: 45.67, lon: 9.7 },
+  { icao: "LIMF", nome: "Torino Caselle", lat: 45.2, lon: 7.65 },
+  { icao: "LIMJ", nome: "Genova Sestri", lat: 44.41, lon: 8.84 },
+  { icao: "LIPZ", nome: "Venezia Tessera", lat: 45.51, lon: 12.35 },
+  { icao: "LIPH", nome: "Treviso", lat: 45.65, lon: 12.19 },
+  { icao: "LIPX", nome: "Verona Villafranca", lat: 45.4, lon: 10.89 },
+  { icao: "LIPQ", nome: "Ronchi dei Legionari", lat: 45.83, lon: 13.47 },
+  { icao: "LIPE", nome: "Bologna", lat: 44.53, lon: 11.29 },
+  { icao: "LIPR", nome: "Rimini", lat: 44.02, lon: 12.61 },
+  { icao: "LIRQ", nome: "Firenze Peretola", lat: 43.81, lon: 11.2 },
+  { icao: "LIRS", nome: "Pisa", lat: 43.68, lon: 10.39 },
+  { icao: "LIRZ", nome: "Perugia", lat: 43.1, lon: 12.51 },
+  { icao: "LIRN", nome: "Napoli Capodichino", lat: 40.88, lon: 14.29 },
+  { icao: "LIBP", nome: "Pescara", lat: 42.43, lon: 14.18 },
+  { icao: "LIBD", nome: "Bari", lat: 41.14, lon: 16.76 },
+  { icao: "LIBR", nome: "Brindisi", lat: 40.66, lon: 17.95 },
+  { icao: "LIEE", nome: "Cagliari Elmas", lat: 39.25, lon: 9.05 },
+  { icao: "LIEO", nome: "Olbia", lat: 40.9, lon: 9.52 },
+  { icao: "LIEA", nome: "Alghero", lat: 40.63, lon: 8.29 },
+  { icao: "LICJ", nome: "Palermo", lat: 38.18, lon: 13.1 },
+  { icao: "LICC", nome: "Catania Fontanarossa", lat: 37.47, lon: 15.07 },
+  { icao: "LICT", nome: "Trapani Birgi", lat: 37.91, lon: 12.49 },
+  { icao: "LICA", nome: "Lamezia Terme", lat: 38.91, lon: 16.24 },
+  { icao: "LICR", nome: "Reggio Calabria", lat: 38.07, lon: 15.65 },
+  { icao: "LICG", nome: "Pantelleria", lat: 36.82, lon: 11.97 },
+  { icao: "LIMK", nome: "Comiso", lat: 36.99, lon: 14.6 },
+  { icao: "LIQC", nome: "Lampedusa", lat: 35.5, lon: 12.62 },
+  { icao: "LIBG", nome: "Taranto Grottaglie", lat: 40.52, lon: 17.4 },
+];
+
+const DEFAULT_MODELS = "ecmwf_ifs025,icon_seamless,gfs_seamless,ukmo_seamless,gem_seamless";
+
+function nearestIcao(lat: number, lon: number, n: number) {
+  return ICAO_STATIONS.map((s) => ({
+    ...s,
+    distKm: Math.round(haversine({ lat, lon }, { lat: s.lat, lon: s.lon }) * 10) / 10,
+  }))
+    .sort((a, b) => a.distKm - b.distKm)
+    .slice(0, n);
+}
+
+function sourceStatus(r: PromiseSettledResult<any>): "ok" | "errore" | "parziale" {
+  if (r.status === "rejected") return "errore";
+  const v = r.value;
+  if (v == null || v.ok === false) return "errore";
+  return "ok";
+}
+
+export interface BriefParams {
+  nome?: string;
+  latitude?: number;
+  longitude?: number;
+  regione?: string;
+  days?: number;
+  models?: string;
+}
+
+export async function runBrief(params: BriefParams): Promise<{ ok: boolean; data?: any; error?: string; elapsedMs: number }> {
+  const { nome, latitude, longitude, regione, days = 3, models } = params;
+  return runBriefCore({ nome, latitude, longitude, regione, days, models });
+}
+
+function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
+  nome?: string; latitude?: number; longitude?: number; regione?: string; days: number; models?: string;
+}): Promise<{ ok: boolean; data?: any; error?: string; elapsedMs: number }> {
+  return (async () => {
+      const start = Date.now();
+      const errori: string[] = [];
+
+      // 1) Posizione
+      let lat = latitude;
+      let lon = longitude;
+      let regioneEff = regione;
+      let comune = nome;
+      let elevation: number | null = null;
+      if (lat == null || lon == null) {
+        if (!nome) {
+          return { ok: false, error: "Passa nome località oppure latitude+longitude.", elapsedMs: 0 };
+        }
+        const g = await apiGet("https://geocoding-api.open-meteo.com/v1/search", {
+          name: nome, count: 10, language: "it", format: "json",
+        });
+        const it = ((g.data as any)?.results ?? []).filter((x: any) => x.country_code === "IT");
+        if (!it.length) {
+          return { ok: false, error: `Località '${nome}' non trovata in Italia.`, elapsedMs: Date.now() - start };
+        }
+        lat = it[0].latitude;
+        lon = it[0].longitude;
+        elevation = it[0].elevation ?? null;
+        comune = it[0].name;
+        regioneEff = regioneEff ?? it[0].admin1 ?? undefined;
+      }
+
+      const chosenModels = (models ?? DEFAULT_MODELS).split(",").map((x) => x.trim()).filter(Boolean);
+      const icaoList = nearestIcao(lat!, lon!, 3);
+      const nwpTask = apiGet("https://api.open-meteo.com/v1/forecast", {
+        latitude: lat, longitude: lon,
+        models: chosenModels,
+        hourly: ["temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m"],
+        daily: [
+          "temperature_2m_max", "temperature_2m_min", "precipitation_sum",
+          "precipitation_probability_max", "wind_gusts_10m_max", "uv_index_max", "weather_code",
+        ],
+        current: ["temperature_2m", "weather_code", "wind_speed_10m", "relative_humidity_2m"],
+        timezone: "Europe/Rome",
+        forecast_days: days,
+      });
+      const allerteTask = fetchLatestBulletin();
+      const radarTask = fetchRadarLatest("VMI");
+      const metarTask = apiGet("https://aviationweather.gov/api/data/metar", {
+        ids: icaoList.map((s) => s.icao).join(","), format: "json",
+      });
+      const ensembleTask = apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
+        latitude: lat, longitude: lon,
+        models: ["ecmwf_ifs025_ensemble_mean", "icon_seamless"],
+        hourly: ["temperature_2m_spread", "precipitation", "precipitation_spread"],
+        timezone: "Europe/Rome",
+        forecast_days: days,
+      });
+      const regioneNorm = (regioneEff ?? "").toLowerCase();
+      const arpaTask = (async (): Promise<any> => {
+        if (regioneNorm.includes("veneto")) {
+          const [bol, idro] = await Promise.all([
+            apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
+            apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
+          ]);
+          const zoneRows = ((bol.data as any)?.data ?? [])
+            .filter((r: any) => Number(r.giorno) <= 1)
+            .map((r: any) => ({
+              zona: r.zona, giorno: r.giorno, scadenza: r.scadenza,
+              cielo: r.testo, precipitazioni: r.precipitazioni, attendibilita: r.attendibilita,
+            }));
+          let idroVicino: any = null;
+          if (idro.ok) {
+            const stazioni = parseArpavIdroXml(String(idro.data))
+              .map((s) => ({ ...s, distKm: Math.round(haversine({ lat: lat!, lon: lon! }, { lat: s.lat, lon: s.lon }) * 10) / 10 }))
+              .sort((a, b) => a.distKm - b.distKm)
+              .slice(0, 2);
+            idroVicino = stazioni;
+          }
+          return {
+            ok: bol.ok, agenzia: "ARPAV (Veneto)",
+            bollettino: { emissione: (bol.data as any)?.data?.[0]?.dataemissione ?? null, zone: zoneRows },
+            idrometrieVicine: idroVicino,
+          };
+        }
+        if (regioneNorm.includes("trentino")) {
+          const list = await apiGet("https://dati.meteotrentino.it/service.asmx/listaStazioni", {}, { acceptText: true });
+          if (!list.ok) return { ok: false, agenzia: "Meteotrentino", error: list.error };
+          const stations = parseMeteoTrentinoStations(String(list.data));
+          let best: any = null;
+          for (const s of stations) {
+            const d = haversine({ lat: lat!, lon: lon! }, { lat: s.lat, lon: s.lon });
+            if (!best || d < best.distKm) best = { ...s, distKm: Math.round(d * 10) / 10 };
+          }
+          if (!best) return { ok: false, agenzia: "Meteotrentino", error: "nessuna stazione" };
+          const obs = await apiGet(
+            `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${best.codice}`,
+            {}, { acceptText: true }
+          );
+          return {
+            ok: obs.ok, agenzia: "Meteotrentino (P.A. Trento)",
+            stazione: { codice: best.codice, nome: best.nome, distKm: best.distKm, quota: best.quota },
+            osservazioni: obs.ok ? parseMeteoTrentinoObs(String(obs.data)) : null,
+          };
+        }
+        return {
+          ok: false, agenzia: null,
+          nonCoperto: `Nessun adapter ARPA real-time verificato per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino). Usa METAR + radar come osservazioni.`,
+        };
+      })();
+
+      const [nwpR, allerteR, radarR, metarR, ensembleR, arpaR] = await Promise.allSettled([
+        nwpTask, allerteTask, radarTask, metarTask, ensembleTask, arpaTask,
+      ]);
+
+      // NWP multi-modello + consensus
+      let nwp: any = { status: sourceStatus(nwpR) };
+      if (nwpR.status === "fulfilled" && nwpR.value.ok) {
+        const raw = nwpR.value.data as any;
+        const summary = summarizeForecast(raw, chosenModels);
+        const perDay = summary.days.slice(0, days).map((d) => {
+          const tmaxs = Object.values(d.models).map((m: any) => m.temp_max).filter((v): v is number => v != null);
+          const tmins = Object.values(d.models).map((m: any) => m.temp_min).filter((v): v is number => v != null);
+          const precs = Object.values(d.models).map((m: any) => m.precip_sum).filter((v): v is number => v != null);
+          const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+          const spread = (xs: number[]) => (xs.length > 1 ? Math.max(...xs) - Math.min(...xs) : null);
+          const round1 = (v: number | null) => (v == null ? null : Math.round(v * 10) / 10);
+          return {
+            data: d.date,
+            tmaxMedia: round1(mean(tmaxs)), tmaxSpread: round1(spread(tmaxs)),
+            tminMedia: round1(mean(tmins)),
+            precipMediaMm: round1(mean(precs)), precipMaxMm: round1(precs.length ? Math.max(...precs) : null),
+            modelli: Object.fromEntries(
+              Object.entries(d.models).map(([k, m]: [string, any]) => [
+                k, { tmax: m.temp_max, tmin: m.temp_min, precip: m.precip_sum, probPrecip: m.precip_prob_max },
+              ])
+            ),
+            score: (d as any).score, flags: (d as any).flags,
+          };
+        });
+        nwp = {
+          status: "ok",
+          modelli: chosenModels,
+          giorni: perDay,
+          current: raw?.current ?? null,
+          url: nwpR.value.url,
+        };
+      } else if (nwpR.status === "fulfilled") {
+        errori.push(`Open-Meteo: ${nwpR.value.error ?? "errore"}`);
+      }
+
+      // Allerte PC per il comune
+      let allerte: any = { status: sourceStatus(allerteR) };
+      if (allerteR.status === "fulfilled" && allerteR.value.ok) {
+        const b = allerteR.value;
+        const norm = (s: string) =>
+          s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`]/g, " ").replace(/\s+/g, " ").trim();
+        const zoneOggi = comune
+          ? b.today.filter((z: any) => z.comuni.some((x: string) => norm(x) === norm(comune)))
+          : [];
+        const zoneDomani = comune
+          ? b.tomorrow.filter((z: any) => z.comuni.some((x: string) => norm(x) === norm(comune)))
+          : [];
+        const maxL = (zs: any[]) =>
+          zs.length
+            ? Math.max(...zs.flatMap((z) => [z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico]))
+            : null;
+        allerte = {
+          status: "ok",
+          bollettino: { nome: b.nome, emissione: b.emissione },
+          comune: comune ?? null,
+          oggi: zoneOggi.map((z: any) => ({ zona: z.zona, livelli: z.livelli })),
+          domani: zoneDomani.map((z: any) => ({ zona: z.zona, livelli: z.livelli })),
+          allertaMaxOggi: maxL(zoneOggi),
+          allertaMaxDomani: maxL(zoneDomani),
+          comuneTrovato: zoneOggi.length > 0 || zoneDomani.length > 0,
+        };
+      } else if (allerteR.status === "fulfilled") {
+        allerte = { status: "errore", error: allerteR.value?.error ?? "bollettino non disponibile" };
+        errori.push("Allerte DPC non disponibili");
+      }
+
+      // Radar
+      const radar: any =
+        radarR.status === "fulfilled"
+          ? { status: radarR.value.ok ? "ok" : "errore", ...radarR.value }
+          : { status: "errore" };
+
+      // METAR
+      let metar: any = { status: sourceStatus(metarR) };
+      let nwpCurrentTemp: number | null = nwp?.current?.temperature_2m ?? null;
+      if (metarR.status === "fulfilled" && metarR.value.ok) {
+        const payload = metarR.value.data as any;
+        const list = Array.isArray(payload) ? payload : payload?.data ?? [];
+        metar = {
+          status: "ok",
+          stazioni: list.filter(Boolean).map((s: any) => {
+            const parsed = parseMetarStation(s, nwpCurrentTemp ?? undefined);
+            const dist = icaoList.find((i) => i.icao === parsed.icao)?.distKm ?? null;
+            return { ...parsed, distKm: dist };
+          }),
+        };
+      } else if (metarR.status === "fulfilled") {
+        metar = { status: "errore", error: metarR.value.error };
+      }
+
+      // Ensemble spread
+      let ensemble: any = { status: sourceStatus(ensembleR) };
+      if (ensembleR.status === "fulfilled" && ensembleR.value.ok) {
+        const h = (ensembleR.value.data as any)?.hourly ?? {};
+        const ensModels = ["ecmwf_ifs025_ensemble_mean", "icon_seamless"];
+        const grab = (base: string) =>
+          ensModels
+            .flatMap((m) => {
+              const v = h[`${base}_${m}`] ?? (ensModels.length === 1 ? h[base] : undefined);
+              return Array.isArray(v) ? v : [];
+            })
+            .filter((v): v is number => typeof v === "number");
+        const tSpread = grab("temperature_2m_spread");
+        const pMean = grab("precipitation");
+        const pSpread = grab("precipitation_spread");
+        ensemble = {
+          status: "ok",
+          tempSpreadMaxC: tSpread.length ? Math.round(Math.max(...tSpread) * 10) / 10 : null,
+          precipMeanTotMm: pMean.length ? Math.round(pMean.reduce((a, b) => a + b, 0) * 10) / 10 : null,
+          precipSpreadMaxMm: pSpread.length ? Math.round(Math.max(...pSpread) * 10) / 10 : null,
+          modelli: ["ecmwf_ifs025_ensemble_mean", "icon_seamless"],
+        };
+      }
+
+      const arpa: any = arpaR.status === "fulfilled" ? arpaR.value : { status: "errore" };
+
+      // Divergenze tra fonti
+      const divergenze: string[] = [];
+      const day1 = nwp?.giorni?.[0];
+      if (day1?.tmaxSpread != null && day1.tmaxSpread > 3) {
+        divergenze.push(`Modelli NWP divergono su T max oggi: spread ${day1.tmaxSpread}°C (>3°C)`);
+      }
+      if (metar?.stazioni?.length) {
+        for (const st of metar.stazioni) {
+          const scarto = st?.decodedVsNwp?.tempScarto;
+          if (scarto != null && scarto > 2) {
+            divergenze.push(
+              `METAR ${st.icao} (${st.distKm}km): T osservata scarta di ${scarto}°C dal NWP corrente (>2°C)`
+            );
+          }
+          if (st?.decodedVsNwp?.visFlag) {
+            divergenze.push(`METAR ${st.icao}: visibilità <2000m non risolta dal NWP`);
+          }
+        }
+      }
+      if (allerte?.allertaMaxOggi != null && allerte.allertaMaxOggi >= 1 && day1?.precipMaxMm != null && day1.precipMaxMm < 5) {
+        divergenze.push(
+          `Allerta PC ≥ gialla ma precipitazione NWP max ${day1.precipMaxMm}mm: verificare con radar/nowcasting`
+        );
+      }
+      if (ensemble?.tempSpreadMaxC != null && ensemble.tempSpreadMaxC > 4) {
+        divergenze.push(`Spread ensemble T elevato: ${ensemble.tempSpreadMaxC}°C`);
+      }
+
+      const nFontiOk = [nwp.status, allerte.status, radar.status, metar.status, ensemble.status, arpa?.ok ? "ok" : "x"].filter(
+        (s) => s === "ok"
+      ).length;
+
+      const data = {
+        localita: { nome: comune ?? null, regione: regioneEff ?? null, lat, lon, elevation },
+        fontiInterrogate: 6,
+        fontiOk: nFontiOk,
+        nwp,
+        allerte,
+        radar,
+        metar,
+        ensemble,
+        arpaRegionale: arpa,
+        divergenze,
+        errori,
+        nota: "Confidence ALTA se nwp+allerte+metar ok e divergenze vuote; MEDIA se 1 fonte manca o divergenze presenti; segnalare sempre le divergenze nel report.",
+      };
+      return { ok: nwp.status === "ok", data, elapsedMs: Date.now() - start };
+  })();
+}
+
+export function registerBrief(server: McpServer) {
+  server.registerTool(
+    "meteo_brief",
+    {
+      title: "Brief Meteo Multi-Fonte (default per qualsiasi località italiana)",
+      description:
+        "UNICO tool da chiamare per una richiesta meteo su una località italiana: aggrega in parallelo (1) previsione multi-modello Open-Meteo con consensus e spread, (2) allerte Protezione Civile per il comune, (3) stato radar DPC, (4) METAR delle 3 stazioni ICAO più vicine, (5) osservazioni/bollettino ARPA regionale quando disponibili (Veneto, Trentino), (6) spread ensemble. Ogni fonte riporta il suo stato (ok/errore/non coperta) e le divergenze tra fonti sono calcolate automaticamente. Usa questo PRIMA di qualsiasi approfondimento con i tool singoli.",
+      inputSchema: {
+        nome: z.string().optional().describe("Nome località (es. 'Rovigo'). Se manca latitude/longitude, viene geocodificata in Italia."),
+        latitude: z.coerce.number().optional().describe("Lat (salta geocoding)"),
+        longitude: z.coerce.number().optional().describe("Lon (salta geocoding)"),
+        regione: z.string().optional().describe("Regione (es. 'Veneto') — attiva l'adapter ARPA regionale. Auto da geocoding se possibile."),
+        days: z.coerce.number().int().min(1).max(7).default(3).describe("Giorni di previsione (1-7)"),
+        models: z.string().optional().describe(`Lista modelli Open-Meteo, default ${DEFAULT_MODELS}`),
+      },
+      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    },
+    async ({ nome, latitude, longitude, regione, days, models }) => {
+      const r = await runBrief({ nome, latitude, longitude, regione, days, models });
+      if (!r.ok && !r.data) {
+        return toToolResult({
+          ok: false, url: "mcp://meteo_brief", status: 0, data: null,
+          error: r.error ?? "brief non disponibile", elapsedMs: r.elapsedMs,
+        });
+      }
+      return toToolResult({
+        ok: r.ok, url: "mcp://meteo_brief", status: 200, data: r.data, elapsedMs: r.elapsedMs,
+      });
+    }
+  );
+}

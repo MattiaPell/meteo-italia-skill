@@ -1,0 +1,94 @@
+import { describe, it, expect } from "vitest";
+import { alertLevelFromText, extractZoneRegionMap } from "../dpc.js";
+import {
+  parseArpavIdroXml,
+  parseMeteoTrentinoStations,
+  parseMeteoTrentinoObs,
+} from "../arpa.js";
+import { parseMetarStation } from "../italian_sources.js";
+
+describe("alertLevelFromText", () => {
+  it("maps official bulletin texts to 0-3", () => {
+    expect(alertLevelFromText("Assenza di fenomeni significativi prevedibili / NESSUNA ALLERTA")).toBe(0);
+    expect(alertLevelFromText("Ordinaria criticità per rischio temporali / Allerta gialla")).toBe(1);
+    expect(alertLevelFromText("Moderata criticità per rischio idrogeologico / Allerta arancione")).toBe(2);
+    expect(alertLevelFromText("Elevata criticità per rischio idraulico / Allerta rossa")).toBe(3);
+  });
+});
+
+describe("extractZoneRegionMap", () => {
+  it("builds zona → regione from the bulletin HTML", () => {
+    const html =
+      "<p>Per la giornata di oggi:<br/><b>ORDINARIA CRITICITA' PER RISCHIO TEMPORALI / ALLERTA GIALLA:</b><br /><b>Emilia Romagna</b>: Costa romagnola, Pianura bolognese<br /><b>Lombardia</b>: Orobie bergamasche<br /></p>";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("costa romagnola")).toBe("Emilia Romagna");
+    expect(map.get("orobie bergamasche")).toBe("Lombardia");
+    expect(map.has("ordinaria criticita' per rischio temporali / allerta gialla:")).toBe(false);
+  });
+});
+
+describe("parseArpavIdroXml", () => {
+  it("parses station blocks with last value and 6h trend", () => {
+    const mk = (h: string, v: string) => `<DATI ISTANTE="${h}"><VM>${v}</VM></DATI>`;
+    const dati = Array.from({ length: 40 }, (_, i) => mk(`2026072100${String(i).padStart(2, "0")}`, i < 37 ? "0.50" : "0.80")).join("");
+    const xml = `<CONTENITORE><STAZIONE><IDSTAZ>6</IDSTAZ><NOME><![CDATA[Adige a Verona]]></NOME><X>10.99</X><Y>45.44</Y><QUOTA>60</QUOTA><TIPOSTAZ>IDRO</TIPOSTAZ><PROVINCIA>VR</PROVINCIA><COMUNE><![CDATA[VERONA]]></COMUNE>${dati}</STAZIONE></CONTENITORE>`;
+    const s = parseArpavIdroXml(xml);
+    expect(s).toHaveLength(1);
+    expect(s[0].nome).toBe("Adige a Verona");
+    expect(s[0].provincia).toBe("VR");
+    expect(s[0].livelloM).toBe(0.8);
+    expect(s[0].livello6hFaM).toBe(0.5);
+    expect(s[0].trend).toBe("salita");
+  });
+});
+
+describe("parseMeteoTrentinoStations", () => {
+  it("keeps only active stations (no <fine>)", () => {
+    const xml = `<ArrayOfAnagrafica>
+      <anagrafica><codice>T0154</codice><nome>Ala (Convento)</nome><nomebreve>Ala</nomebreve><quota>165</quota><latitudine>45.75</latitudine><longitudine>10.99</longitudine><fine>22/06/2005</fine></anagrafica>
+      <anagrafica><codice>T0383</codice><nome>Trento</nome><nomebreve>Trento</nomebreve><quota>200</quota><latitudine>46.06</latitudine><longitudine>11.12</longitudine><fine></fine></anagrafica>
+    </ArrayOfAnagrafica>`;
+    const s = parseMeteoTrentinoStations(xml);
+    expect(s).toHaveLength(1);
+    expect(s[0].codice).toBe("T0383");
+  });
+});
+
+describe("parseMeteoTrentinoObs", () => {
+  it("extracts tmin/tmax/rain, last temperature and precip sum", () => {
+    const xml = `<datiOggi><data>2026/07/21</data><tmin>14</tmin><tmax>24</tmax><rain>0.8</rain>
+      <temperature>
+        <temperatura_aria UM="°C"><data>2026-07-20T00:00:00</data><temperatura>15.6</temperatura></temperatura_aria>
+        <temperatura_aria UM="°C"><data>2026-07-20T00:15:00</data><temperatura>16.1</temperatura></temperatura_aria>
+      </temperature>
+      <precipitazioni>
+        <precipitazione UM="mm"><data>2026-07-20T00:00:00</data><pioggia>0.2</pioggia></precipitazione>
+        <precipitazione UM="mm"><data>2026-07-20T00:15:00</data><pioggia>0.6</pioggia></precipitazione>
+      </precipitazioni>
+    </datiOggi>`;
+    const o = parseMeteoTrentinoObs(xml);
+    expect(o.tmin).toBe(14);
+    expect(o.tmax).toBe(24);
+    expect(o.lastTempC).toBe(16.1);
+    expect(o.precipSumMm).toBeCloseTo(0.8, 5);
+  });
+});
+
+describe("parseMetarStation (aviationweather JSON)", () => {
+  it("parses the real aviationweather.gov shape", () => {
+    const raw = {
+      icaoId: "LIPZ", temp: 29, dewp: 16, wdir: 130, wspd: 4,
+      visib: "6+", altim: 1014, cover: "CAVOK", fltCat: "VFR",
+      rawOb: "METAR LIPZ 211250Z 13004KT CAVOK 29/16 Q1014 NOSIG",
+    };
+    const s = parseMetarStation(raw, 30);
+    expect(s.icao).toBe("LIPZ");
+    expect(s.tempC).toBe(29);
+    expect(s.windKt).toBe(4);
+    expect(s.windDir).toBe(130);
+    expect(s.visibilityM).toBe(Math.round(6 * 1609.34));
+    expect(s.qnhHpa).toBe(1014);
+    expect(s.skyCover).toBe("CAVOK");
+    expect(s.decodedVsNwp.tempScarto).toBe(1);
+  });
+});

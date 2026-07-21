@@ -3,18 +3,30 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, apiPostJson, toToolResult, CHECKWX_API_KEY } from "./http.js";
 import { haversine } from "./geo.js";
 
-/** Map CheckWX decoded / AviationWeather shapes into a normalized station record. */
-function parseMetarStation(s: any, nwpTempC?: number): any {
-  const tempC = s.temp_c ?? s.temperature?.celsius ?? null;
-  const windKt = s.wind_speed_kt ?? s.wind_speed?.kts ?? null;
-  const windDir = s.wind_dir_degrees ?? s.wind_direction?.degrees ?? null;
-  const visMi = s.visibility_statute_mi ?? s.visibility?.statute_miles ?? null;
-  const visibilityM = visMi != null ? Math.round(visMi * 1609.34) : null;
+/** Map CheckWX decoded / AviationWeather shapes into a normalized station record.
+ *
+ * aviationweather.gov JSON shape (verified 2026-07): { icaoId, temp, dewp,
+ * wdir, wspd, wgst, visib ("6+" | number, statute miles), altim (hPa),
+ * cover, fltCat, rawOb }. CheckWX decoded uses temp_c / wind_speed_kt /
+ * visibility_statute_mi / sky_condition.
+ */
+export function parseMetarStation(s: any, nwpTempC?: number): any {
+  const tempC = s.temp_c ?? s.temp ?? s.temperature?.celsius ?? null;
+  const windKt = s.wind_speed_kt ?? s.wspd ?? s.wind_speed?.kts ?? null;
+  const windDir = s.wind_dir_degrees ?? s.wdir ?? s.wind_direction?.degrees ?? null;
+  const visRaw = s.visibility_statute_mi ?? s.visib ?? s.visibility?.statute_miles ?? null;
+  const visMi = typeof visRaw === "string" ? parseFloat(visRaw) : visRaw;
+  const visibilityM = visMi != null && Number.isFinite(visMi) ? Math.round(visMi * 1609.34) : null;
   const sky = Array.isArray(s.sky_condition)
     ? s.sky_condition.map((c: any) => c.sky_cover).join("/")
-    : s.cloud_base ?? null;
+    : s.cover ?? s.cloud_base ?? null;
+  const altim = s.altim_in_hpa ?? s.altim ?? null;
   const qnhHpa =
-    s.altim_in_hpa ?? (s.altim_in_hg != null ? Math.round(s.altim_in_hg * 33.8639) : null);
+    altim != null
+      ? altim > 900
+        ? Math.round(altim)
+        : Math.round(altim * 33.8639)
+      : null;
   return {
     icao: s.icaoId ?? s.station_id ?? s.icao ?? null,
     tempC,
@@ -23,6 +35,8 @@ function parseMetarStation(s: any, nwpTempC?: number): any {
     visibilityM,
     skyCover: sky,
     qnhHpa,
+    flightCategory: s.fltCat ?? null,
+    rawOb: s.rawOb ?? null,
     decodedVsNwp:
       nwpTempC != null && tempC != null
         ? { tempScarto: Math.round(Math.abs(tempC - nwpTempC) * 10) / 10, visFlag: visibilityM != null && visibilityM < 2000 }
@@ -53,132 +67,7 @@ export function parseRawMetar(raw: string, nwpTempC?: number): any {
   };
 }
 
-/** Normalize the PC bollettino JSON into a flat list of regional alert levels. */
-const LEVEL_BY_COLOR: Record<string, number> = {
-  verde: 0,
-  giallo: 1,
-  arancione: 2,
-  rosso: 3,
-};
-export function parseAllerte(data: any, regione?: string): any {
-  const records: any[] = [];
-  const push = (reg: string, livello: string, tipo: string) => {
-    const color = livello?.toLowerCase()?.trim();
-    records.push({
-      regione: reg,
-      livello,
-      colore: color,
-      livelloCodice: LEVEL_BY_COLOR[color] ?? -1,
-      tipo_rischio: tipo,
-    });
-  };
-  // Shape 1: { regioni: [{nome, allerte:[{livello, rischio}]}] }
-  const regioni = data?.regioni ?? data?.regioni_allerta ?? [];
-  if (Array.isArray(regioni)) {
-    for (const r of regioni) {
-      const nome = r.nome ?? r.regione;
-      const liste = r.allerte ?? r.rischi ?? [];
-      for (const a of liste) push(nome, a.livello ?? a.colore, a.rischio ?? a.tipo);
-    }
-  }
-  // Shape 2: flat array of {regione, livello, rischio}
-  if (!records.length && Array.isArray(data)) {
-    for (const a of data) push(a.regione ?? a.nome, a.livello ?? a.colore, a.rischio ?? a.tipo);
-  }
-  const filtered = regione ? records.filter((x) => x.regione?.toLowerCase().includes(regione.toLowerCase())) : records;
-  const maxLevel = filtered.reduce((m, x) => Math.max(m, x.livelloCodice), -1);
-  return {
-    source: "bollettino_protezionecivile",
-    allertaMax: maxLevel,
-    count: filtered.length,
-    alerts: filtered,
-    raw: data,
-  };
-}
-
 export function registerItalianSources(server: McpServer) {
-  // --- Protezione Civile allerte (Step E) ------------------------
-  server.registerTool(
-    "pc_allerte_wms",
-    {
-      title: "Protezione Civile Allerte",
-      description:
-        "Fetch the PC civil-protection alert level per region. Tries the public bollettino JSON API first; falls back to the WMS endpoint if needed. Returns a normalized list of {regione, livello, colore, tipo_rischio}. Used by skill Step E.",
-      inputSchema: {
-        regione: z.string().optional().describe("Filter by region name (e.g. 'Lombardia'). Omit for all."),
-        service: z.string().default("WMS").describe("OGC service for fallback, default WMS"),
-        request: z.string().default("GetCapabilities").describe("WMS request when falling back"),
-        version: z.string().default("1.3.0").describe("WMS version"),
-        layer: z.string().optional().describe("Layer name for WMS GetMap"),
-        bbox: z.string().optional().describe("Bounding box for WMS GetMap"),
-        width: z.coerce.number().int().default(800).optional(),
-        height: z.coerce.number().int().default(600).optional(),
-        format: z.string().default("application/json").describe("Output format"),
-      },
-      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
-      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
-    },
-    async ({ regione, service, request, version, layer, bbox, width, height, format }) => {
-      // 1) Try the public bollettino di criticità JSON API (real alert data).
-      const bulletin = await apiGet(
-        "https://api.protezionecivile.gov.it/bollettini/allerte/ultimo",
-        {}
-      );
-      if (bulletin.ok) {
-        const parsed = parseAllerte(bulletin.data, regione);
-        return toToolResult({ ...bulletin, data: parsed });
-      }
-      // 2) Fallback to WMS.
-      const r = await apiGet("https://mappe.protezionecivile.gov.it/geowebcache/service/wms", {
-        service,
-        request,
-        version,
-        layers: layer,
-        bbox,
-        width,
-        height,
-        format,
-        crs: "EPSG:4326",
-      });
-      if (!r.ok) {
-        r.error = `${r.error} — se l'endpoint è irraggiungibile, consulta https://mappe.protezionecivile.gov.it (bollettino allerte).`;
-      }
-      return toToolResult(r);
-    }
-  );
-
-  // --- DPC Radar nowcasting (Step I) -----------------------------------
-  server.registerTool(
-    "dpc_radar_vmi",
-    {
-      title: "DPC Radar VMI (nowcasting)",
-      description:
-        "Find the latest DPC radar product (VMI) and optionally download its image URL. Used by skill Step I for 0-3h nowcasting.",
-      inputSchema: {
-        productType: z.string().default("VMI").describe("Radar product type, default VMI"),
-        download: z.boolean().default(false).describe("If true, also POST downloadProduct and return the image URL"),
-      },
-      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
-      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
-    },
-    async ({ productType, download }) => {
-      const find = await apiGet("https://radar-api.protezionecivile.it/findLastProductByType", {
-        type: productType,
-      });
-      if (!find.ok || !download) return toToolResult(find);
-      const time = (find.data as any)?.time;
-      if (time === undefined) return toToolResult(find);
-      const dl = await apiPostJson("https://radar-api.protezionecivile.it/downloadProduct", {
-        productType,
-        productDate: time,
-      });
-      return toToolResult({
-        ...dl,
-        data: { find: find.data, download: dl.data },
-      });
-    }
-  );
-
   // --- CheckWX METAR/TAF (Step K, primary) -----------------------------
   server.registerTool(
     "checkwx_metar_taf",
@@ -244,7 +133,11 @@ export function registerItalianSources(server: McpServer) {
         ? payload
         : payload?.data ?? payload?.features ?? [payload];
       const stations = list.filter(Boolean).map((s: any) => {
-        if (s.raw_text) return parseMetarStation(parseRawMetar(s.raw_text, nwpTempC), nwpTempC);
+        const rawText = s.rawOb ?? s.raw_text;
+        const hasJsonFields = s.temp != null || s.temp_c != null;
+        if (rawText && !hasJsonFields) {
+          return parseMetarStation(parseRawMetar(rawText, nwpTempC), nwpTempC);
+        }
         return parseMetarStation(s, nwpTempC);
       });
       return toToolResult({ ...r, data: { stations, raw: r.data } });
@@ -316,35 +209,6 @@ export function registerItalianSources(server: McpServer) {
     async ({ sensor_id }) => {
       const path = sensor_id ? `${sensor_id}.json` : "index.json";
       const r = await apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
-      return toToolResult(r);
-    }
-  );
-
-  // --- ARPAV hydrology (Step M, TIER B) --------------------------------
-  server.registerTool(
-    "arpav_idro",
-    {
-      title: "ARPAV Hydrology Stations",
-      description:
-        "Hydrometric level from ARPA Veneto stations (e.g. Verona 124, Vicenza 108, Bassano 105). The documented REST path is https://api.arpa.veneto.it/rest/v1/meteo/stazioni/{id}/dati; if it is unreachable, use the human portal https://www.arpa.veneto.it/dati-ambientali/dati-in-tempo-reale/meteo. Used by skill Step M (TIER B).",
-      inputSchema: {
-        station_id: z.string().describe("ARPAV station id, e.g. 124"),
-        parametro: z.string().default("livello_idrometrico").describe("Parameter name"),
-        periodo: z.string().default("ultimo-giorno").describe("Period selector"),
-        base_url: z.string().optional().describe("Override base URL if the REST endpoint path differs"),
-      },
-      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
-      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
-    },
-    async ({ station_id, parametro, periodo, base_url }) => {
-      const base = base_url ?? "https://api.arpa.veneto.it";
-      const r = await apiGet(`${base}/rest/v1/meteo/stazioni/${station_id}/dati`, {
-        parametro,
-        periodo,
-      });
-      if (!r.ok) {
-        r.error = `${r.error} — REST non raggiungibile da qui; usa il portale https://www.arpa.veneto.it/dati-ambientali/dati-in-tempo-reale/meteo.`;
-      }
       return toToolResult(r);
     }
   );

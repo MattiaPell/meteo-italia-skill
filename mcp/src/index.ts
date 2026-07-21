@@ -2,6 +2,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerOpenMeteo } from "./open_meteo.js";
 import { registerItalianSources } from "./italian_sources.js";
+import { registerDpc } from "./dpc.js";
+import { registerArpa } from "./arpa.js";
+import { registerBrief } from "./brief.js";
 import { registerSummaries } from "./summaries.js";
 import {
   registerClimatology,
@@ -21,6 +24,9 @@ const server = new McpServer({
 
 registerOpenMeteo(server);
 registerItalianSources(server);
+registerDpc(server);
+registerArpa(server);
+registerBrief(server);
 registerSummaries(server);
 registerClimatology(server);
 registerBioclimaticIndices(server);

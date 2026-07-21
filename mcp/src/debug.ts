@@ -2,9 +2,10 @@ import express from "express";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { apiGet, apiPostJson, CHECKWX_API_KEY, getMetrics, getCacheStats } from "./http.js";
+import { apiGet, CHECKWX_API_KEY, getMetrics, getCacheStats } from "./http.js";
 import { summarizeForecast } from "./summaries.js";
-import { parseAllerte } from "./italian_sources.js";
+import { fetchLatestBulletin, fetchRadarLatest, fetchRadarDownload } from "./dpc.js";
+import { runBrief } from "./brief.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(here, "public");
@@ -106,45 +107,31 @@ export function startDebugServer(port: number) {
       const bytesSum = JSON.stringify(summary).length;
       return { ...raw, data: summary, compression: `${bytesRaw} -> ${bytesSum} bytes (${Math.round((1 - bytesSum / bytesRaw) * 100)}% smaller)` };
     },
-    pc_allerte: async (q) => {
-      // 1) Try the public bollettino di criticità JSON API (real alert data).
-      const bulletin = await apiGet(
-        "https://api.protezionecivile.gov.it/bollettini/allerte/ultimo",
-        {}
-      );
-      if (bulletin.ok) {
-        const parsed = parseAllerte(bulletin.data, q.regione || undefined);
-        return { ...bulletin, data: parsed };
-      }
-      // 2) Fallback to WMS.
-      const r = await apiGet("https://mappe.protezionecivile.gov.it/geowebcache/service/wms", {
-        service: q.service ?? "WMS",
-        request: q.request ?? "GetCapabilities",
-        version: q.version ?? "1.3.0",
-        layers: q.layer,
-        bbox: q.bbox,
-        width: q.width,
-        height: q.height,
-        format: q.format ?? "application/json",
-        crs: "EPSG:4326",
-      });
-      if (!r.ok) {
-        r.error = `${r.error} — se l'endpoint è irraggiungibile, consulta https://mappe.protezionecivile.gov.it (bollettino allerte).`;
-      }
-      return r;
+    pc_allerte: async () => {
+      const b = await fetchLatestBulletin();
+      return {
+        ok: b.ok,
+        url: "github.com/pcm-dpc bollettino",
+        status: b.ok ? 200 : 0,
+        data: {
+          nome: b.nome,
+          emissione: b.emissione,
+          zoneOggi: b.today.slice(0, 5),
+          zoneDomani: b.tomorrow.slice(0, 5),
+          totaleZoneOggi: b.today.length,
+        },
+        error: b.error,
+        elapsedMs: 0,
+      };
     },
     dpc_radar: async (q) => {
-      const find = await apiGet("https://radar-api.protezionecivile.it/findLastProductByType", {
-        type: q.productType ?? "VMI",
-      });
-      if (!find.ok || q.download !== "true") return find;
-      const time = (find.data as any)?.time;
-      if (time === undefined) return find;
-      const dl = await apiPostJson("https://radar-api.protezionecivile.it/downloadProduct", {
-        productType: q.productType ?? "VMI",
-        productDate: time,
-      });
-      return { ...dl, data: { find: find.data, download: dl.data } };
+      const product = q.productType ?? "VMI";
+      const latest = await fetchRadarLatest(product);
+      if (!latest.ok || q.download !== "true" || latest.time == null) {
+        return { ok: latest.ok, url: "radar-api.protezionecivile.it", status: latest.ok ? 200 : 0, data: latest, error: latest.error, elapsedMs: 0 };
+      }
+      const dl = await fetchRadarDownload(product, latest.time);
+      return { ok: dl.ok, url: dl.url, status: dl.status, data: { latest, download: dl.data }, error: dl.error, elapsedMs: dl.elapsedMs };
     },
     checkwx: (q) => {
       if (!CHECKWX_API_KEY)
@@ -173,12 +160,29 @@ export function startDebugServer(port: number) {
       const path = q.sensor_id ? `${q.sensor_id}.json` : "index.json";
       return apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
     },
-    arpav: (q) => {
-      const base = q.base_url ?? "https://api.arpa.veneto.it";
-      return apiGet(`${base}/rest/v1/meteo/stazioni/${q.station_id}/dati`, {
-        parametro: q.parametro ?? "livello_idrometrico",
-        periodo: q.periodo ?? "ultimo-giorno",
+    arpav_bollettino: () =>
+      apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
+    arpav_idro: () =>
+      apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
+    meteotrentino: (q) =>
+      apiGet(
+        `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${q.codice ?? "T0383"}`,
+        {},
+        { acceptText: true }
+      ),
+    meteo_brief: async (q) => {
+      const r = await runBrief({
+        nome: q.nome || undefined,
+        latitude: q.latitude ? Number(q.latitude) : undefined,
+        longitude: q.longitude ? Number(q.longitude) : undefined,
+        regione: q.regione || undefined,
+        days: q.days ? Number(q.days) : undefined,
+        models: q.models || undefined,
       });
+      return {
+        ok: r.ok, url: "mcp://meteo_brief", status: r.ok ? 200 : 0,
+        data: r.data ?? null, error: r.error, elapsedMs: r.elapsedMs,
+      };
     },
     eumetsat: () =>
       Promise.resolve({
@@ -297,13 +301,16 @@ const FIELDS = {
   air_quality: { latitude:"45.5", longitude:"9.2", hourly:"pm10,pm2_5,european_aqi,ozone,dust", current:"european_aqi,pm10,pm2_5", domains:"cams_europe", timezone:"Europe/Rome" },
   ensemble: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025_ensemble_mean,gfs025_ensemble_mean", hourly:"temperature_2m,temperature_2m_spread,precipitation_mean,precipitation_spread", daily:"temperature_2m_max,temperature_2m_min", timezone:"Europe/Rome", forecast_days:"7" },
   forecast_summary: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code,cape,wind_gusts_10m", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max", timezone:"Europe/Rome", forecast_days:"7" },
-  pc_allerte: { regione:"", service:"WMS", request:"GetCapabilities", version:"1.3.0", layer:"", bbox:"", width:"800", height:"600", format:"application/json" },
-  dpc_radar: { productType:"VMI", download:"false" },
+  pc_allerte: {},
+  dpc_radar: { productType:"VMI", download:"true" },
   checkwx: { icao:"LIRF,LIMC,LIPE", type:"metar" },
   aviationweather: { ids:"LIRF,LIMC,LIPE", format:"json" },
   dmi_lightning: { bbox:"6.5,44.0,14.0,47.0", limit:"1000", observed_after:"" },
   floods_it: { sensor_id:"" },
-  arpav: { station_id:"124", parametro:"livello_idrometrico", periodo:"ultimo-giorno", base_url:"https://api.arpa.veneto.it" },
+  arpav_bollettino: {},
+  arpav_idro: {},
+  meteotrentino: { codice:"T0383" },
+  meteo_brief: { nome:"Rovigo", days:"3" },
   eumetsat: {}
 };
 const fieldsEl = document.getElementById('fields');

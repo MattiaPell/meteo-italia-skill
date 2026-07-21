@@ -42,6 +42,7 @@ i nomi dei modelli Open-Meteo e debuggare le chiamate prima di usarle nella skil
 
 | Tool | Servizio | Tipo |
 |---|---|---|
+| `meteo_brief` | Aggregatore multi-fonte: NWP + allerte PC + radar + METAR + ARPA + ensemble in 1 chiamata, con divergenze calcolate. **Entry point di default per qualsiasi località.** | Esterno |
 | `open_meteo_geocode` | Open-Meteo Geocoding | Esterno |
 | `open_meteo_forecast` | Open-Meteo Forecast (raw hourly/daily) | Esterno |
 | `open_meteo_forecast_summary` | Open-Meteo Forecast (compact per-model daily summary, ~80-90% less context) | Esterno |
@@ -49,14 +50,21 @@ i nomi dei modelli Open-Meteo e debuggare le chiamate prima di usarle nella skil
 | `open_meteo_marine` | Open-Meteo Marine | Esterno |
 | `open_meteo_air_quality` | Open-Meteo Air-Quality (CAMS) | Esterno |
 | `open_meteo_ensemble` | Open-Meteo Ensemble | Esterno |
-| `pc_allerte_wms` | Protezione Civile WMS | Esterno |
-| `dpc_radar_vmi` | Radar DPC (nowcasting) | Esterno |
+| `pc_allerte` | Bollettino criticità DPC (GitHub pcm-dpc), filtro per comune/regione | Esterno |
+| `dpc_radar` | Radar-DPC REST (22 prodotti: VMI, SRI, cumulate, IR108, TEMP, VIL/ETM/POH, CAPPI, SITES) | Esterno |
 | `checkwx_metar_taf` | CheckWX METAR/TAF (richiede key) | Esterno |
 | `aviationweather_metar` | AviationWeather METAR (fallback) | Esterno |
 | `dmi_lightning` | DMI Lightning | Esterno |
 | `floods_it_monitoring` | floods.it (idro TA-A) | Esterno |
-| `arpav_idro` | ARPAV idrometria | Esterno |
+| `arpav_bollettino` | ARPAV previsione 15 zone Veneto | Esterno |
+| `arpav_idro` | ARPAV livelli idrometrici 103 stazioni (XML 48h) | Esterno |
+| `meteotrentino_osservazioni` | Meteotrentino osservazioni stazioni (P.A. Trento) | Esterno |
 | `eumetsat_satellite_info` | EUMETSAT (metadata) | Esterno |
+
+> **Breaking changes 2026-07**: rimossi `pc_allerte_wms` e `dpc_radar_vmi` (endpoint
+> defunti/parsing errato — vedi `dpc.ts` per le fonti ufficiali verificate);
+> `arpav_idro` riscritto (nuova firma e nuova fonte XML open data ARPAV);
+> `aviationweather_metar` fixato il parser dei campi JSON.
 | `meteo_climatology` | Climatologia ERA5 (110 città italiane, anomalie/sigma) | Locale |
 | `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, soglie Vite/Api/Olivo, quota neve, rischio incendi | Locale |
 | `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Nebbia, Gelicidio | Locale |

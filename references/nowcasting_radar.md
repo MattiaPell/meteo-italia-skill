@@ -12,9 +12,10 @@ Questo file descrive i riferimenti per il monitoraggio radar in tempo reale e le
 
 Utilizza i seguenti tool per il monitoraggio e l'estrapolazione radar:
 
-### `dpc_radar_vmi`
+### `dpc_radar`
 
-- **Scopo**: Ottiene l'URL dell'immagine radar VMI (Vertical Maximum Intensity) più recente elaborata dal Dipartimento della Protezione Civile Italiana per l'identificazione immediata delle aree di precipitazione attiva.
+- **Scopo**: Ottiene l'ultimo prodotto della piattaforma Radar-DPC e, con `download=true`, la pre-signed URL del GeoTIFF (valida ~5 minuti). Prodotti: VMI (riflettività max, 5min), SRI (mm/h al suolo), SRT1/CUM3-24 (cumulate), IR_108, TEMP, VIL/ETM/POH, CAPPI_1..10, SITES. REST API ufficiale: https://dpc-radar.readthedocs.io/it/latest/api.html
+- **Nota 2026-07**: sostituisce `dpc_radar_vmi`. La risposta di `findLastProductByType` è `{total, lastProducts:[{time, period}]}` dopo l'aggiornamento piattaforma del 12-01-2026; header/parametro `origin` documentato come obbligatorio.
 
 ### `meteo_reference_guidelines` (categoria: `nowcasting`)
 

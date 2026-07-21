@@ -18,6 +18,18 @@ const CACHE_TTL_MS: Record<string, number> = {
   "marine-api.open-meteo.com": 300_000,
   "air-quality-api.open-meteo.com": 300_000,
   "ensemble-api.open-meteo.com": 300_000,
+  // Radar-DPC products update every 5 min — keep the discovery call fresh.
+  "radar-api.protezionecivile.it": 120_000,
+  // DPC bulletins are published ~daily (plus evening updates).
+  "api.github.com": 1_800_000,
+  "raw.githubusercontent.com": 1_800_000,
+  // ARPA regional observations update every 10-30 min.
+  "api.arpa.veneto.it": 300_000,
+  "www.arpa.veneto.it": 300_000,
+  "dati.meteotrentino.it": 300_000,
+  "www.floods.it": 300_000,
+  "aviationweather.gov": 120_000,
+  "api.checkwx.com": 120_000,
 };
 
 export interface ApiResult {
@@ -45,7 +57,8 @@ function recordMetrics(host: string, ok: boolean, elapsedMs: number) {
   const m = (metrics[host] ??= { hits: 0, misses: 0, errors: 0, latenciesMs: [] });
   m.latenciesMs.push(elapsedMs);
   if (m.latenciesMs.length > 100) m.latenciesMs.shift();
-  if (!ok) m.errors += 1;
+  if (ok) m.misses += 1;
+  else m.errors += 1;
 }
 export function getMetrics(): Record<string, RequestMetrics> {
   return metrics;

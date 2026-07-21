@@ -12,11 +12,29 @@ Questo file descrive i riferimenti per la consultazione dei dati osservativi rea
 
 Utilizza i seguenti strumenti per accedere alle osservazioni regionali:
 
+### Copertura API verificata (2026-07)
+
+| Regione | Tool | Fonte |
+|---|---|---|
+| Veneto | `arpav_bollettino`, `arpav_idro` | ARPAV REST + XML open data (CC BY 4.0) |
+| Trentino | `meteotrentino_osservazioni` | dati.meteotrentino.it service.asmx (CC BY) |
+| Altre regioni | — (dichiarare `nonCoperto`) | Fallback: METAR + radar DPC + portali |
+
+### `arpav_bollettino`
+
+- **Scopo**: Previsione del Centro Meteorologico ARPAV per le 15 zone del Veneto (stato del cielo, precipitazioni, temperature in quota, attendibilità).
+- **Parametri**: `zona` (match parziale), `giorno` (0=oggi).
+
 ### `arpav_idro`
 
-- **Scopo**: Interroga in tempo reale la rete idrometrica della regione Veneto (ARPAV) per monitorare i livelli dei principali fiumi (Adige, Brenta, Bacchiglione, Po).
-- **Parametri**: `stationId` corrispondente alla stazione idro di interesse.
+- **Scopo**: Livelli idrometrici rete Veneto (103 stazioni, ultime 48h, trend 6h).
+- **Parametri**: `provincia`, `nome`, `latitude`+`longitude`, `limit`.
+
+### `meteotrentino_osservazioni`
+
+- **Scopo**: Dati recenti stazioni meteo P.A. Trento (tmin/tmax, pioggia, ultima temperatura) dalla stazione più vicina o per codice.
+- **Parametri**: `codice` (es. T0383) oppure `latitude`+`longitude`.
 
 ### `meteo_reference_guidelines` (categoria: `aviation` o `portals`)
 
-- **Scopo**: Ottiene i metadati generali sulle reti regionali, inclusi endpoint secondari e codifiche per l'interazione con altre ARPA regionali (es. Piemonte, Toscana, Lazio, Campania, Emilia-Romagna).
+- **Scopo**: Metadati sulle reti regionali senza API aperta verificata (Piemonte, Toscana, Lazio, Campania, Emilia-Romagna...): portali di consultazione manuale.
