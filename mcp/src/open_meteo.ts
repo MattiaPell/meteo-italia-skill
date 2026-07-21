@@ -303,4 +303,70 @@ export function registerOpenMeteo(server: McpServer) {
       return toToolResult(r);
     }
   );
+
+  // --- Flood (GloFAS) ------------------------------------------------------
+  server.registerTool(
+    "open_meteo_flood",
+    {
+      title: "Open-Meteo Flood (GloFAS)",
+      description:
+        "Simulated river discharge at 5 km resolution from 1984 up to 12 months forecast. Uses GloFAS v4. Fits Step G (risk idrogeologico). Tip: variare coordinate di ±0.1° per selezionare il corso d'acqua corretto.",
+      inputSchema: {
+        ...latLon,
+        ...openMeteoCommon,
+        daily: z.string().optional().describe("Comma-separated daily flood variables: river_discharge, river_discharge_mean, river_discharge_median, river_discharge_max, river_discharge_min, river_discharge_p25, river_discharge_p75"),
+        models: z.string().default("seamless").describe("Flood model: seamless (default, GloFAS v4), seo_v4_forecast, seo_v4_consolidated, glofas_v3_forecast, glofas_v3_consolidated, glofas_v3_seamless"),
+        ensemble: z.boolean().default(false).describe("Set true to return all 50 ensemble members"),
+      },
+      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async ({ latitude, longitude, daily, models, ensemble, timezone, past_days, forecast_days }) => {
+      const r = await apiGet("https://flood-api.open-meteo.com/v1/flood", {
+        latitude,
+        longitude,
+        daily: daily ? csv(daily) : undefined,
+        models: models ? csv(models).map(normalizeModelId) : undefined,
+        ensemble: ensemble ? "true" : undefined,
+        timezone,
+        past_days,
+        forecast_days,
+      });
+      return toToolResult(r);
+    }
+  );
+
+  // --- Seasonal (ECMWF, 7 mesi) --------------------------------------------
+  server.registerTool(
+    "open_meteo_seasonal",
+    {
+      title: "Open-Meteo Seasonal (ECMWF, 7 mesi)",
+      description:
+        "Seasonal weather forecast up to 7 months ahead (ECMWF SEAS5). 6-hourly resolution. Variables: temperature_2m, precipitation, pressure_msl, cloud_cover, geopotential_height, soil moisture/temperature. Usato per outlook climatico Step K.",
+      inputSchema: {
+        ...latLon,
+        ...openMeteoCommon,
+        seasonal: z.string().optional().describe("Comma-separated seasonal variables: temperature_2m, precipitation, pressure_msl, cloud_cover, soil_moisture_total, geopotential_height_500hPa, temperature_850hPa, soil_temperature_0_to_7cm, etc."),
+        models: z.string().default("ecmwf_seasonal_seamless").describe("Seasonal model: ecmwf_seasonal_seamless (default)"),
+        temporal_resolution: z.string().optional().describe("Time aggregation (default: hourly_6)"),
+      },
+      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async ({ latitude, longitude, seasonal, models, temporal_resolution, timezone, past_days, forecast_days }) => {
+      const params: Record<string, any> = {
+        latitude,
+        longitude,
+        timezone,
+        temporal_resolution,
+      };
+      if (seasonal) params.seasonal = csv(seasonal);
+      if (models) params.models = csv(models).map(normalizeModelId);
+      if (past_days != null) params.past_days = past_days;
+      if (forecast_days != null) params.forecast_days = forecast_days;
+
+      const r = await apiGet("https://seasonal-api.open-meteo.com/v1/seasonal", params);
+      return toToolResult(r);
+    }
+  );
 }
