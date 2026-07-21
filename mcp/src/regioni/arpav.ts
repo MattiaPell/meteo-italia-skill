@@ -60,6 +60,33 @@ export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   return stations;
 }
 
+// --- Adapter per brief.ts (Veneto) ------------------------------------------
+export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+  const [bol, idro] = await Promise.all([
+    apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
+    apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
+  ]);
+  const zoneRows = ((bol.data as any)?.data ?? [])
+    .filter((r: any) => Number(r.giorno) <= 1)
+    .map((r: any) => ({
+      zona: r.zona, giorno: r.giorno, scadenza: r.scadenza,
+      cielo: r.testo, precipitazioni: r.precipitazioni, attendibilita: r.attendibilita,
+    }));
+  let idroVicino: any = null;
+  if (idro.ok) {
+    const stazioni = parseArpavIdroXml(String(idro.data))
+      .map((s) => ({ ...s, distKm: Math.round(haversine({ lat, lon }, { lat: s.lat, lon: s.lon }) * 10) / 10 }))
+      .sort((a, b) => a.distKm - b.distKm)
+      .slice(0, 2);
+    idroVicino = stazioni;
+  }
+  return {
+    ok: bol.ok, agenzia: "ARPAV (Veneto)",
+    bollettino: { emissione: (bol.data as any)?.data?.[0]?.dataemissione ?? null, zone: zoneRows },
+    idrometrieVicine: idroVicino,
+  };
+}
+
 export function registerArpav(server: McpServer) {
   // --- ARPAV bollettino meteo per zone (Veneto) --------------------------
   server.registerTool(

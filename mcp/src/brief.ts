@@ -5,10 +5,10 @@ import { haversine } from "./geo.js";
 import { summarizeForecast } from "./summaries.js";
 import { parseMetarStation } from "./italian_sources.js";
 import { fetchLatestBulletin, fetchRadarLatest } from "./dpc.js";
-import { parseArpavIdroXml } from "./regioni/arpav.js";
-import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "./regioni/meteotrentino.js";
-import type { ArpaMarcheStation } from "./regioni/arpa-marche.js";
-import type { ArpaLombardiaStation, ArpaLombardiaObs } from "./regioni/arpa-lombardia.js";
+import { runBriefArpa as arpaVeneto } from "./regioni/arpav.js";
+import { runBriefArpa as arpaTrentino } from "./regioni/meteotrentino.js";
+import { runBriefArpa as arpaMarche } from "./regioni/arpa-marche.js";
+import { runBriefArpa as arpaLombardia } from "./regioni/arpa-lombardia.js";
 
 // Aeroporti italiani con reporting METAR attivo (coordinate ARP). Usati per
 // scegliere le stazioni di nowcasting più vicine al punto richiesto.
@@ -64,6 +64,22 @@ function sourceStatus(r: PromiseSettledResult<any>): "ok" | "errore" | "parziale
   if (v == null || v.ok === false) return "errore";
   return "ok";
 }
+
+// ---------------------------------------------------------------------------
+// ARPA adapter registry — ogni regione con API real-time esporta
+// runBriefArpa(lat, lon) dal proprio file in regioni/.
+// ---------------------------------------------------------------------------
+interface ArpaAdapter {
+  keywords: string[];
+  execute(lat: number, lon: number): Promise<any>;
+}
+
+const ARPA_ADAPTERS: ArpaAdapter[] = [
+  { keywords: ["veneto"], execute: arpaVeneto },
+  { keywords: ["trentino"], execute: arpaTrentino },
+  { keywords: ["marche"], execute: arpaMarche },
+  { keywords: ["lombardia"], execute: arpaLombardia },
+];
 
 export interface BriefParams {
   nome?: string;
@@ -138,99 +154,8 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
       });
       const regioneNorm = (regioneEff ?? "").toLowerCase();
       const arpaTask = (async (): Promise<any> => {
-        if (regioneNorm.includes("veneto")) {
-          const [bol, idro] = await Promise.all([
-            apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
-            apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
-          ]);
-          const zoneRows = ((bol.data as any)?.data ?? [])
-            .filter((r: any) => Number(r.giorno) <= 1)
-            .map((r: any) => ({
-              zona: r.zona, giorno: r.giorno, scadenza: r.scadenza,
-              cielo: r.testo, precipitazioni: r.precipitazioni, attendibilita: r.attendibilita,
-            }));
-          let idroVicino: any = null;
-          if (idro.ok) {
-            const stazioni = parseArpavIdroXml(String(idro.data))
-              .map((s) => ({ ...s, distKm: Math.round(haversine({ lat: lat!, lon: lon! }, { lat: s.lat, lon: s.lon }) * 10) / 10 }))
-              .sort((a, b) => a.distKm - b.distKm)
-              .slice(0, 2);
-            idroVicino = stazioni;
-          }
-          return {
-            ok: bol.ok, agenzia: "ARPAV (Veneto)",
-            bollettino: { emissione: (bol.data as any)?.data?.[0]?.dataemissione ?? null, zone: zoneRows },
-            idrometrieVicine: idroVicino,
-          };
-        }
-        if (regioneNorm.includes("trentino")) {
-          const list = await apiGet("https://dati.meteotrentino.it/service.asmx/listaStazioni", {}, { acceptText: true });
-          if (!list.ok) return { ok: false, agenzia: "Meteotrentino", error: list.error };
-          const stations = parseMeteoTrentinoStations(String(list.data));
-          let best: any = null;
-          for (const s of stations) {
-            const d = haversine({ lat: lat!, lon: lon! }, { lat: s.lat, lon: s.lon });
-            if (!best || d < best.distKm) best = { ...s, distKm: Math.round(d * 10) / 10 };
-          }
-          if (!best) return { ok: false, agenzia: "Meteotrentino", error: "nessuna stazione" };
-          const obs = await apiGet(
-            `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${best.codice}`,
-            {}, { acceptText: true }
-          );
-          return {
-            ok: obs.ok, agenzia: "Meteotrentino (P.A. Trento)",
-            stazione: { codice: best.codice, nome: best.nome, distKm: best.distKm, quota: best.quota },
-            osservazioni: obs.ok ? parseMeteoTrentinoObs(String(obs.data)) : null,
-          };
-        }
-        if (regioneNorm.includes("marche")) {
-          const stazioniR = await apiGet("https://apimeteo.regione.marche.it/Stazioni", { attive: true });
-          if (!stazioniR.ok) return { ok: false, agenzia: "ARPA Marche (AMAP)", error: stazioniR.error };
-          const items: any[] = (stazioniR.data as any)?.lista ?? [];
-          let best: any = null;
-          for (const s of items) {
-            const slat = s.latitudine ?? 0;
-            const slon = s.longitudine ?? 0;
-            if (!slat || !slon) continue;
-            const d = haversine({ lat: lat!, lon: lon! }, { lat: slat, lon: slon });
-            if (!best || d < best.distKm) best = { codice: s.codice, nome: s.nome, comune: s.comune, provincia: s.provincia, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10, ultimoAgg: s.fine };
-          }
-          if (!best) return { ok: false, agenzia: "ARPA Marche (AMAP)", error: "nessuna stazione vicina" };
-          const dettaglio = await apiGet(`https://apimeteo.regione.marche.it/Stazione/${best.codice}`, {});
-          return {
-            ok: true, agenzia: "ARPA Marche / AMAP Agrometeo",
-            stazioneVicina: best,
-            sensori: dettaglio.ok ? ((dettaglio.data as any)?.listaSensori?.lista ?? []).map((sen: any) => ({
-              id: sen.idSensoreStazione, tipo: sen.descrizioneClasse, giornalieri: sen.haGiornalieri,
-            })) : [],
-          };
-        }
-        if (regioneNorm.includes("lombardia")) {
-          const [stazioniR, obsR] = await Promise.allSettled([
-            apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "200" }),
-            apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
-              $where: `data >= '${new Date(Date.now() - 7200 * 1000).toISOString().replace(/\.\d{3}Z$/, "")}'`,
-              $order: "data DESC", $limit: "50",
-            }),
-          ]);
-          const stazioni: any[] = stazioniR.status === "fulfilled" && stazioniR.value.ok ? (stazioniR.value.data as any[]) ?? [] : [];
-          let bestObs: any = null;
-          for (const s of stazioni) {
-            const slat = parseFloat(s.lat) || 0;
-            const slon = parseFloat(s.lng) || 0;
-            if (!slat || !slon) continue;
-            const d = haversine({ lat: lat!, lon: lon! }, { lat: slat, lon: slon });
-            if (!bestObs || d < bestObs.distKm) bestObs = { idsensore: s.idsensore, nome: s.nomestazione, provincia: s.provincia, tipologia: s.tipologia, quota: s.quota, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10 };
-          }
-          const osservazioni: any[] = obsR.status === "fulfilled" && obsR.value.ok ? ((obsR.value.data as any[]) ?? []).filter((o: any) => o.valore !== "-999") : [];
-          return {
-            ok: true, agenzia: "ARPA Lombardia (dati.lombardia.it)",
-            stazioneVicina: bestObs,
-            osservazioniRecenti: osservazioni.slice(0, 10).map((o: any) => ({
-              data: o.data, valore: o.valore, stato: o.stato,
-            })),
-          };
-        }
+        const adapter = ARPA_ADAPTERS.find((a) => a.keywords.some((k) => regioneNorm.includes(k)));
+        if (adapter) return adapter.execute(lat!, lon!);
         return {
           ok: false, agenzia: null,
           nonCoperto: `Nessun adapter ARPA real-time per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino), Marche (AMAP), Lombardia (ARPA Lombardia). Usa METAR + radar come osservazioni.`,

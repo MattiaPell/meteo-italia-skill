@@ -70,6 +70,28 @@ export function parseMeteoTrentinoObs(xml: string): MeteoTrentinoObs {
   };
 }
 
+// --- Adapter per brief.ts (Trentino) ----------------------------------------
+export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+  const list = await apiGet("https://dati.meteotrentino.it/service.asmx/listaStazioni", {}, { acceptText: true });
+  if (!list.ok) return { ok: false, agenzia: "Meteotrentino", error: list.error };
+  const stations = parseMeteoTrentinoStations(String(list.data));
+  let best: any = null;
+  for (const s of stations) {
+    const d = haversine({ lat, lon }, { lat: s.lat, lon: s.lon });
+    if (!best || d < best.distKm) best = { ...s, distKm: Math.round(d * 10) / 10 };
+  }
+  if (!best) return { ok: false, agenzia: "Meteotrentino", error: "nessuna stazione" };
+  const obs = await apiGet(
+    `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${best.codice}`,
+    {}, { acceptText: true }
+  );
+  return {
+    ok: obs.ok, agenzia: "Meteotrentino (P.A. Trento)",
+    stazione: { codice: best.codice, nome: best.nome, distKm: best.distKm, quota: best.quota },
+    osservazioni: obs.ok ? parseMeteoTrentinoObs(String(obs.data)) : null,
+  };
+}
+
 export function registerMeteotrentino(server: McpServer) {
   // --- Meteotrentino osservazioni (P.A. Trento) ---------------------------
   server.registerTool(

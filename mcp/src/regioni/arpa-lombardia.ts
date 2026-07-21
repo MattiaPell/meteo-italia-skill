@@ -33,7 +33,7 @@ export interface ArpaLombardiaObs {
 }
 
 /** Parse station from Socrata row. */
-function parseStation(row: any): ArpaLombardiaStation {
+export function parseStation(row: any): ArpaLombardiaStation {
   return {
     idsensore: row.idsensore ?? "",
     tipologia: row.tipologia ?? "",
@@ -44,6 +44,34 @@ function parseStation(row: any): ArpaLombardiaStation {
     provincia: row.provincia ?? "",
     lat: parseFloat(row.lat) || 0,
     lon: parseFloat(row.lng) || 0,
+  };
+}
+
+// --- Adapter per brief.ts (Lombardia) --------------------------------------
+export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+  const [stazioniR, obsR] = await Promise.allSettled([
+    apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "200" }),
+    apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
+      $where: `data >= '${new Date(Date.now() - 7200 * 1000).toISOString().replace(/\.\d{3}Z$/, "")}'`,
+      $order: "data DESC", $limit: "50",
+    }),
+  ]);
+  const stazioni: any[] = stazioniR.status === "fulfilled" && stazioniR.value.ok ? (stazioniR.value.data as any[]) ?? [] : [];
+  let bestObs: any = null;
+  for (const s of stazioni) {
+    const slat = parseFloat(s.lat) || 0;
+    const slon = parseFloat(s.lng) || 0;
+    if (!slat || !slon) continue;
+    const d = haversine({ lat, lon }, { lat: slat, lon: slon });
+    if (!bestObs || d < bestObs.distKm) bestObs = { idsensore: s.idsensore, nome: s.nomestazione, provincia: s.provincia, tipologia: s.tipologia, quota: s.quota, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10 };
+  }
+  const osservazioni: any[] = obsR.status === "fulfilled" && obsR.value.ok ? ((obsR.value.data as any[]) ?? []).filter((o: any) => o.valore !== "-999") : [];
+  return {
+    ok: true, agenzia: "ARPA Lombardia (dati.lombardia.it)",
+    stazioneVicina: bestObs,
+    osservazioniRecenti: osservazioni.slice(0, 10).map((o: any) => ({
+      data: o.data, valore: o.valore, stato: o.stato,
+    })),
   };
 }
 
