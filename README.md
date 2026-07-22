@@ -32,21 +32,57 @@ Tutte le altre API (Open-Meteo, DPC Radar, DMI Lightning, floods.it, EUMETSAT) s
 
 ## Come funziona
 
-L'agente AI segue il flusso definito in `SKILL.md`:
+L'agente AI carica `SKILL.md` come istruzioni operative e usa i tool MCP per tutti i
+dati e i calcoli, seguendo il flusso:
 
 1. **Determina parametri** — luogo, periodo, variabili, use case
-2. **Geocoding** — risoluzione città italiane via Open-Meteo Geocoding API
-3. **Fetch parallelo** — previsioni multi-modello + qualità aria + allerte
-4. **Analisi contestuale** — bias noti, fenomeni locali, spread ensemble, climatologia
-5. **Report finale** — output strutturato con widget visuale
+2. **Geocoding** — risoluzione città italiane via `open_meteo_geocode`
+3. **`meteo_brief`** — aggregatore multi-fonte obbligatorio (NWP + allerte + radar + METAR + ARPA + ensemble)
+4. **Approfondimento selettivo** — solo se il brief segnala anomalie, attiva i tool dei Tier 2-3
+5. **Report finale** — output strutturato con Execution Manifest, badge confidence, widget visuale
 
-## MCP Server (opzionale ma consigliato)
+## Architettura Skill + MCP
 
-Le chiamate API e la knowledge base meteorologica sono esposte anche come **MCP server**
-in [`mcp/`](mcp/): **24 tool** (18 API esterne + 6 locali di climatologia/indici/bias)
-più una **pagina web di debug** (`METEO_MCP_DEBUG_PORT`, default 3000) per ispezionare
-richieste e risposte. Se il tuo agente supporta MCP, usa i tool al posto dei fetch
-grezzi e dei file di reference — risparmi fino al 95% di context window.
+Il progetto è composto da due livelli:
+
+| Livello | File | Ruolo |
+|---|---|---|
+| **Skill** | `SKILL.md` | Workflow operativo: parametri → geocoding → tier system → analisi → report. È il "prompt di sistema" che l'agente carica. |
+| **MCP Server** | `mcp/` | **35 tool** che espongono API esterne + knowledge base (climatologia, bias, indici, fenomeni locali). L'agente chiama i tool invece di leggere file o fare fetch HTTP. |
+
+L'MCP server **non è opzionale**: la skill è progettata per delegare dati e calcoli ai
+tool MCP. Senza, l'agente può solo produrre stime qualitative usando la propria
+conoscenza interna (`🧠 Stima interna`).
+
+### Perché Skill + MCP — evoluzione dal modello full-skill
+
+Prima del refactor MCP-first (commit `f0e169b`, luglio 2026), l'intera knowledge base
+era in file Markdown sotto `references/`. L'agente doveva caricare tutto in contesto
+prima di ogni analisi.
+
+| | Pre-MCP (797750a) | Post-MCP (HEAD) |
+|---|---|---|
+| **SKILL.md** | 891 righe | 657 righe |
+| **references/** | 19 file, **4.314 righe** (tabelle, scale, soglie, codici ICAO, formule...) | 16 file, **460 righe** (placeholder minimi che puntano ai tool MCP) |
+| **Knowledge base** | Caricata in contesto a ogni esecuzione | Dentro i tool MCP, interrogata on-demand |
+| **Chiamate API** | Fetch HTTP grezzi dall'agente | Tool MCP con error handling, retry, cache, rate-limit |
+| **Context window** | ~5.200 righe di istruzioni fisse | ~1.100 righe + solo i dati pertinenti alla località |
+| **Risparmio contesto** | — | **~79%** sulle istruzioni, **~95%** complessivo includendo dati selettivi |
+
+**Benefici concreti del modello MCP-first:**
+
+1. **Contesto libero per l'analisi**: l'agente usa i token risparmiati per generare
+   report più dettagliati invece di processare tabelle di riferimento.
+2. **Calcoli server-side**: Heat Index, Wind Chill, quota neve, fenomeni locali e
+   divergenze tra fonti sono pre-calcolati dal server MCP — l'agente non deve
+   implementare formule.
+3. **Aggiornamenti trasparenti**: correggere un bias o una soglia richiede solo un
+   aggiornamento del server MCP, non una modifica alla skill.
+4. **Fallback automatici**: se CheckWX non risponde, il tool passa automaticamente
+   a AviationWeather; se un endpoint ARPA è down, il `meteo_brief` lo dichiara
+   `nonCoperto` senza rompere il flusso.
+5. **Debug**: la pagina web su `METEO_MCP_DEBUG_PORT` permette di ispezionare ogni
+   chiamata API con URL, risposta JSON e latenza — impossibile con fetch grezzi.
 
 Il tool centrale è **`meteo_brief`**: per qualsiasi località italiana aggrega in una
 sola chiamata NWP multi-modello, allerte Protezione Civile per il comune, radar DPC,
@@ -112,6 +148,8 @@ METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
 | `open_meteo_marine` | Open-Meteo Marine | API |
 | `open_meteo_air_quality` | Open-Meteo Air-Quality (CAMS) | API |
 | `open_meteo_ensemble` | Open-Meteo Ensemble | API |
+| `open_meteo_flood` | Open-Meteo Flood (GloFAS v4, portata fiumi a 5km) | API |
+| `open_meteo_seasonal` | Open-Meteo Seasonal (ECMWF SEAS5, outlook fino a 7 mesi) | API |
 | `pc_allerte` | Protezione Civile — bollettino criticità (GitHub pcm-dpc), filtro comune/regione | API |
 | `dpc_radar` | Radar-DPC REST (22 prodotti, GeoTIFF pre-signed) | API |
 | `checkwx_metar_taf` | CheckWX METAR/TAF (richiede key) | API |
@@ -121,11 +159,23 @@ METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
 | `arpav_bollettino` | ARPAV previsione 15 zone Veneto | API |
 | `arpav_idro` | ARPAV livelli idrometrici 103 stazioni (Veneto) | API |
 | `meteotrentino_osservazioni` | Meteotrentino osservazioni stazioni (P.A. Trento) | API |
+| `arpae_bollettino` | ARPAE bollettino meteo Emilia-Romagna (fino 4gg) | API |
+| `arpafvg_previsioni` | ARPA FVG/OSMER previsioni regionali | API |
+| `arpafvg_stazione` | ARPA FVG/OSMER dati stazione (T, vento, pioggia, neve) | API |
+| `arpa_marche_stazioni` | ARPA Marche/AMAP elenco stazioni agrometeo | API |
+| `arpa_marche_stazione` | ARPA Marche/AMAP dettaglio stazione con sensori | API |
+| `arpa_marche_grandezze` | ARPA Marche/AMAP grandezze misurate | API |
+| `arpa_lombardia_stazioni` | ARPA Lombardia elenco stazioni idro-nivo-meteo | API |
+| `arpa_lombardia_osservazioni` | ARPA Lombardia osservazioni recenti | API |
+| `arpa_piemonte_stazioni` | ARPA Piemonte elenco stazioni (336 stazioni) | API |
 | `eumetsat_satellite_info` | EUMETSAT (metadata satellite) | API |
 
 > **Breaking changes 2026-07**: `pc_allerte_wms` → `pc_allerte` (host bollettini defunto,
 > nuova fonte GitHub pcm-dpc), `dpc_radar_vmi` → `dpc_radar` (parsing risposta REST
-> aggiornata alla nuova piattaforma), `arpav_idro` nuova firma. Dettagli in SKILL.md.
+> aggiornata alla nuova piattaforma), `arpav_idro` nuova firma.
+> **Nuovi 2026-07**: `meteo_brief`, `arpae_bollettino`, `arpafvg_previsioni`,
+> `arpafvg_stazione`, `arpa_marche_*`, `arpa_lombardia_*`, `arpa_piemonte_stazioni`,
+> `open_meteo_flood`, `open_meteo_seasonal`. Dettagli in SKILL.md.
 | `meteo_climatology` | Climatologia ERA5 (110 città, anomalie/σ) | Locale |
 | `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, quota neve, incendi | Locale |
 | `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Nebbia | Locale |
@@ -137,13 +187,15 @@ METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
 
 Tutti gli endpoint contattati dal server MCP (elenco completo e verificato; l'host originale `api.protezionecivile.gov.it` è stato rimosso perché il DNS è-morto).
 
-**Open-Meteo (NWP, clima, marine, qualità aria, ensemble)**
+**Open-Meteo (NWP, clima, marine, qualità aria, ensemble, alluvioni, stagionale)**
 - `https://geocoding-api.open-meteo.com/v1/search` — geocoding città italiane
 - `https://api.open-meteo.com/v1/forecast` — forecast multi-modello (Step A, meteo_brief)
 - `https://archive-api.open-meteo.com/v1/archive` — ERA5 historical / climatologia (Step B)
 - `https://marine-api.open-meteo.com/v1/marine` — mare e SST (Step F)
 - `https://air-quality-api.open-meteo.com/v1/air-quality` — CAMS europee (Step H)
 - `https://ensemble-api.open-meteo.com/v1/ensemble` — spread probabilistico (Step J, meteo_brief)
+- `https://flood-api.open-meteo.com/v1/flood` — GloFAS v4 (portata fiumi a 5km, 50 membri ensemble)
+- `https://seasonal-api.open-meteo.com/v1/seasonal` — ECMWF SEAS5 (outlook stagionale 6-ore, fino a 7 mesi)
 
 **Protezione Civile — bollettino di criticità (allerte)**
 - `https://api.github.com/repos/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica` — discovery ultimo stamp via git tree API (repo ufficiale del DPC)
@@ -179,6 +231,28 @@ Tutti gli endpoint contattati dal server MCP (elenco completo e verificato; l'ho
   - `https://dati.meteotrentino.it/service.asmx/listaStazioni` — anagrafica stazioni (XML)
   - `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice={COD}` — dati recenti stazione
   - Portale: `https://www.meteotrentino.it`
+- Emilia-Romagna (ARPAE, open data CC BY):
+  - `https://apps.arpae.it/REST/meteo_bollettini/` — API Eve REST: bollettino meteo ultimo + storico
+  - `https://dati.arpae.it/it/dataset/bollettino-testuale-previsioni-meteo` — catalogo open data
+  - Portale: `https://www.arpae.it`
+- Friuli-Venezia Giulia (ARPA FVG / OSMER):
+  - `http://dev.meteo.fvg.it/xml/previsioni/PW{YYYYMMDD}.xml` — previsioni XML bilingue (it/en/de/sl/fur)
+  - `http://dev.meteo.fvg.it/xml/stazioni/{CODICE}.xml` — osservazioni stazione real-time
+  - WFS anagrafica: `https://serviziogc.regione.fvg.it/WMS_TERRITORIO/wfs` (309 stazioni, EPSG:6708)
+  - Portale: `https://dev.meteo.fvg.it`
+- Marche (AMAP Agrometeo, CC BY):
+  - `https://apimeteo.regione.marche.it/Stazioni` — anagrafica stazioni (JSON)
+  - `https://apimeteo.regione.marche.it/Stazione/{COD}` — dettaglio stazione con sensori
+  - `https://apimeteo.regione.marche.it/Grandezze` — grandezze misurate (unità, codici)
+  - Portale: `https://meteo.regione.marche.it/OpenData`
+- Lombardia (ARPA Lombardia, CC BY 4.0):
+  - `https://www.dati.lombardia.it/resource/nf78-nj6b.json` — stazioni idro-nivo-meteo (Socrata API)
+  - `https://www.dati.lombardia.it/resource/647i-nhxk.json` — osservazioni sensori (Socrata API)
+  - Portale: `https://www.arpalombardia.it`
+- Piemonte (ARPA Piemonte, CC BY):
+  - `https://utility.arpa.piemonte.it/meteoidro/stazione_meteorologica/` — 336 stazioni (Django REST)
+  - `https://utility.arpa.piemonte.it/meteoidro/dati_giornalieri_meteo/` — dati giornalieri
+  - Portale: `https://www.arpa.piemonte.it`
 - Altre regioni: nessuna API pubblica verificata. Fallback = METAR + radar DPC + portali umani (vedi `references/arpa_network.md`).
 
 **Satellite (metadata-only)**
@@ -209,11 +283,13 @@ Per dettagli su build, test, MCP Inspector e debug API → [`mcp/README.md`](mcp
 | **Fenomeni locali** | Riconoscimento automatico di foehn, bora, scirocco, tramontana, libeccio, grandine padana, neve appenninica, temporali adriatici |
 | **Allerte** | Integrazione allerte da fonti pubbliche per regione (solo informativo) |
 | **Qualità aria** | Dati CAMS via Open-Meteo AQ API |
+| **Rischio idraulico** | Portata fluviale simulata GloFAS v4 a 5km (fino a 12 mesi, 50 membri ensemble) |
+| **Outlook stagionale** | Tendenze climatiche ECMWF SEAS5 fino a 7 mesi |
 | **Matrice affidabilità** | Affidabilità forecast per tipo di evento × orizzonte temporale |
 | **Bias noti** | Calibrazione per macroarea italiana con bias documentati per modello e stagione |
 | **METAR/TAF** | Validazione forecast con dati aeroportuali osservati (CheckWX API) |
 | **Lightning Detection** | Nowcasting temporali con fulmini in tempo reale (DMI API) |
-| **Dati Idrologici** | Monitoraggio fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
+| **Dati Idrologici** | Monitoraggio fiumi e rischio alluvioni (floods.it + ARPAV + GloFAS) |
 | **Immagini Satellite** | Validazione visiva nowcasting con Meteosat (EUMETSAT) |
 
 ## Modelli Supportati

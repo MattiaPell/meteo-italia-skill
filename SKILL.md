@@ -19,12 +19,12 @@ climatologia di riferimento (ERA5) e bias noti dei modelli.
 
 ## Bootstrap obbligatorio
 
-⚠️ **STRATEGIA MCP-FIRST OBBLIGATORIA (RACCOMANDATA)**:
-L'intero progetto adotta una filosofia **MCP-First**. Tutti i file presenti sotto `references/` sono stati ridotti a file placeholder minimi. L'intera base di conoscenza dettagliata (tabelle, scale, regole di calcolo e soglie) è stata migrata all'interno del server MCP (`meteo-italia-mcp-server`) per risparmiare oltre il 95% di context window ed evitare rallentamenti dell'agente.
+⚠️ **STRATEGIA MCP-FIRST OBBLIGATORIA**:
+L'intero progetto adotta una filosofia **MCP-First**. Tutti i file presenti sotto `references/` sono file placeholder minimi che puntano ai tool MCP. L'intera base di conoscenza dettagliata (tabelle, scale, regole di calcolo, soglie, codici, bias) è stata migrata all'interno del server MCP (`meteo-italia-mcp-server`), riducendo il contesto di ~79% rispetto al modello pre-MCP (da 4.314 a 460 righe di reference).
 
 Se il server MCP è disponibile nell'ambiente, **NON caricare alcun file di reference in contesto**. Usa direttamente i tool MCP dedicati per ottenere climatologia, indici bioclimatici avanzati, bias dei modelli, affidabilità, linee guida, e riconoscimento dei fenomeni locali al volo.
 
-Se l'ambiente non supporta l'MCP, l'agente dovrà fare affidamento sulle proprie capacità interne (Stima interna) o sui file minimi presenti nella cartella `references/` che indicano i riferimenti generali dei tool.
+Se l'ambiente non supporta MCP, l'agente opererà in modalità `🧠 Stima interna` — basandosi esclusivamente sulla propria conoscenza del modello, senza accesso a dati reali. In questo caso, **dichiarare esplicitamente** il badge `🔴 STIMA` nel report e non produrre numeri specifici senza fonte verificata.
 
 ---
 
@@ -52,6 +52,7 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 | B (Climatologia ERA5) | `meteo_climatology` / `open_meteo_archive` | Query norme ERA5 di capoluoghi italiani / Archive raw |
 | E (allerte) | `pc_allerte` | Bollettino criticità DPC (GitHub pcm-dpc), filtro per comune/regione |
 | F (marine) | `open_meteo_marine` | Open-Meteo Marine |
+| G (flood / GloFAS) | `open_meteo_flood` | Portata fiumi simulata GloFAS v4 a 5km (fino a 12 mesi forecast, 50 membri) |
 | H (CAMS) | `open_meteo_air_quality` | Open-Meteo Air-Quality |
 | J (ensemble) | `open_meteo_ensemble` | Open-Meteo Ensemble |
 | I (radar) | `dpc_radar` | Radar-DPC REST (22 prodotti, pre-signed GeoTIFF) |
@@ -61,7 +62,13 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 | M (idro Veneto) | `arpav_idro` | ARPAV livelli idrometrici 103 stazioni (XML 48h) |
 | D (ARPA Veneto) | `arpav_bollettino` | Previsione ARPAV per 15 zone (Centro Meteorologico) |
 | D (ARPA Trentino) | `meteotrentino_osservazioni` | Osservazioni stazioni P.A. Trento (open data XML) |
+| D (ARPA Emilia-Romagna) | `arpae_bollettino` | Bollettino ARPAE fino 4gg (provinciale + regionale + tabellare) |
+| D (ARPA FVG) | `arpafvg_previsioni` / `arpafvg_stazione` | Previsioni OSMER + osservazioni stazione (XML) |
+| D (ARPA Marche) | `arpa_marche_stazioni` / `arpa_marche_stazione` / `arpa_marche_grandezze` | Stazioni AMAP Agrometeo (JSON, CC BY) |
+| D (ARPA Lombardia) | `arpa_lombardia_stazioni` / `arpa_lombardia_osservazioni` | Osservazioni Socrata Open Data (CC BY 4.0) |
+| D (ARPA Piemonte) | `arpa_piemonte_stazioni` | Stazioni meteo (336 stazioni, Django REST, CC BY) |
 | N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
+| **Outlook stagionale** | `open_meteo_seasonal` | ECMWF SEAS5 (6-ore, fino a 7 mesi) |
 | **Ref: Climatologia** | `meteo_climatology` | Ottieni medie e anomalie storiche per 110 città italiane |
 | **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, Quota Neve, Rischio Incendi (NFR) |
 | **Ref: Fenomeni Locali** | `meteo_local_phenomena` | Riconoscimento automatico Bora, Foehn, Scirocco, Nebbia, Gelicidio, ecc. |
@@ -75,7 +82,7 @@ I template `GET https://...` nei singoli step restano come **riferimento/overrid
 > - `pc_allerte_wms` → **`pc_allerte`**: l'host `api.protezionecivile.gov.it` non esiste più (DNS morto). Nuova fonte: bollettino ufficiale DPC dal repo GitHub pcm-dpc, con filtro per comune esatto (non solo regione).
 > - `dpc_radar_vmi` → **`dpc_radar`**: la risposta di `findLastProductByType` è cambiata dopo l'aggiornamento piattaforma del 12-01-2026 (`lastProducts[0].time`, non più `time` top-level — il vecchio tool non scaricava mai nulla). Ora 22 prodotti, header `origin` obbligatorio, download GeoTIFF pre-signed.
 > - `arpav_idro`: nuova firma (provincia/nome/lat-lon). Il vecchio path `/rest/v1/meteo/stazioni/{id}/dati` risponde 404.
-> - Nuovi: `meteo_brief` (aggregatore multi-fonte, STEP 0), `arpav_bollettino`, `meteotrentino_osservazioni`.
+> - **Nuovi**: `meteo_brief` (aggregatore multi-fonte, STEP 0), `arpav_bollettino`, `meteotrentino_osservazioni`, `arpae_bollettino`, `arpafvg_previsioni`, `arpafvg_stazione`, `arpa_marche_*` (3 tool), `arpa_lombardia_*` (2 tool), `arpa_piemonte_stazioni`, `open_meteo_flood` (GloFAS v4), `open_meteo_seasonal` (ECMWF SEAS5).
 > - Fix: `aviationweather_metar` — il parser ignorava i campi JSON reali (`temp`, `rawOb`, `visib`): le stazioni uscivano vuote.
 
 ---
@@ -166,8 +173,8 @@ Se `allertaMaxOggi` ≥1 (gialla) segnala nel report e attiva gli Step condizion
 #### TIER 2 (Condizionali ad alta priorità)
 
 #### D — Osservazioni ARPA
-> **Via MCP (già incluse in `meteo_brief`):** `arpav_bollettino` (Veneto, previsione Centro Meteorologico per 15 zone), `meteotrentino_osservazioni` (Trentino, dati stazione più vicina), `arpav_idro` (Veneto, livelli idrometrici).
-Copertura API real-time verificata oggi: **Veneto (ARPAV)** e **Trentino (Meteotrentino)**. Per le altre regioni il brief dichiara `nonCoperto` e le osservazioni di riferimento diventano METAR (Step K) + radar DPC (Step I): dichiaralo nel report. Non inventare dati ARPA per regioni non coperte.
+> **Via MCP (già incluse in `meteo_brief`):** `arpav_bollettino` (Veneto, previsione Centro Meteorologico per 15 zone), `meteotrentino_osservazioni` (Trentino, dati stazione più vicina), `arpav_idro` (Veneto, livelli idrometrici), `arpae_bollettino` (Emilia-Romagna), `arpafvg_previsioni` / `arpafvg_stazione` (FVG/OSMER), `arpa_marche_stazioni` / `arpa_marche_stazione` (Marche/AMAP), `arpa_lombardia_stazioni` / `arpa_lombardia_osservazioni` (Lombardia), `arpa_piemonte_stazioni` (Piemonte).
+Copertura API real-time verificata oggi: **Veneto (ARPAV)**, **Trentino (Meteotrentino)**, **Emilia-Romagna (ARPAE)**, **Friuli-Venezia Giulia (OSMER)**, **Marche (AMAP)**, **Lombardia**, **Piemonte**. Per le altre regioni il brief dichiara `nonCoperto` e le osservazioni di riferimento diventano METAR (Step K) + radar DPC (Step I): dichiaralo nel report. Non inventare dati ARPA per regioni non coperte.
 Se disponibile, confronta con il forecast delle ore precedenti → stima bias locale del giorno.
 
 #### F — Dati marini (solo se costa o use case mare/nautica)
@@ -253,12 +260,13 @@ Mappa esplicita del monitoraggio:
 
 **Attiva sempre per:** allerta PC ≥ gialla per rischio idrogeologico/idraulico (Step E), precipitazioni previste >30mm/24h da Step A, precipitazioni cumulate 7gg >100mm (dallo storico in C), use case agricoltura/cantieri/viabilità/nautica. **Altrimenti:** disattiva.
 
-### TIER A (API real-time)
+### TIER A (API real-time + GloFAS)
 
-> **Via MCP:** `floods_it_monitoring` (sensor_id opzionale) per floods.it; `arpav_idro` (station_id, parametro, periodo) per ARPAV.
+> **Via MCP:** `floods_it_monitoring` (sensor_id opzionale) per floods.it; `arpav_idro` (station_id, parametro, periodo) per ARPAV; `open_meteo_flood` (daily, models, ensemble) per portata simulata GloFAS v4 su qualsiasi corso d'acqua italiano a 5km di risoluzione.
 
 **Trentino-Alto Adige:** `floods_it_monitoring` (sensor_id opzionale).
 **Veneto:** `arpav_idro` (provincia / nome / latitude+longitude, limit). Restituisce livello attuale, livello 6h fa e trend per le stazioni della rete idrometrica ARPAV (Adige, Piave, Brenta, Bacchiglione, Po...). Filtra per nome fiume o stazione più vicina alle coordinate.
+**Italia (qualsiasi bacino):** `open_meteo_flood` con `models="seamless"` (GloFAS v4) restituisce portata giornaliera del fiume nel punto coordinate. Variare lat/lon di ±0.1° per selezionare il corso d'acqua corretto.
 
 ### TIER B (soglie manuali + ARPA)
 

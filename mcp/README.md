@@ -2,8 +2,10 @@
 
 MCP server (TypeScript) + pagina web di debug che wrappa tutte le API esterne
 usate dalla skill `meteo-italia`: Open-Meteo (forecast, geocoding, archive,
-marine, air-quality, ensemble) e le fonti italiane (Protezione Civile allerte/radar,
-CheckWX METAR/TAF, AviationWeather, DMI fulmini, floods.it, ARPAV, EUMETSAT).
+marine, air-quality, ensemble, flood/GloFAS, seasonal), reti ARPA regionali
+(Veneto, Trentino, Emilia-Romagna, FVG, Marche, Lombardia, Piemonte),
+Protezione Civile (allerte/radar), CheckWX METAR/TAF, AviationWeather,
+DMI fulmini, floods.it, EUMETSAT. 35 tool totali (29 API + 6 locali).
 
 ## Build
 
@@ -38,39 +40,67 @@ i nomi dei modelli Open-Meteo e debuggare le chiamate prima di usarle nella skil
 `CHECKWX_API_KEY`. Senza key, il tool ritorna un errore esplicito e puoi usare
 `aviationweather_metar` as fallback senza autenticazione.
 
-## Tool esposti
+## Tool esposti (35 totali: 29 API + 6 locali)
 
-| Tool | Servizio | Tipo |
+### Open-Meteo (9 tool)
+
+| Tool | Descrizione | Tipo |
 |---|---|---|
-| `meteo_brief` | Aggregatore multi-fonte: NWP + allerte PC + radar + METAR + ARPA + ensemble in 1 chiamata, con divergenze calcolate. **Entry point di default per qualsiasi località.** | Esterno |
-| `open_meteo_geocode` | Open-Meteo Geocoding | Esterno |
-| `open_meteo_forecast` | Open-Meteo Forecast (raw hourly/daily) | Esterno |
-| `open_meteo_forecast_summary` | Open-Meteo Forecast (compact per-model daily summary, ~80-90% less context) | Esterno |
-| `open_meteo_archive` | Open-Meteo Archive (ERA5) | Esterno |
-| `open_meteo_marine` | Open-Meteo Marine | Esterno |
-| `open_meteo_air_quality` | Open-Meteo Air-Quality (CAMS) | Esterno |
-| `open_meteo_ensemble` | Open-Meteo Ensemble | Esterno |
-| `pc_allerte` | Bollettino criticità DPC (GitHub pcm-dpc), filtro per comune/regione | Esterno |
+| `open_meteo_geocode` | Geocoding città italiane | Esterno |
+| `open_meteo_forecast` | Forecast multi-modello (raw hourly/daily) | Esterno |
+| `open_meteo_forecast_summary` | Forecast compact per-model daily summary (~90% meno contesto) | Esterno |
+| `open_meteo_archive` | Archive ERA5 (climatologia) | Esterno |
+| `open_meteo_marine` | Dati marini (onde, SST) | Esterno |
+| `open_meteo_air_quality` | Qualità aria CAMS (PM2.5/PM10, O3, NO2, pollini) | Esterno |
+| `open_meteo_ensemble` | Ensemble probabilistico (spread, membri) | Esterno |
+| `open_meteo_flood` | Rischio idraulico GloFAS v4 (portata fiumi, 5km) | Esterno |
+| `open_meteo_seasonal` | Outlook stagionale ECMWF SEAS5 (fino a 7 mesi) | Esterno |
+
+### Fonti italiane — Protezione Civile, METAR, fulmini, satellite (7 tool)
+
+| Tool | Descrizione | Tipo |
+|---|---|---|
+| `meteo_brief` | **Aggregatore multi-fonte**: NWP + allerte PC + radar + METAR + ARPA + ensemble in 1 chiamata. Entry point di default. | Esterno |
+| `pc_allerte` | Bollettino criticità DPC (GitHub pcm-dpc), filtro comune/regione | Esterno |
 | `dpc_radar` | Radar-DPC REST (22 prodotti: VMI, SRI, cumulate, IR108, TEMP, VIL/ETM/POH, CAPPI, SITES) | Esterno |
 | `checkwx_metar_taf` | CheckWX METAR/TAF (richiede key) | Esterno |
-| `aviationweather_metar` | AviationWeather METAR (fallback) | Esterno |
-| `dmi_lightning` | DMI Lightning | Esterno |
-| `floods_it_monitoring` | floods.it (idro TA-A) | Esterno |
-| `arpav_bollettino` | ARPAV previsione 15 zone Veneto | Esterno |
-| `arpav_idro` | ARPAV livelli idrometrici 103 stazioni (XML 48h) | Esterno |
-| `meteotrentino_osservazioni` | Meteotrentino osservazioni stazioni (P.A. Trento) | Esterno |
-| `eumetsat_satellite_info` | EUMETSAT (metadata) | Esterno |
+| `aviationweather_metar` | AviationWeather METAR (fallback, no auth) | Esterno |
+| `dmi_lightning` | DMI Lightning (fulmini, nowcasting temporali) | Esterno |
+| `floods_it_monitoring` | floods.it idrologia Trentino-Alto Adige | Esterno |
 
-> **Breaking changes 2026-07**: rimossi `pc_allerte_wms` e `dpc_radar_vmi` (endpoint
-> defunti/parsing errato — vedi `dpc.ts` per le fonti ufficiali verificate);
-> `arpav_idro` riscritto (nuova firma e nuova fonte XML open data ARPAV);
-> `aviationweather_metar` fixato il parser dei campi JSON.
+### Reti ARPA regionali (13 tool)
+
+| Tool | Regione | Descrizione | Tipo |
+|---|---|---|---|
+| `arpav_bollettino` | Veneto | Previsione Centro Meteorologico per 15 zone | Esterno |
+| `arpav_idro` | Veneto | Livelli idrometrici 103 stazioni (XML 48h) | Esterno |
+| `meteotrentino_osservazioni` | Trentino | Osservazioni stazioni P.A. Trento | Esterno |
+| `arpae_bollettino` | Emilia-Romagna | Bollettino meteo fino 4gg (regionale + provinciale) | Esterno |
+| `arpafvg_previsioni` | Friuli-Venezia Giulia | Previsioni OSMER (zone, simboli, probabilità) | Esterno |
+| `arpafvg_stazione` | Friuli-Venezia Giulia | Dati osservati stazione (T, vento, pioggia, neve) | Esterno |
+| `arpa_marche_stazioni` | Marche | Elenco stazioni AMAP Agrometeo | Esterno |
+| `arpa_marche_stazione` | Marche | Dettaglio stazione con sensori | Esterno |
+| `arpa_marche_grandezze` | Marche | Grandezze misurate (unità, codici) | Esterno |
+| `arpa_lombardia_stazioni` | Lombardia | Elenco stazioni idro-nivo-meteo (Socrata) | Esterno |
+| `arpa_lombardia_osservazioni` | Lombardia | Osservazioni recenti (T, pioggia, vento, umidità) | Esterno |
+| `arpa_piemonte_stazioni` | Piemonte | Elenco stazioni meteo (336 stazioni, CC BY) | Esterno |
+| `eumetsat_satellite_info` | — | EUMETSAT metadata satellite (collection, canali) | Esterno |
+
+### Knowledge base locale (6 tool)
+
+| Tool | Descrizione | Tipo |
+|---|---|---|
 | `meteo_climatology` | Climatologia ERA5 (110 città italiane, anomalie/sigma) | Locale |
 | `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, soglie Vite/Api/Olivo, quota neve, rischio incendi | Locale |
 | `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Nebbia, Gelicidio | Locale |
 | `meteo_model_tuning` | Pesi zone, bias modelli, correzione UHI | Locale |
 | `meteo_event_reliability` | Matrice affidabilità forecast per orizzonte/tipo evento | Locale |
 | `meteo_reference_guidelines` | Tabelle statiche (models, marine, air_quality, mountain, hydro, nowcasting, satellite, lightning, aviation, portals) | Locale |
+
+> **Breaking changes 2026-07**: rimossi `pc_allerte_wms` e `dpc_radar_vmi` (endpoint
+> defunti/parsing errato). Nuovi: `meteo_brief`, `arpae_bollettino`, `arpafvg_*`,
+> `arpa_marche_*`, `arpa_lombardia_*`, `arpa_piemonte_*`, `open_meteo_flood`,
+> `open_meteo_seasonal`.
 
 Ogni tool ritorna `structuredContent` con `{ ok, url, status, data, elapsedMs }`.
 
