@@ -25,3 +25,8 @@ Usa i seguenti tool per l'analisi climatologica e bioclimatica:
 ### `meteo_bioclimatic_indices`
 
 - **Scopo**: Calcola gli indici agrometeorologici e bioclimatici (es. Heat Index, Wind Chill, Growing Degree Days GDD, bilancio idrico a 7gg) confrontandoli con le soglie storiche per contesti specifici (apicoltura, viticoltura, selvicoltura, ecc.).
+
+### `open_meteo_seasonal`
+
+- **Scopo**: Outlook climatico stagionale ECMWF SEAS5 con risoluzione 6-ore fino a 7 mesi. Usato per tendenze climatiche di medio-lungo termine (es. anomalie termiche stagionali, precipitazioni cumulate attese).
+- **Parametri**: `latitude`+`longitude`, `seasonal` (temperature_2m, precipitation, pressure_msl...), `models` (ecmwf_seasonal_seamless).

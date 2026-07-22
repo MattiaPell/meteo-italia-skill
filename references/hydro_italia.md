@@ -12,6 +12,11 @@ Questo file descrive i riferimenti per il monitoraggio idrometrico dei principal
 
 Usa i seguenti tool per monitorare i fiumi e confrontare i livelli con le soglie di allertamento:
 
+### `open_meteo_flood`
+
+- **Scopo**: Portata fluviale simulata GloFAS v4 a risoluzione 5km su qualsiasi corso d'acqua italiano, dal 1984 fino a 12 mesi di forecast. Supporta 50 membri ensemble. Variare le coordinate di ±0.1° per selezionare il corso d'acqua corretto.
+- **Parametri**: `latitude`+`longitude`, `daily` (river_discharge varianti), `models` (seamless/default, seo_v4_*, glofas_v3_*), `ensemble` (true per 50 membri).
+
 ### `floods_it_monitoring`
 
 - **Scopo**: Recupera in tempo reale i livelli idrometrici e le portate per le stazioni del Trentino-Alto Adige (Adige, Sarca, ecc.).
