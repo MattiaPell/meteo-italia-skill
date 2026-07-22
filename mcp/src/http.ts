@@ -269,10 +269,11 @@ export function buildUrl(
 
 /** Format an ApiResult as MCP tool content (text + structured). */
 export function toToolResult(result: ApiResult) {
-  const text = JSON.stringify(result, null, 2);
+  const { cached, ...clean } = result;
+  const text = JSON.stringify(clean, null, 2);
   return {
     content: [{ type: "text" as const, text }],
-    structuredContent: result,
+    structuredContent: clean,
     isError: !result.ok,
   };
 }

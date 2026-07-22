@@ -315,18 +315,18 @@ export function registerOpenMeteo(server: McpServer) {
         ...latLon,
         ...openMeteoCommon,
         daily: z.string().optional().describe("Comma-separated daily flood variables: river_discharge, river_discharge_mean, river_discharge_median, river_discharge_max, river_discharge_min, river_discharge_p25, river_discharge_p75"),
-        models: z.string().default("seamless").describe("Flood model: seamless (default, GloFAS v4), seo_v4_forecast, seo_v4_consolidated, glofas_v3_forecast, glofas_v3_consolidated, glofas_v3_seamless"),
+        model: z.string().optional().describe("Flood model (default: GloFAS v4 Seamless). Valid: seo_v4_forecast, seo_v4_consolidated, glofas_v3_seamless, glofas_v3_forecast, glofas_v3_consolidated"),
         ensemble: z.boolean().default(false).describe("Set true to return all 50 ensemble members"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ latitude, longitude, daily, models, ensemble, timezone, past_days, forecast_days }) => {
+    async ({ latitude, longitude, daily, model, ensemble, timezone, past_days, forecast_days }) => {
       const r = await apiGet("https://flood-api.open-meteo.com/v1/flood", {
         latitude,
         longitude,
         daily: daily ? csv(daily) : undefined,
-        models: models ? csv(models).map(normalizeModelId) : undefined,
+        model: model ?? undefined,
         ensemble: ensemble ? "true" : undefined,
         timezone,
         past_days,
