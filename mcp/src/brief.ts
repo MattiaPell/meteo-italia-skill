@@ -164,7 +164,7 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
         if (adapter) return adapter.execute(lat!, lon!);
         return {
           ok: false, agenzia: null,
-          nonCoperto: `Nessun adapter ARPA real-time per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino), Marche (AMAP), Lombardia (ARPA Lombardia). Usa METAR + radar come osservazioni.`,
+          nonCoperto: `Nessun adapter ARPA real-time per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino), Marche (AMAP), Lombardia (ARPA Lombardia), Friuli Venezia Giulia (ARPA FVG/OSMER), Emilia-Romagna (ARPAE), Piemonte (ARPA Piemonte). Usa METAR + radar come osservazioni.`,
         };
       })();
 
@@ -345,7 +345,7 @@ export function registerBrief(server: McpServer) {
     {
       title: "Brief Meteo Multi-Fonte (default per qualsiasi località italiana)",
       description:
-        "UNICO tool da chiamare per una richiesta meteo su una località italiana: aggrega in parallelo (1) previsione multi-modello Open-Meteo con consensus e spread, (2) allerte Protezione Civile per il comune, (3) stato radar DPC, (4) METAR delle 3 stazioni ICAO più vicine, (5) osservazioni/bollettino ARPA regionale quando disponibili (Veneto, Trentino), (6) spread ensemble. Ogni fonte riporta il suo stato (ok/errore/non coperta) e le divergenze tra fonti sono calcolate automaticamente. Usa questo PRIMA di qualsiasi approfondimento con i tool singoli.",
+        "UNICO tool da chiamare per una richiesta meteo su una località italiana: aggrega in parallelo (1) previsione multi-modello Open-Meteo con consensus e spread, (2) allerte Protezione Civile per il comune, (3) stato radar DPC, (4) METAR delle 3 stazioni ICAO più vicine, (5) osservazioni/bollettino ARPA regionale quando disponibili (Veneto, Trentino, Marche, Lombardia, Friuli Venezia Giulia, Emilia-Romagna, Piemonte), (6) spread ensemble. Ogni fonte riporta il suo stato (ok/errore/non coperta) e le divergenze tra fonti sono calcolate automaticamente. Usa questo PRIMA di qualsiasi approfondimento con i tool singoli.",
       inputSchema: {
         nome: z.string().optional().describe("Nome località (es. 'Rovigo'). Se manca latitude/longitude, viene geocodificata in Italia."),
         latitude: z.coerce.number().optional().describe("Lat (salta geocoding)"),
