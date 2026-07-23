@@ -1,4 +1,4 @@
-# Meteo Italia Skill ⛅
+# Meteo Italia Skill (+ MCP)⛅
 
 ---
 ⚠️ USO PERSONALE E INFORMATIVO
