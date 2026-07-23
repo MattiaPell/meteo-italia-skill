@@ -70,14 +70,15 @@ export function extractZoneRegionMap(html: string): Map<string, string> {
   const map = new Map<string, string>();
   // Handle both <b> and <strong> tags (DPC format may change)
   const re = /<(?:b|strong)>([^<]{2,40})<\/(?:b|strong)>\s*:\s*([^<]+)/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
+  let m: RegExpExecArray | null = re.exec(html);
+  while (m !== null) {
     const regione = m[1].trim();
     if (/CRITICA|RISCHIO|ALLERTA/i.test(regione)) continue;
     for (const zona of m[2].split(",")) {
       const z = zona.trim().replace(/\.$/, "");
       if (z) map.set(normalizeName(z), regione);
     }
+    m = re.exec(html);
   }
   return map;
 }

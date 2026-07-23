@@ -56,7 +56,10 @@ export interface RequestMetrics {
 
 const metrics: Record<string, RequestMetrics> = {};
 function recordMetrics(host: string, ok: boolean, elapsedMs: number) {
-  const m = (metrics[host] ??= { hits: 0, misses: 0, errors: 0, latenciesMs: [] });
+  if (!(host in metrics)) {
+    metrics[host] = { hits: 0, misses: 0, errors: 0, latenciesMs: [] };
+  }
+  const m = metrics[host];
   m.latenciesMs.push(elapsedMs);
   if (m.latenciesMs.length > 100) m.latenciesMs.shift();
   if (ok) m.hits += 1;
@@ -121,8 +124,10 @@ async function requestWithRetry(
     const hit = cache.get(cacheKey(url));
     if (hit && hit.expires > Date.now()) {
       cacheHits += 1;
-      const m = (metrics[host] ??= { hits: 0, misses: 0, errors: 0, latenciesMs: [] });
-      m.hits += 1;
+      if (!(host in metrics)) {
+        metrics[host] = { hits: 0, misses: 0, errors: 0, latenciesMs: [] };
+      }
+      metrics[host].hits += 1;
       return { ...hit.result, cached: true };
     }
     cacheMisses += 1;
