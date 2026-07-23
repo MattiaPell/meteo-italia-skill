@@ -50,7 +50,7 @@ const ICAO_STATIONS: Array<{ icao: string; nome: string; lat: number; lon: numbe
   { icao: "LIBG", nome: "Taranto Grottaglie", lat: 40.52, lon: 17.4 },
 ];
 
-const DEFAULT_MODELS = "ecmwf_ifs025,icon_seamless,gfs_seamless,ukmo_seamless,gem_seamless";
+const DEFAULT_MODELS = "italia_meteo_arpae_icon_2i,ecmwf_ifs025,icon_seamless,gfs_seamless,meteofrance_seamless";
 
 function nearestIcao(lat: number, lon: number, n: number) {
   return ICAO_STATIONS.map((s) => ({
@@ -79,11 +79,11 @@ interface ArpaAdapter {
 
 const ARPA_ADAPTERS: ArpaAdapter[] = [
   { keywords: ["veneto"], execute: arpaVeneto },
-  { keywords: ["trentino"], execute: arpaTrentino },
+  { keywords: ["trentino", "p.a. trento", "p.a. bolzano", "bolzano", "trento"], execute: arpaTrentino },
   { keywords: ["marche"], execute: arpaMarche },
   { keywords: ["lombardia"], execute: arpaLombardia },
-  { keywords: ["friuli", "fvg"], execute: arpaFvg },
-  { keywords: ["emilia", "romagna"], execute: arpaEr },
+  { keywords: ["friuli", "fvg", "venezia giulia"], execute: arpaFvg },
+  { keywords: ["emilia", "romagna", "emilia-romagna"], execute: arpaEr },
   { keywords: ["piemonte"], execute: arpaPiemonte },
 ];
 
@@ -153,7 +153,7 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
       });
       const ensembleTask = apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
         latitude: lat, longitude: lon,
-        models: ["ecmwf_ifs025_ensemble_mean", "icon_seamless"],
+        models: ["ecmwf_ifs025_ensemble_mean"],
         hourly: ["temperature_2m_spread", "precipitation", "precipitation_spread"],
         timezone: "Europe/Rome",
         forecast_days: days,
@@ -201,6 +201,10 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
           status: "ok",
           modelli: chosenModels,
           giorni: perDay,
+          scoreOggi: perDay[0]?.score ?? null,
+          flagsOggi: perDay[0]?.flags ?? [],
+          scoreDomani: perDay[1]?.score ?? null,
+          flagsDomani: perDay[1]?.flags ?? [],
           current: raw?.current ?? null,
           url: nwpR.value.url,
         };
@@ -263,18 +267,14 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
         metar = { status: "errore", error: metarR.value.error };
       }
 
-      // Ensemble spread
+      // Ensemble spread (ECMWF only — ICON has no public ensemble on Open-Meteo)
       let ensemble: any = { status: sourceStatus(ensembleR) };
       if (ensembleR.status === "fulfilled" && ensembleR.value.ok) {
         const h = (ensembleR.value.data as any)?.hourly ?? {};
-        const ensModels = ["ecmwf_ifs025_ensemble_mean", "icon_seamless"];
-        const grab = (base: string) =>
-          ensModels
-            .flatMap((m) => {
-              const v = h[`${base}_${m}`] ?? (ensModels.length === 1 ? h[base] : undefined);
-              return Array.isArray(v) ? v : [];
-            })
-            .filter((v): v is number => typeof v === "number");
+        const grab = (base: string) => {
+          const v = h[`${base}_ecmwf_ifs025_ensemble_mean`] ?? h[base];
+          return Array.isArray(v) ? v.filter((x: any) => typeof x === "number") : [];
+        };
         const tSpread = grab("temperature_2m_spread");
         const pMean = grab("precipitation");
         const pSpread = grab("precipitation_spread");
@@ -283,7 +283,8 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
           tempSpreadMaxC: tSpread.length ? Math.round(Math.max(...tSpread) * 10) / 10 : null,
           precipMeanTotMm: pMean.length ? Math.round(pMean.reduce((a, b) => a + b, 0) * 10) / 10 : null,
           precipSpreadMaxMm: pSpread.length ? Math.round(Math.max(...pSpread) * 10) / 10 : null,
-          modelli: ["ecmwf_ifs025_ensemble_mean", "icon_seamless"],
+          modelli: ["ecmwf_ifs025_ensemble_mean"],
+          nota: "Solo ECMWF ha ensemble pubblico su Open-Meteo. ICON è deterministico.",
         };
       }
 
