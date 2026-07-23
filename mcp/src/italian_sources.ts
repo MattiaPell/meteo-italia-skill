@@ -54,7 +54,11 @@ export function parseRawMetar(raw: string, nwpTempC?: number): any {
   const temp = raw.match(/\b(\d{2})\/(\d{2})\b/);
   const wind = raw.match(/(\d{3})(\d{2})(?:G(\d{2}))?KT/);
   const cavok = /CAVOK/.test(raw);
-  const visMatch = cavok ? null : raw.match(/\b(\d{4})\b/);
+  // Visibility is the 4-digit number AFTER the wind group (KT).
+  // Match "KT" then optional spaces, then 4-5 digits (9999 = ≥10km, 10000 = 10km).
+  // Avoid matching digits inside the wind group (e.g. 36012KT → 3601 would be wrong).
+  const afterWind = wind ? raw.slice(raw.indexOf("KT") + 2) : raw;
+  const visMatch = cavok ? null : afterWind.match(/^\s*(\d{4,5})\b/);
   const visibilityM = visMatch ? parseInt(visMatch[1], 10) : null;
   return {
     raw_text: raw,
@@ -74,7 +78,7 @@ export function registerItalianSources(server: McpServer) {
     {
       title: "CheckWX METAR/TAF",
       description:
-        "Decoded METAR/TAF from CheckWX for one or more ICAO airports. Requires CHECKWX_API_KEY env var. Used by skill Step K.",
+        "Decoded METAR/TAF from CheckWX for one or more ICAO airports. Requires CHECKWX_API_KEY env var. Used by skill Step K. Falls back automatically to aviationweather_metar if key is missing or API fails.",
       inputSchema: {
         icao: z.string().describe("Comma-separated ICAO codes, e.g. LIRF,LIMC,LIPE"),
         type: z.enum(["metar", "taf"]).default("metar").describe("Product type"),
@@ -84,25 +88,42 @@ export function registerItalianSources(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ icao, type, nwpTempC }) => {
-      if (!CHECKWX_API_KEY) {
+      const codes = icao.split(",").map((x) => x.trim().toUpperCase()).join(",");
+
+      // Try CheckWX first if key is available
+      if (CHECKWX_API_KEY) {
+        const r = await apiGet(`https://api.checkwx.com/v2/${type}/${codes}/decoded`, {}, {
+          headers: { "X-API-KEY": CHECKWX_API_KEY },
+        });
+        if (r.ok) {
+          const arr = Array.isArray((r.data as any)?.data) ? (r.data as any).data : [(r.data as any)?.data];
+          const stations = arr.filter(Boolean).map((s: any) => parseMetarStation(s, nwpTempC));
+          return toToolResult({ ...r, data: { stations, raw: r.data, source: "checkwx" } });
+        }
+      }
+
+      // Fallback to aviationweather.gov (no auth)
+      const fallback = await apiGet("https://aviationweather.gov/api/data/metar", {
+        ids: codes, format: "json",
+      });
+      if (!fallback.ok) {
         return toToolResult({
-          ok: false,
-          url: "https://api.checkwx.com",
-          status: 0,
-          data: null,
-          error:
-            "CHECKWX_API_KEY non impostata. Imposta la variabile d'ambiente o usa aviationweather_metar come fallback.",
-          elapsedMs: 0,
+          ok: false, url: "https://api.checkwx.com + https://aviationweather.gov",
+          status: 0, data: null, error: "Entrambe le fonti METAR non disponibili (CheckWX + AviationWeather)",
+          elapsedMs: fallback.elapsedMs,
         });
       }
-      const codes = icao.split(",").map((x) => x.trim().toUpperCase()).join(",");
-      const r = await apiGet(`https://api.checkwx.com/v2/${type}/${codes}/decoded`, {}, {
-        headers: { "X-API-KEY": CHECKWX_API_KEY },
+      const payload = fallback.data as any;
+      const list = Array.isArray(payload) ? payload : payload?.data ?? payload?.features ?? [payload];
+      const stations = list.filter(Boolean).map((s: any) => {
+        const rawText = s.rawOb ?? s.raw_text;
+        const hasJsonFields = s.temp != null || s.temp_c != null;
+        if (rawText && !hasJsonFields) {
+          return parseMetarStation(parseRawMetar(rawText, nwpTempC), nwpTempC);
+        }
+        return parseMetarStation(s, nwpTempC);
       });
-      if (!r.ok) return toToolResult(r);
-      const arr = Array.isArray((r.data as any)?.data) ? (r.data as any).data : [(r.data as any)?.data];
-      const stations = arr.filter(Boolean).map((s: any) => parseMetarStation(s, nwpTempC));
-      return toToolResult({ ...r, data: { stations, raw: r.data } });
+      return toToolResult({ ...fallback, data: { stations, raw: fallback.data, source: "aviationweather_fallback" } });
     }
   );
 

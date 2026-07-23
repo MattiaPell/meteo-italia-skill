@@ -195,6 +195,38 @@ export function startDebugServer(port: number) {
         },
         elapsedMs: 0,
       }),
+    arpae_bollettino: () =>
+      apiGet("https://apps.arpae.it/REST/meteo_bollettini/", {}),
+    arpafvg_previsioni: (q) => {
+      const date = q.date ?? new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      return apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${date}.xml`, {}, { acceptText: true });
+    },
+    arpafvg_stazione: (q) =>
+      apiGet(`http://dev.meteo.fvg.it/xml/stazioni/${q.codice ?? "UDI"}.xml`, {}, { acceptText: true }),
+    arpa_marche_stazioni: () =>
+      apiGet("https://apimeteo.regione.marche.it/Stazioni", {}),
+    arpa_marche_stazione: (q) =>
+      apiGet(`https://apimeteo.regione.marche.it/Stazione/${q.codice ?? ""}`, {}),
+    arpa_lombardia_stazioni: () =>
+      apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { "$limit": "10" }),
+    arpa_lombardia_osservazioni: () =>
+      apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", { "$limit": "10", "$order": "data_osservazione DESC" }),
+    arpa_piemonte_stazioni: () =>
+      apiGet("https://utility.arpa.piemonte.it/meteoidro/stazione_meteorologica/", { format: "json" }),
+    open_meteo_flood: (q) =>
+      apiGet("https://flood-api.open-meteo.com/v1/flood", {
+        latitude: q.latitude ?? "45.44",
+        longitude: q.longitude ?? "12.34",
+        daily: q.daily ?? "river_discharge",
+        timezone: "Europe/Rome",
+      }),
+    open_meteo_seasonal: (q) =>
+      apiGet("https://seasonal-api.open-meteo.com/v1/seasonal", {
+        latitude: q.latitude ?? "41.9",
+        longitude: q.longitude ?? "12.5",
+        daily: q.daily ?? "temperature_2m_max",
+        timezone: "Europe/Rome",
+      }),
   };
 
   app.get("/api/services", (_req, res) => res.json(Object.keys(services)));
@@ -311,7 +343,17 @@ const FIELDS = {
   arpav_idro: {},
   meteotrentino: { codice:"T0383" },
   meteo_brief: { nome:"Rovigo", days:"3" },
-  eumetsat: {}
+  eumetsat: {},
+  arpae_bollettino: {},
+  arpafvg_previsioni: { date: new Date().toISOString().slice(0, 10).replace(/-/g, "") },
+  arpafvg_stazione: { codice:"UDI" },
+  arpa_marche_stazioni: {},
+  arpa_marche_stazione: { codice:"" },
+  arpa_lombardia_stazioni: {},
+  arpa_lombardia_osservazioni: {},
+  arpa_piemonte_stazioni: {},
+  open_meteo_flood: { latitude:"45.44", longitude:"12.34", daily:"river_discharge" },
+  open_meteo_seasonal: { latitude:"41.9", longitude:"12.5", daily:"temperature_2m_max" },
 };
 const fieldsEl = document.getElementById('fields');
 const serviceEl = document.getElementById('service');
