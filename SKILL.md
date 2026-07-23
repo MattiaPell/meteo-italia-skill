@@ -70,11 +70,14 @@ METEO_MCP_DEBUG_PORT=3000 node dist/index.js
 | N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
 | **Outlook stagionale** | `open_meteo_seasonal` | ECMWF SEAS5 (6-ore, fino a 7 mesi) |
 | **Ref: Climatologia** | `meteo_climatology` | Ottieni medie e anomalie storiche per 110 città italiane |
-| **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, Quota Neve, Rischio Incendi (NFR) |
-| **Ref: Fenomeni Locali** | `meteo_local_phenomena` | Riconoscimento automatico Bora, Foehn, Scirocco, Nebbia, Gelicidio, ecc. |
+| **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, Quota Neve, Rischio Incendi (NFR), Energia FV/Eolico |
+| **Ref: Fenomeni Locali** | `meteo_local_phenomena` | Riconoscimento automatico Bora, Foehn, Scirocco, Maestrale, Nebbia, Gelicidio, Libeccio, Tramontana, Garbino, Breva/Tivano, ecc. |
 | **Ref: Bias e Pesi** | `meteo_model_tuning` | Recupera pesi zone, bias modelli e correzione UHI (Isola di Calore) |
 | **Ref: Affidabilità** | `meteo_event_reliability` | Matrice di affidabilità forecast per orizzonte e tipo evento |
-| **Ref: Linee Guida e Scale** | `meteo_reference_guidelines` | Tabelle statiche per categorie: `models`, `marine`, `air_quality`, `mountain`, `hydro`, `nowcasting`, `satellite`, `lightning`, `aviation`, `portals` |
+| **Ref: Linee Guida e Scale** | `meteo_reference_guidelines` | Tabelle statiche per categorie: `models`, `marine`, `air_quality`, `mountain`, `hydro`, `nowcasting`, `satellite`, `lightning`, `aviation`, `portals`, `pollen`, `uv`, `construction`, `tourism` |
+| **Ref: Verifica Storica** | `meteo_verification` | Confronta forecast passati con ERA5 reanalysis: MAE, bias, RMSE per T e precipitazioni (3-30gg) |
+| **Ref: Confronto Annuale** | `meteo_year_compare` | Confronta meteo attuale vs stesso periodo anno scorso (ERA5): anomalie T e precip, trend |
+| **Ref: Pollini** | `meteo_pollen` | Previsione pollini Italia: livello allergeni attivi, rischio, raccomandazioni (calendario + meteo) |
 
 I template `GET https://...` nei singoli step restano come **riferimento/override**: usali solo se il tool MCP non è disponibile.
 
@@ -82,8 +85,9 @@ I template `GET https://...` nei singoli step restano come **riferimento/overrid
 > - `pc_allerte_wms` → **`pc_allerte`**: l'host `api.protezionecivile.gov.it` non esiste più (DNS morto). Nuova fonte: bollettino ufficiale DPC dal repo GitHub pcm-dpc, con filtro per comune esatto (non solo regione).
 > - `dpc_radar_vmi` → **`dpc_radar`**: la risposta di `findLastProductByType` è cambiata dopo l'aggiornamento piattaforma del 12-01-2026 (`lastProducts[0].time`, non più `time` top-level — il vecchio tool non scaricava mai nulla). Ora 22 prodotti, header `origin` obbligatorio, download GeoTIFF pre-signed.
 > - `arpav_idro`: nuova firma (provincia/nome/lat-lon). Il vecchio path `/rest/v1/meteo/stazioni/{id}/dati` risponde 404.
-> - **Nuovi**: `meteo_brief` (aggregatore multi-fonte, STEP 0), `arpav_bollettino`, `meteotrentino_osservazioni`, `arpae_bollettino`, `arpafvg_previsioni`, `arpafvg_stazione`, `arpa_marche_*` (3 tool), `arpa_lombardia_*` (2 tool), `arpa_piemonte_stazioni`, `open_meteo_flood` (GloFAS v4), `open_meteo_seasonal` (ECMWF SEAS5).
+> - **Nuovi**: `meteo_brief` (aggregatore multi-fonte, STEP 0), `arpav_bollettino`, `meteotrentino_osservazioni`, `arpae_bollettino`, `arpafvg_previsioni`, `arpafvg_stazione`, `arpa_marche_*` (3 tool), `arpa_lombardia_*` (2 tool), `arpa_piemonte_stazioni`, `open_meteo_flood` (GloFAS v4), `open_meteo_seasonal` (ECMWF SEAS5), `meteo_verification` (confronto forecast vs ERA5).
 > - Fix: `aviationweather_metar` — il parser ignorava i campi JSON reali (`temp`, `rawOb`, `visib`): le stazioni uscivano vuote.
+> - Fix: `checkwx_metar_taf` — fallback automatico a `aviationweather_metar` se key mancante o API fallisce.
 
 ---
 
@@ -145,7 +149,7 @@ Esegui i passi seguendo l'ordine dei Tier:
 > **Via MCP:** `open_meteo_forecast` (latitude, longitude, models, hourly, daily, current, past_days, forecast_days, **level**).
 > Il tool gestisce internamente la strategia a 3 livelli: con `level="auto"` (default) decide da solo se salire a Livello 2 (trigger `weather_code` 80-99, CAPE >500, precip >10mm, vento >50km/h) o Livello 3 (use case specializzato). La risposta include `levelUsed` e `triggerActivated`.
 > **Per il report di sintesi usa `open_meteo_forecast_summary`**: ritorna max/min T, precip totale, probabilità pioggia max, CAPE max, raffica max, conteggio ore temporale/precipitazione, **score 0-100 e flag** per giorno e modello — ~80-90% meno contesto del raw. Usalo di default.
-> Nomi modello validi: `ecmwf_ifs`, `ecmwf_ifs025`, `icon_seamless`, `gfs_seamless`, `metno_nordic`, `ukmo_seamless`, `gem_seamless`, `jma_seamless` (default `best_match`).
+> Nomi modello validi: `italia_meteo_arpae_icon_2i`, `ecmwf_ifs`, `ecmwf_ifs025`, `icon_seamless`, `gfs_seamless`, `meteofrance_seamless`, `arpege_europe`, `icon_d2`, `meteoswiss_icon_seamless`, `geosphere_seamless` (default: `italia_meteo_arpae_icon_2i,ecmwf_ifs025,icon_seamless,gfs_seamless,meteofrance_seamless`).
 
 Vedi `references/models.md` per il set corretto per macroarea.
 
@@ -326,6 +330,7 @@ Vedi `references/satellite.md` per canali SEVIRI, guida interpretazione pattern,
 - **Raffinamenti**: quota neve (`meteo_bioclimatic_indices`), UHI (`meteo_model_tuning`), traversia costiera (`references/uv_marine_recent.md`), fenomeni locali (`meteo_local_phenomena`).
 - **Ensemble**: quando attivo Step J, confronta ensemble mean vs deterministico, calcola p10/mediana/p90, probabilità eventi e applica la gerarchia ensemble–deterministico.
 - **Nowcasting + NWP blending**: 0-15min radar, 15-45min 80/20, 45-90min 40/60, 90-150min 10/90, >150min NWP. Se divergenze a 1-3h, segnala incertezza.
+- **Verifica storica bias**: usa `meteo_verification` (lat/lon, days, models) per calcolare MAE/bias/RMSE dei modelli sugli ultimi N giorni vs ERA5. Utile per: (1) validare se un modello è affidabile per la zona, (2) stimare il bias locale da applicare al forecast, (3) confrontare modelli su una specifica località.
 
 ### 5. Output
 

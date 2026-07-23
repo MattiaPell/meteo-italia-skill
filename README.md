@@ -175,13 +175,16 @@ METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
 > aggiornata alla nuova piattaforma), `arpav_idro` nuova firma.
 > **Nuovi 2026-07**: `meteo_brief`, `arpae_bollettino`, `arpafvg_previsioni`,
 > `arpafvg_stazione`, `arpa_marche_*`, `arpa_lombardia_*`, `arpa_piemonte_stazioni`,
-> `open_meteo_flood`, `open_meteo_seasonal`. Dettagli in SKILL.md.
+> `open_meteo_flood`, `open_meteo_seasonal`, `meteo_verification`. Dettagli in SKILL.md.
 | `meteo_climatology` | Climatologia ERA5 (110 città, anomalie/σ) | Locale |
-| `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, quota neve, incendi | Locale |
-| `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Nebbia | Locale |
+| `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, quota neve, incendi, energia FV/Eolico | Locale |
+| `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Libeccio, Tramontana, Garbino, Breva/Tivano, Nebbia, Gelicidio | Locale |
 | `meteo_model_tuning` | Pesi zone, bias modelli, correzione UHI | Locale |
 | `meteo_event_reliability` | Matrice affidabilità forecast | Locale |
-| `meteo_reference_guidelines` | Tabelle statiche di riferimento | Locale |
+| `meteo_reference_guidelines` | Tabelle statiche (pollen, uv, construction, tourism, ecc.) | Locale |
+| `meteo_verification` | Verifica storica: forecast vs ERA5 (MAE, bias, RMSE) | Locale |
+| `meteo_year_compare` | Confronto annuale: meteo attuale vs anno scorso (ERA5) | Locale |
+| `meteo_pollen` | Previsione pollini Italia (calendario + meteo) | Locale |
 
 ### Base URL utilizzati dal progetto
 

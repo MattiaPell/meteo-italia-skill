@@ -27,6 +27,7 @@ Tutta la comunicazione con l'agente DEVE usare **caveman mode** (stile compresso
 - **Error handling**: usa `MeteoError` per errori strutturati. Mai catch vuoti.
 - **Niente over-engineering**: fix minimale, niente refactor mentre si fixa.
 - **Duplicazione > astrazione prematura**.
+- **Sync documentazione**: ogni modifica ai tool MCP (nuovo tool, rename, cambio firma, cambio comportamento) DEVE essere riflessa in `SKILL.md` (tool mapping table + breaking changes) e `README.md` (tool table). Nessuna eccezione.
 
 ### 4. Git
 
