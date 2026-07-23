@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { toToolResult, latLon, ApiResult } from "./http.js";
+import { toToolResult, latLon, ApiResult, apiGet } from "./http.js";
 import { getDistance } from "./geo.js";
 import { climatologyData } from "./climatology_data.js";
 
@@ -113,7 +113,7 @@ export function registerBioclimaticIndices(server: McpServer) {
         et07dMm: z.coerce.number().min(0).optional().describe("7-day FAO-ET0 evapotranspiration in mm"),
         soilMoisture0to1cm: z.coerce.number().min(0).max(1).optional().describe("Soil moisture (0-1cm) in m³/m³"),
         soilTemp6cm: z.coerce.number().optional().describe("Soil temperature at 6cm depth in °C"),
-        useCase: z.enum(["agricoltura", "apicoltura", "vite", "olivo", "solare", "eolico", "montagna_sci", "spiaggia_mare"]).optional().describe("Target use case for threshold checks"),
+        useCase: z.enum(["agricoltura", "apicoltura", "vite", "olivo", "solare", "eolico", "montagna_sci", "spiaggia_mare", "energia_fv", "energia_eolico"]).optional().describe("Target use case for threshold checks"),
         seaSurfaceTempC: z.coerce.number().optional().describe("Sea Surface Temperature in °C (for beach/marine)"),
         uvIndex: z.coerce.number().min(0).optional().describe("UV Index max value"),
         snowfallSumCm: z.coerce.number().min(0).optional().describe("Fresh snowfall sum in cm (for ski)"),
@@ -121,6 +121,7 @@ export function registerBioclimaticIndices(server: McpServer) {
         freezingLevelHeightM: z.coerce.number().optional().describe("Freezing level (Zero Termico) height in meters"),
         precipIntensityMmH: z.coerce.number().optional().describe("Precipitation intensity in mm/h or cm/h"),
         isNarrowValley: z.boolean().optional().describe("Whether the location is in a narrow alpine/apennine valley"),
+        cloudCover: z.coerce.number().min(0).max(100).optional().describe("Cloud cover in % (for energy use cases)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -144,6 +145,7 @@ export function registerBioclimaticIndices(server: McpServer) {
       freezingLevelHeightM,
       precipIntensityMmH,
       isNarrowValley,
+      cloudCover,
     }) => {
       const start = Date.now();
       const indices: Record<string, any> = {};
@@ -337,6 +339,57 @@ export function registerBioclimaticIndices(server: McpServer) {
           thresholds.eolicoStato = {
             windSpeedMs: Math.round(vMs * 10) / 10,
             stato: eolicoVolo,
+          };
+        }
+      }
+
+      if (useCase === "energia_fv") {
+        let fvScore = 100;
+        const debugFlags: string[] = [];
+        if (cloudCover !== undefined) {
+          if (cloudCover > 80) { fvScore -= 60; debugFlags.push("cielo_coperto"); }
+          else if (cloudCover > 50) { fvScore -= 30; debugFlags.push("parzialmente_nuvoloso"); }
+          else if (cloudCover > 20) { fvScore -= 10; debugFlags.push("poche_nuvole"); }
+        }
+        if (uvIndex !== undefined) {
+          if (uvIndex < 2) { fvScore -= 20; debugFlags.push("uv_basso"); }
+          else if (uvIndex > 8) { fvScore += 5; }
+        }
+        if (tempC > 35) { fvScore -= 10; debugFlags.push("caldo_estremo_efficienza_ridotta"); }
+        indices.energiaFv = {
+          score: Math.max(0, Math.min(100, fvScore)),
+          stima: fvScore >= 70 ? "Produzione eccellente" : fvScore >= 40 ? "Produzione moderata" : "Produzione ridotta",
+          flags: debugFlags,
+          nota: "Stima qualitativa basata su copertura e UV. Per stima kWh/kWp servono dati GHI/DNI orari.",
+        };
+      }
+
+      if (useCase === "energia_eolico") {
+        if (windSpeedKmH !== undefined) {
+          const vMs = windSpeedKmH / 3.6;
+          const cutIn = 3, rated = 12, cutOut = 25;
+          let powerPct = 0;
+          let stato = "Nessuna produzione";
+          if (vMs >= cutOut) {
+            powerPct = 0;
+            stato = "CUT-OUT (vento troppo forte, turbina frenata)";
+          } else if (vMs >= rated) {
+            powerPct = 100;
+            stato = "Produzione massima (rated power)";
+          } else if (vMs >= cutIn) {
+            powerPct = Math.round(Math.pow((vMs - cutIn) / (rated - cutIn), 3) * 100);
+            stato = `Produzione ${powerPct}% (curva cubica)`;
+          } else {
+            stato = "Sotto cut-in (nessuna produzione)";
+          }
+          indices.energiaEolico = {
+            windSpeedMs: Math.round(vMs * 10) / 10,
+            powerPercent: powerPct,
+            stato,
+            cutInMs: cutIn,
+            ratedMs: rated,
+            cutOutMs: cutOut,
+            nota: "Curva di potenza semplificata (cubica tra cut-in e rated). Per calcolo preciso serve curva specifica turbina.",
           };
         }
       }
@@ -806,6 +859,89 @@ export function registerReferenceGuidelines(server: McpServer) {
           ],
           consensusRules: "Confrontare almeno 3 portali indipendenti. Se divergono, dichiarare esplicitamente l'incertezza e mostrare gli scenari alternativi."
         };
+      } else if (category === "pollen") {
+        data = {
+          pollenCalendarItaly: {
+            ontano: { nord: "gen–mar", centro_sud: "dic–feb", peak: "feb" },
+            betulla: { nord: "mar–apr", centro_sud: "feb–mar", peak: "mar" },
+            cipresso: { nord: "feb–apr", centro_sud: "gen–mar", peak: "mar" },
+            graminacee: { nord: "apr–giu", centro_sud: "mar–mag", peak: "mag" },
+            olivo: { nord: "mag–giu", centro_sud: "apr–mag", peak: "mag" },
+            parietaria: { nord: "mar–ott", centro_sud: "feb–nov", peak: "apr" },
+            artemisia: { nord: "lug–set", centro_sud: "lug–ago", peak: "ago" },
+            ambrosia: { nord: "ago–set", centro_sud: "ago–set", peak: "set" }
+          },
+          thresholdsAia: [
+            { type: "Graminacee", low: "0.6–9.9", medium: "10–29.9", high: "≥30", unit: "grani/m³" },
+            { type: "Olivo", low: "0.6–4.9", medium: "5–24.9", high: "≥25", unit: "grani/m³" },
+            { type: "Betulle/Ontano", low: "0.6–15.9", medium: "16–49.9", high: "≥50", unit: "grani/m³" },
+            { type: "Parietaria", low: "2.0–19.9", medium: "20–69.9", high: "≥70", unit: "grani/m³" },
+            { type: "Ambrosia", low: "0.1–4.9", medium: "5–24.9", high: "≥25", unit: "grani/m³" },
+            { type: "Cipresso", low: "4.0–29.9", medium: "30–89.9", high: "≥90", unit: "grani/m³" }
+          ],
+          weatherFactors: "Pioggia abbassa polline (lavaggio aria). Vento >15 km/h aumenta dispersione. T >15°C e secco favorisce rilascio. Nebbia intrappola polline vicino al suolo."
+        };
+      } else if (category === "uv") {
+        data = {
+          uvScale: [
+            { range: "0–2", level: "Basso", color: "🟢", protection: "Nessuna necessaria", burnTimeFitzpatrick2: "60+ min" },
+            { range: "3–5", level: "Moderato", color: "🟡", protection: "Occhiali, crema SPF 30", burnTimeFitzpatrick2: "30–45 min" },
+            { range: "6–7", level: "Alto", color: "🟠", protection: "SPF 50, cappello, ombra 11–16", burnTimeFitzpatrick2: "15–25 min" },
+            { range: "8–10", level: "Molto alto", color: "🔴", protection: "SPF 50+, evitare esposizione 10–16", burnTimeFitzpatrick2: "10–15 min" },
+            { range: "11+", level: "Estremo", color: "🟣", protection: "Evitare uscita, SPF 50+, abiti coprenti", burnTimeFitzpatrick2: "<10 min" }
+          ],
+          fitzpatrickTypes: [
+            { type: 1, description: "Pelle molto chiara, capelli rossi, lentiggini", burnMultiplier: 0.5 },
+            { type: 2, description: "Pelle chiara, capelli biondi/rossi", burnMultiplier: 1.0 },
+            { type: 3, description: "Pelle media, capelli castani", burnMultiplier: 1.5 },
+            { type: 4, description: "Pelle olivastra, capelli scuri", burnMultiplier: 2.5 },
+            { type: 5, description: "Pelle scura", burnMultiplier: 4.0 },
+            { type: 6, description: "Pelle molto scura", burnMultiplier: 8.0 }
+          ],
+          altitudeNote: "UV aumenta ~10% ogni 1000m di quota. Riflessione neve: +80%. Riflessione acqua: +25%. Riflessione sabbia: +15%.",
+          vitaminD: "15–20 min di esposizione braccia/viso senza protezione sufficiente per sintesi vitamina D (UV 3+)."
+        };
+      } else if (category === "construction") {
+        data = {
+          windLimits: [
+            { activity: "Grù a torre", limitKmH: 50, note: "Fermo operazioni, braccio in bandiera" },
+            { activity: "Ponteggi", limitKmH: 60, note: "Verifica ancoraggi, no salita" },
+            { activity: "Lavori in quota", limitKmH: 40, note: "Imbracatura obbligatoria, no bordi" },
+            { activity: "Getto calcestruzzo", limitKmH: 30, note: "Rischio rapida essicazione" },
+            { activity: "Verniciatura", limitKmH: 20, note: "Spray disperdo, adesione ridotta" }
+          ],
+          concreteRules: {
+            minTempC: 5,
+            maxTempC: 35,
+            rainRisk: "Coprire getto se pioggia prevista entro 4h",
+            frostRisk: "No getto se T<0°C prevista nelle 24h successive",
+            curingNote: "T 20°C: maturazione 28gg. T 10°C: 42gg. T 5°C: 56gg."
+          },
+          soilConditions: {
+            saturatedRisk: "soil_moisture > 0.35 → scavi instabili, rischio cedimento",
+            frozenRisk: "T suolo < 0°C → lavorazione impossibile, attesa disgelo"
+          }
+        };
+      } else if (category === "tourism") {
+        data = {
+          bestPeriods: {
+            mare: { best: "giu–set", peak: "lug–ago", note: "SST > 22°C, UV alto" },
+            montagna: { best: "giu–set", peak: "lug–ago", note: "Quota 1500–2500m ideale" },
+            citta_arte: { best: "mar–mag, set–ott", peak: "apr, ott", note: "T miti, meno folla" },
+            sci: { best: "dic–mar", peak: "gen–feb", note: "Migliore neve, freddo" },
+            termale: { best: "ott–apr", peak: "nov–mar", note: "Ideale con T fredde" }
+          },
+          comfortIndex: {
+            formula: "Basato su T percepita, UR, vento, UV",
+            scale: [
+              { range: "0–20", label: "Molto scomodo", action: "Evitare attività outdoor" },
+              { range: "21–40", label: "Scomodo", action: "Limitare esposizione" },
+              { range: "41–60", label: "Accettabile", action: "Attività outdoor con cautela" },
+              { range: "61–80", label: "Confortevole", action: "Ideale per escursioni" },
+              { range: "81–100", label: "Perfetto", action: "Condizioni ottimali" }
+            ]
+          }
+        };
       }
 
       const res: ApiResult = {
@@ -816,6 +952,112 @@ export function registerReferenceGuidelines(server: McpServer) {
         elapsedMs: Date.now() - start
       };
       return toToolResult(res);
+    }
+  );
+}
+
+// --- POLLEN FORECAST TOOL ---------------------------------------------------
+export function registerPollen(server: McpServer) {
+  server.registerTool(
+    "meteo_pollen",
+    {
+      title: "Pollen Forecast Italy",
+      description:
+        "Estimate pollen levels for Italian allergenic plants based on season, weather conditions (T, humidity, wind, rain), and AIA thresholds. Returns active allergens, risk level, and recommendations.",
+      inputSchema: {
+        latitude: z.coerce.number().min(-90).max(90).describe("Latitude"),
+        longitude: z.coerce.number().min(-180).max(180).describe("Longitude"),
+        tempC: z.coerce.number().describe("Current temperature in °C"),
+        relativeHumidity: z.coerce.number().min(0).max(100).describe("Relative humidity in %"),
+        windSpeedKmH: z.coerce.number().min(0).describe("Wind speed in km/h"),
+        precipMm: z.coerce.number().min(0).default(0).describe("Precipitation in last 24h in mm"),
+        cloudCover: z.coerce.number().min(0).max(100).optional().describe("Cloud cover in %"),
+      },
+      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async ({ latitude, longitude, tempC, relativeHumidity, windSpeedKmH, precipMm, cloudCover }) => {
+      const start = Date.now();
+      const month = new Date().getMonth() + 1;
+      const isNord = latitude > 44.0;
+
+      const pollenCalendar: Record<string, { nord: number[]; centro_sud: number[] }> = {
+        ontano: { nord: [1, 2, 3], centro_sud: [12, 1, 2] },
+        betulla: { nord: [3, 4], centro_sud: [2, 3] },
+        cipresso: { nord: [2, 3, 4], centro_sud: [1, 2, 3] },
+        graminacee: { nord: [4, 5, 6], centro_sud: [3, 4, 5] },
+        olivo: { nord: [5, 6], centro_sud: [4, 5] },
+        parietaria: { nord: [3, 4, 5, 6, 7, 8, 9, 10], centro_sud: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] },
+        artemisia: { nord: [7, 8, 9], centro_sud: [7, 8] },
+        ambrosia: { nord: [8, 9], centro_sud: [8, 9] }
+      };
+
+      const thresholds: Record<string, { low: number; medium: number; high: number }> = {
+        graminacee: { low: 10, medium: 30, high: 50 },
+        olivo: { low: 5, medium: 25, high: 50 },
+        betulla: { low: 16, medium: 50, high: 80 },
+        parietaria: { low: 20, medium: 70, high: 100 },
+        ambrosia: { low: 5, medium: 25, high: 50 },
+        cipresso: { low: 30, medium: 90, high: 150 },
+      };
+
+      const activeAllergens: any[] = [];
+      for (const [pollen, seasons] of Object.entries(pollenCalendar)) {
+        const activeMonths = isNord ? seasons.nord : seasons.centro_sud;
+        if (!activeMonths.includes(month)) continue;
+
+        let baseLevel = 50;
+        if (tempC < 5) baseLevel *= 0.2;
+        else if (tempC < 10) baseLevel *= 0.5;
+        else if (tempC > 30) baseLevel *= 0.7;
+
+        if (precipMm > 5) baseLevel *= 0.2;
+        else if (precipMm > 1) baseLevel *= 0.5;
+
+        if (windSpeedKmH > 25) baseLevel *= 1.5;
+        else if (windSpeedKmH > 15) baseLevel *= 1.2;
+        else if (windSpeedKmH < 3) baseLevel *= 0.6;
+
+        if (relativeHumidity > 85) baseLevel *= 0.4;
+        else if (relativeHumidity > 70) baseLevel *= 0.7;
+
+        if (cloudCover !== undefined && cloudCover > 80) baseLevel *= 0.6;
+
+        const estimatedLevel = Math.round(Math.max(0, Math.min(150, baseLevel)));
+        const th = thresholds[pollen] ?? { low: 10, medium: 30, high: 50 };
+        let risk = "Basso";
+        if (estimatedLevel >= th.high) risk = "Alto";
+        else if (estimatedLevel >= th.medium) risk = "Medio";
+
+        activeAllergens.push({
+          pollen,
+          estimatedLevel,
+          risk,
+          isPeak: activeMonths.length <= 2,
+        });
+      }
+
+      activeAllergens.sort((a, b) => b.estimatedLevel - a.estimatedLevel);
+      const maxRisk = activeAllergens.some((a) => a.risk === "Alto") ? "Alto" : activeAllergens.some((a) => a.risk === "Medio") ? "Medio" : "Basso";
+
+      return toToolResult({
+        ok: true,
+        url: "mcp://pollen",
+        status: 200,
+        data: {
+          location: { latitude, longitude, zona: isNord ? "Nord Italia" : "Centro-Sud Italia" },
+          mese: month,
+          condizioniMeteo: { tempC, relativeHumidity, windSpeedKmH, precipMm },
+          overallRisk: maxRisk,
+          allergeniAttivi: activeAllergens,
+          raccomandazioni: maxRisk === "Alto"
+            ? "Evitare attività outdoor nelle ore calde (10-16). Antistaminici profilattici. Chiudere finestre, lavarsi dopo essere stati fuori."
+            : maxRisk === "Medio"
+            ? "Limitare tempo all'aperto se sensibili. Doccia e cambio vestiti al rientro."
+            : "Condizioni favorevoli per chi soffre di allergie.",
+        },
+        elapsedMs: Date.now() - start,
+      });
     }
   );
 }
@@ -1002,6 +1244,43 @@ export function registerLocalPhenomena(server: McpServer) {
         }
       }
 
+      // 15. LIBECCIO
+      const isLibeccio = windSpeed10m > 25 && (windDir10m >= 210 && windDir10m <= 250);
+      const isTirreno = longitude >= 9.0 && longitude <= 16.0 && latitude >= 37.0 && latitude <= 44.0;
+      if (isLibeccio && isTirreno) {
+        flags.push("LIBECCIO");
+        descriptions.LIBECCIO = `Libeccio forte sul Tirreno (vento da ${windDir10m}° a ${windSpeed10m} km/h). Mare molto agitato su coste occidentali, onde fino a ${windSpeed10m > 40 ? "4-6m" : "2-3m"}.`;
+      }
+
+      // 16. GELO DA IRRAGGIAMENTO
+      const isGeloIrraggiamento = temp2m < 0 && cloudCover !== undefined && cloudCover < 15 && windSpeed10m < 5 && relHum2m > 60;
+      const isValle = precip7dMm !== undefined && precip7dMm < 2;
+      if (isGeloIrraggiamento && isValle) {
+        flags.push("GELO_IRRAGGIAMENTO");
+        descriptions.GELO_IRRAGGIAMENTO = `Gelo da irraggiamento notturno in vallata. T ${temp2m}°C, cielo sereno (${cloudCover}%), vento quasi assente. Possibili ${temp2m < -5 ? "formazioni di ghiaccio nero" : "brinate diffuse"}.`;
+      }
+
+      // 17. NEBBIA DA AVVEZIONE
+      const isNebbiaAvvezione = relHum2m >= 95 && windSpeed10m >= 5 && windSpeed10m <= 15 && cloudCoverLow !== undefined && cloudCoverLow > 90;
+      const isCosta = seaSurfaceTemp !== undefined && (temp2m - seaSurfaceTemp) > 3;
+      if (isNebbiaAvvezione && isCosta) {
+        flags.push("NEBBIA_AVVEZIONE");
+        descriptions.NEBBIA_AVVEZIONE = `Nebbia da avvezione costiera. Aria calda e umida (${temp2m}°C, UR ${relHum2m}%) su mare più freddo (${seaSurfaceTemp}°C). Visibilità < 500m, critica per navigazione e viabilità costiera.`;
+      }
+
+      // 18. BREVA / TIVANO (Lago di Como)
+      const isLagoDiComo = latitude >= 45.8 && latitude <= 46.2 && longitude >= 9.0 && longitude <= 9.5;
+      if (isLagoDiComo && windSpeed10m > 8) {
+        const hour = new Date().getHours();
+        if (hour >= 10 && hour <= 18 && windDir10m >= 170 && windDir10m <= 210) {
+          flags.push("BREVA");
+          descriptions.BREVA = `Breva attiva sul Lago di Como: brezza diurna da Sud (ore ${hour}). Vento regolare ${windSpeed10m} km/h, ideale per vela.`;
+        } else if ((hour >= 20 || hour <= 8) && windDir10m >= 340 || windDir10m <= 20) {
+          flags.push("TIVANO");
+          descriptions.TIVANO = `Tivano attivo sul Lago di Como: brezza notturna da Nord (ore ${hour}). Vento fresco ${windSpeed10m} km/h.`;
+        }
+      }
+
       const res: ApiResult = {
         ok: true,
         url: "mcp://local_phenomena",
@@ -1177,6 +1456,252 @@ export function registerEventReliability(server: McpServer) {
         elapsedMs: Date.now() - start,
       };
       return toToolResult(res);
+    }
+  );
+}
+
+function round1(v: number | null): number | null {
+  return v == null ? null : Math.round(v * 10) / 10;
+}
+
+// --- 7. HISTORICAL VERIFICATION TOOL ----------------------------------------
+export function registerVerification(server: McpServer) {
+  server.registerTool(
+    "meteo_verification",
+    {
+      title: "Historical Forecast Verification",
+      description:
+        "Compare past NWP forecasts with ERA5 reanalysis (ground truth) to compute model accuracy metrics: MAE, bias, RMSE for temperature and precipitation. Use to evaluate local model bias over recent days.",
+      inputSchema: {
+        ...latLon,
+        days: z.coerce.number().int().min(3).max(30).default(7).describe("Number of past days to verify (3-30)"),
+        models: z.string().default("ecmwf_ifs025").describe("Comma-separated model ids to verify"),
+      },
+      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async ({ latitude, longitude, days, models }) => {
+      const start = Date.now();
+      const modelList = models.split(",").map((x) => x.trim()).filter(Boolean);
+
+      const forecastRes = await apiGet("https://api.open-meteo.com/v1/forecast", {
+        latitude, longitude,
+        models: modelList,
+        daily: ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"],
+        past_days: days,
+        forecast_days: 0,
+        timezone: "Europe/Rome",
+      });
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - days);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+
+      const archiveRes = await apiGet("https://archive-api.open-meteo.com/v1/archive", {
+        latitude, longitude,
+        daily: ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"],
+        start_date: fmt(startDate),
+        end_date: fmt(endDate),
+        timezone: "Europe/Rome",
+      });
+
+      if (!forecastRes.ok || !archiveRes.ok) {
+        return toToolResult({
+          ok: false, url: "mcp://verification", status: 0, data: null,
+          error: `Dati non disponibili: forecast=${forecastRes.ok}, archive=${archiveRes.ok}`,
+          elapsedMs: Date.now() - start,
+        });
+      }
+
+      const fData = forecastRes.data as any;
+      const aData = archiveRes.data as any;
+      const era5Dates: string[] = aData?.daily?.time ?? [];
+      const era5Tmax: number[] = aData?.daily?.temperature_2m_max ?? [];
+      const era5Tmin: number[] = aData?.daily?.temperature_2m_min ?? [];
+      const era5Precip: number[] = aData?.daily?.precipitation_sum ?? [];
+
+      const verification: Record<string, any> = {};
+      for (const model of modelList) {
+        const fTmax: number[] = fData?.daily?.[`temperature_2m_max_${model}`] ?? fData?.daily?.temperature_2m_max ?? [];
+        const fTmin: number[] = fData?.daily?.[`temperature_2m_min_${model}`] ?? fData?.daily?.temperature_2m_min ?? [];
+        const fPrecip: number[] = fData?.daily?.[`precipitation_sum_${model}`] ?? fData?.daily?.precipitation_sum ?? [];
+        const fDates: string[] = fData?.daily?.time ?? [];
+
+        const errors = { tmax: [] as number[], tmin: [] as number[], precip: [] as number[] };
+        const dailyComparison: any[] = [];
+
+        for (let i = 0; i < era5Dates.length; i++) {
+          const fi = fDates.indexOf(era5Dates[i]);
+          if (fi < 0) continue;
+          const eTmax = era5Tmax[i], eTmin = era5Tmin[i], eP = era5Precip[i];
+          const fTmaxV = fTmax[fi], fTminV = fTmin[fi], fPV = fPrecip[fi];
+          if (eTmax != null && fTmaxV != null) errors.tmax.push(fTmaxV - eTmax);
+          if (eTmin != null && fTminV != null) errors.tmin.push(fTminV - eTmin);
+          if (eP != null && fPV != null) errors.precip.push(fPV - eP);
+          dailyComparison.push({
+            date: era5Dates[i],
+            era5: { tmax: eTmax, tmin: eTmin, precip: eP },
+            forecast: { tmax: fTmaxV, tmin: fTminV, precip: fPV },
+            error: { tmax: round1(fTmaxV - eTmax), tmin: round1(fTminV - eTmin), precip: round1(fPV - eP) },
+          });
+        }
+
+        const calcStats = (errs: number[]) => {
+          if (!errs.length) return { n: 0, mae: null, bias: null, rmse: null };
+          const n = errs.length;
+          const mae = round1(errs.reduce((s, e) => s + Math.abs(e), 0) / n);
+          const bias = round1(errs.reduce((s, e) => s + e, 0) / n);
+          const rmse = round1(Math.sqrt(errs.reduce((s, e) => s + e * e, 0) / n));
+          return { n, mae, bias, rmse };
+        };
+
+        verification[model] = {
+          temperature_max: calcStats(errors.tmax),
+          temperature_min: calcStats(errors.tmin),
+          precipitation: calcStats(errors.precip),
+          daily: dailyComparison,
+        };
+      }
+
+      return toToolResult({
+        ok: true,
+        url: "mcp://verification",
+        status: 200,
+        data: {
+          location: { latitude, longitude },
+          period: { from: era5Dates[0], to: era5Dates[era5Dates.length - 1], days: era5Dates.length },
+          reference: "ERA5 Reanalysis (ECMWF)",
+          verification,
+          interpretation: "bias>0=model sovrastima, bias<0=model sottostima. MAE=errore medio assoluto. RMSE=punisce errori grandi.",
+        },
+        elapsedMs: Date.now() - start,
+      });
+    }
+  );
+}
+
+// --- 8. YEAR COMPARISON TOOL ------------------------------------------------
+export function registerYearCompare(server: McpServer) {
+  server.registerTool(
+    "meteo_year_compare",
+    {
+      title: "Year-over-Year Weather Comparison",
+      description:
+        "Compare current weather forecast with the same period last year (ERA5 reanalysis). Shows anomalies in temperature and precipitation to identify trends (warmer/cooler, wetter/drier).",
+      inputSchema: {
+        ...latLon,
+        days: z.coerce.number().int().min(3).max(14).default(7).describe("Number of days to compare (3-14)"),
+      },
+      outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async ({ latitude, longitude, days }) => {
+      const start = Date.now();
+
+      const now = new Date();
+      const currentStart = new Date(now);
+      currentStart.setDate(now.getDate() - days);
+      const lastYearStart = new Date(currentStart);
+      lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
+      const lastYearEnd = new Date(now);
+      lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+
+      const currentRes = await apiGet("https://api.open-meteo.com/v1/forecast", {
+        latitude, longitude,
+        daily: ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"],
+        past_days: days,
+        forecast_days: 0,
+        timezone: "Europe/Rome",
+      });
+
+      const lastYearRes = await apiGet("https://archive-api.open-meteo.com/v1/archive", {
+        latitude, longitude,
+        daily: ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"],
+        start_date: fmt(lastYearStart),
+        end_date: fmt(lastYearEnd),
+        timezone: "Europe/Rome",
+      });
+
+      if (!currentRes.ok || !lastYearRes.ok) {
+        return toToolResult({
+          ok: false, url: "mcp://year_compare", status: 0, data: null,
+          error: `Dati non disponibili: current=${currentRes.ok}, lastYear=${lastYearRes.ok}`,
+          elapsedMs: Date.now() - start,
+        });
+      }
+
+      const cData = currentRes.data as any;
+      const lData = lastYearRes.data as any;
+      const cDates: string[] = cData?.daily?.time ?? [];
+      const lDates: string[] = lData?.daily?.time ?? [];
+      const cTmax: number[] = cData?.daily?.temperature_2m_max ?? [];
+      const cTmin: number[] = cData?.daily?.temperature_2m_min ?? [];
+      const cPrecip: number[] = cData?.daily?.precipitation_sum ?? [];
+      const lTmax: number[] = lData?.daily?.temperature_2m_max ?? [];
+      const lTmin: number[] = lData?.daily?.temperature_2m_min ?? [];
+      const lPrecip: number[] = lData?.daily?.precipitation_sum ?? [];
+
+      const daily: any[] = [];
+      const diffs = { tmax: [] as number[], tmin: [] as number[], precip: [] as number[] };
+
+      for (let i = 0; i < Math.min(cDates.length, lDates.length); i++) {
+        const cDate = cDates[i];
+        const lDate = lDates[i];
+        const cDay = parseInt(cDate.slice(8, 10));
+        const lDay = parseInt(lDate.slice(8, 10));
+        if (cDay !== lDay) continue;
+
+        const dTmax = cTmax[i] != null && lTmax[i] != null ? round1(cTmax[i] - lTmax[i]) : null;
+        const dTmin = cTmin[i] != null && lTmin[i] != null ? round1(cTmin[i] - lTmin[i]) : null;
+        const dPrecip = cPrecip[i] != null && lPrecip[i] != null ? round1(cPrecip[i] - lPrecip[i]) : null;
+
+        if (dTmax != null) diffs.tmax.push(dTmax);
+        if (dTmin != null) diffs.tmin.push(dTmin);
+        if (dPrecip != null) diffs.precip.push(dPrecip);
+
+        daily.push({
+          date: cDate,
+          current: { tmax: cTmax[i], tmin: cTmin[i], precip: cPrecip[i] },
+          lastYear: { tmax: lTmax[i], tmin: lTmin[i], precip: lPrecip[i] },
+          delta: { tmax: dTmax, tmin: dTmin, precip: dPrecip },
+        });
+      }
+
+      const avg = (xs: number[]) => xs.length ? round1(xs.reduce((a, b) => a + b, 0) / xs.length) : null;
+      const summary = {
+        avgDeltaTmax: avg(diffs.tmax),
+        avgDeltaTmin: avg(diffs.tmin),
+        avgDeltaPrecip: avg(diffs.precip),
+        totalPrecipCurrent: round1(cPrecip.reduce((a, b) => a + (b ?? 0), 0)),
+        totalPrecipLastYear: round1(lPrecip.reduce((a, b) => a + (b ?? 0), 0)),
+        daysAnalyzed: daily.length,
+      };
+
+      const trend = {
+        temperature: summary.avgDeltaTmax != null
+          ? summary.avgDeltaTmax > 1 ? "Più caldo dell'anno scorso" : summary.avgDeltaTmax < -1 ? "Più freddo dell'anno scorso" : "Simile all'anno scorso"
+          : "Dati insufficienti",
+        precipitation: summary.totalPrecipCurrent != null && summary.totalPrecipLastYear != null
+          ? summary.totalPrecipCurrent > summary.totalPrecipLastYear * 1.3 ? "Più piovoso dell'anno scorso" : summary.totalPrecipCurrent < summary.totalPrecipLastYear * 0.7 ? "Più secco dell'anno scorso" : "Simile all'anno scorso"
+          : "Dati insufficienti",
+      };
+
+      return toToolResult({
+        ok: true,
+        url: "mcp://year_compare",
+        status: 200,
+        data: {
+          location: { latitude, longitude },
+          currentPeriod: { from: cDates[0], to: cDates[cDates.length - 1] },
+          lastYearPeriod: { from: lDates[0], to: lDates[lDates.length - 1] },
+          summary,
+          trend,
+          daily,
+        },
+        elapsedMs: Date.now() - start,
+      });
     }
   );
 }
