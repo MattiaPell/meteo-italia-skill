@@ -68,7 +68,8 @@ function normalizeName(s: string): string {
 /** Parse the bulletin HTML description into { zona normalizzata → regione }. */
 export function extractZoneRegionMap(html: string): Map<string, string> {
   const map = new Map<string, string>();
-  const re = /<b>([^<]{2,40})<\/b>\s*:\s*([^<]+)/g;
+  // Handle both <b> and <strong> tags (DPC format may change)
+  const re = /<(?:b|strong)>([^<]{2,40})<\/(?:b|strong)>\s*:\s*([^<]+)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
     const regione = m[1].trim();

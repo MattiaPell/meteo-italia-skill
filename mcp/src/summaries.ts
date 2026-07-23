@@ -59,7 +59,9 @@ export function summarizeForecast(raw: any, models?: string[]): {
       const tmin = pickDaily(s, "temperature_2m_min")?.[i];
       const psum = pickDaily(s, "precipitation_sum")?.[i];
       const pprob = pickDaily(s, "precipitation_probability_max")?.[i];
-      const cape = pickDaily(s, "cape")?.[i] ?? pickHourly(s, "cape")?.[i];
+      // CAPE: only available as hourly, not daily — compute daily max from hourly
+      const capeHourly = pickHourly(s, "cape");
+      const cape = capeHourly ? Math.max(...capeHourly.filter((v): v is number => v != null)) : undefined;
       const gust = pickDaily(s, "wind_gusts_10m_max")?.[i] ?? pickHourly(s, "wind_gusts_10m")?.[i];
       modelsOut[s] = {
         temp_max: num(tmax),
@@ -109,6 +111,14 @@ export function summarizeForecast(raw: any, models?: string[]): {
   if (hourly?.time) {
     const times = hourly.time as string[];
     const n = times.length;
+    // Pre-build time→dayIndex map to avoid O(n*m) findIndex per hour.
+    const timeToDayIdx = new Map<string, number>();
+    for (let di = 0; di < dates.length; di++) {
+      const d = dates[di];
+      for (const t of times) {
+        if (t?.startsWith(d)) timeToDayIdx.set(t, di);
+      }
+    }
     for (const s of modelList) {
       const wc = pickHourly(s, "weather_code");
       const precip = pickHourly(s, "precipitation");
@@ -116,7 +126,7 @@ export function summarizeForecast(raw: any, models?: string[]): {
       for (let i = 0; i < n; i++) {
         const code = num(wc[i]);
         const p = num(precip?.[i]);
-        const dayIdx = dates.findIndex((d) => times[i]?.startsWith(d));
+        const dayIdx = timeToDayIdx.get(times[i]) ?? -1;
         if (dayIdx < 0) continue;
         const m = days[dayIdx]?.models[s];
         if (!m) continue;

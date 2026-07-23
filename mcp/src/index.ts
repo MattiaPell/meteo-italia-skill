@@ -19,6 +19,9 @@ import {
   registerModelTuning,
   registerEventReliability,
   registerReferenceGuidelines,
+  registerVerification,
+  registerYearCompare,
+  registerPollen,
 } from "./reference_tools.js";
 import { startDebugServer } from "./debug.js";
 import { DEBUG_PORT } from "./http.js";
@@ -46,6 +49,9 @@ registerLocalPhenomena(server);
 registerModelTuning(server);
 registerEventReliability(server);
 registerReferenceGuidelines(server);
+registerVerification(server);
+registerYearCompare(server);
+registerPollen(server);
 
 // Stdio transport for MCP clients.
 const transport = new StdioServerTransport();
