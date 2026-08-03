@@ -63,7 +63,7 @@ prima di ogni analisi.
 | | Pre-MCP (797750a) | Post-MCP (HEAD) |
 |---|---|---|
 | **SKILL.md** | 891 righe | 657 righe |
-| **references/** | 19 file, **4.314 righe** (tabelle, scale, soglie, codici ICAO, formule...) | 16 file, **460 righe** (placeholder minimi che puntano ai tool MCP) |
+| **references/** | 1 file, **170 righe** (unico riferimento consolidato che mappa i tool MCP) |
 | **Knowledge base** | Caricata in contesto a ogni esecuzione | Dentro i tool MCP, interrogata on-demand |
 | **Chiamate API** | Fetch HTTP grezzi dall'agente | Tool MCP con error handling, retry, cache, rate-limit |
 | **Context window** | ~5.200 righe di istruzioni fisse | ~1.100 righe + solo i dati pertinenti alla località |
@@ -312,26 +312,9 @@ Per dettagli su build, test, MCP Inspector e debug API → [`mcp/README.md`](mcp
 
 ## Riferimenti
 
-La cartella `references/` contiene la knowledge base di supporto per l'agente:
+La cartella `references/` contiene l'unico file consolidato di riferimento per l'agente:
 
-| File | Contenuto |
-|---|---|
-| [models.md](references/models.md) | Modelli meteo Open-Meteo — coverage, risoluzione, update |
- | [model_tuning.md](references/model_tuning.md) | Calibrazione Modelli e Macroaree (pesi, bias, UHI) |
-| [arpa_network.md](references/arpa_network.md) | Rete ARPA/ARPAS — endpoint osservativi regionali |
-| [climatology.md](references/climatology.md) | Climatologia ERA5 1991-2020 — 32 città italiane, indici derivati, record storici |
-| [ensemble_spread.md](references/ensemble_spread.md) | Spread ensemble — incertezza probabilistica |
-| [event_reliability.md](references/event_reliability.md) | Affidabilità forecast per evento e orizzonte |
-| [local_phenomena.md](references/local_phenomena.md) | Flag automatici per fenomeni italiani |
-| [mountain.md](references/mountain.md) | Montagna, Neve e Agro-meteo |
-| [air_quality.md](references/air_quality.md) | Qualità dell'aria — CAMS + Open-Meteo AQ API |
-| [italian_portals.md](references/italian_portals.md) | Portali meteo italiani di fallback |
-| [nowcasting_radar.md](references/nowcasting_radar.md) | Nowcasting radar — precipitazioni in tempo reale |
-| [uv_marine_recent.md](references/uv_marine_recent.md) | UV index e condizioni marine recenti |
-| [metar_taf.md](references/metar_taf.md) | METAR/TAF aeroporti italiani — validazione forecast (CheckWX API) |
-| [lightning.md](references/lightning.md) | Lightning detection — nowcasting temporali (DMI Open Data API) |
-| [hydro_italia.md](references/hydro_italia.md) | Dati idrologici — fiumi e rischio alluvioni (floods.it + ISPRA + EFAS) |
-| [satellite.md](references/satellite.md) | Immagini satellite Meteosat — validazione visiva (EUMETSAT) |
+- [mcp_reference.md](references/mcp_reference.md): Mappature di tutti i tool MCP, scale statiche (Beaufort, Douglas, AQI, AINEVA, ICAO, ecc.), formule di calcolo (Quota Neve Nimbus, THI, VPD) e regole di fallback e blending.
 
 ## Use Case
 
