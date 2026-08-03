@@ -20,191 +20,108 @@ climatologia di riferimento (ERA5) e bias noti dei modelli.
 ## Bootstrap obbligatorio
 
 ⚠️ **STRATEGIA MCP-FIRST OBBLIGATORIA**:
-L'intero progetto adotta una filosofia **MCP-First**. Tutti i file presenti sotto `references/` sono file placeholder minimi che puntano ai tool MCP. L'intera base di conoscenza dettagliata (tabelle, scale, regole di calcolo, soglie, codici, bias) è stata migrata all'interno del server MCP, riducendo il contesto di ~79%.
+L'intero progetto adotta una filosofia **MCP-First**. L'intera base di conoscenza dettagliata (tabelle, scale, regole di calcolo, soglie, codici, bias) è caricata nel server MCP ed è riassunta nell'unico file consolidato di riferimento `references/mcp_reference.md`.
 
 Se il server MCP è disponibile nell'ambiente, **NON caricare alcun file di reference in contesto**. Usa direttamente i tool MCP dedicati per ottenere climatologia, indici bioclimatici avanzati, bias dei modelli, affidabilità, linee guida e riconoscimento dei fenomeni locali al volo.
 
-Se l'ambiente non supporta MCP, l'agente opererà in modalità `🧠 Stima interna` — basandosi esclusivamente sulla propria conoscenza del modello, senza accesso a dati reali. In questo caso, **dichiarare esplicitamente** il badge `🔴 STIMA` nel report e non produrre numeri specifici senza fonte verificata.
+Se l'ambiente non supporta MCP, l'agente opererà in modalità `🧠 Stima interna` — basandosi esclusivamente sulla propria conoscenza interna, senza accesso a dati reali. In questo caso, **dichiarare esplicitamente** il badge `🔴 STIMA` nel report e non produrre numeri specifici senza fonte verificata.
 
 ---
 
 ## MCP Server (meteo-italia-mcp-server)
 
-Tutte le chiamate API esterne e le basi di conoscenza meteorologiche sono esposte come **tool MCP**. Se l'ambiente fornisce questo server, **USA I TOOL al posto dei fetch HTTP grezzi e dei file di reference locali**: gestiscono errori, cache, rate-limit e calcoli complessi.
+Le chiamate alle API esterne e le basi di conoscenza meteorologiche sono esposte come **tool MCP**. Se l'ambiente fornisce questo server, **USA I TOOL al posto dei fetch HTTP grezzi e dei file di reference locali**: gestiscono errori, cache, rate-limit e calcoli complessi.
 
-**Mappatura step/riferimenti → tool MCP:**
+**Mappatura step/riferimenti → tool MCP (Dettagli in `references/mcp_reference.md`):**
 
-| Step / Riferimento | Tool MCP | Servizio / Funzione |
+| Step | Nome / Servizio | Tool MCP Principale |
 |---|---|---|
-| **0 (default, SEMPRE)** | `meteo_brief` | Aggrega in 1 chiamata: NWP multi-modello + allerte PC + radar + METAR + ARPA regionale + ensemble, con divergenze calcolate |
-| Geocoding | `open_meteo_geocode` | Open-Meteo Geocoding |
-| A (forecast) | `open_meteo_forecast` / `open_meteo_forecast_summary` | Open-Meteo Forecast (raw / compact summary) |
-| B (Climatologia ERA5) | `meteo_climatology` / `open_meteo_archive` | Query norme ERA5 di capoluoghi italiani / Archive raw |
-| E (allerte) | `pc_allerte` | Bollettino criticità DPC (GitHub pcm-dpc), filtro per comune/regione |
-| F (marine) | `open_meteo_marine` | Open-Meteo Marine |
-| G (flood / GloFAS) | `open_meteo_flood` | Portata fiumi simulata GloFAS v4 a 5km |
-| H (CAMS) | `open_meteo_air_quality` | Open-Meteo Air-Quality |
-| J (ensemble) | `open_meteo_ensemble` | Open-Meteo Ensemble |
-| I (radar) | `dpc_radar` | Radar-DPC REST (22 prodotti, pre-signed GeoTIFF) |
-| K (METAR/TAF) | `checkwx_metar_taf` / `aviationweather_metar` | CheckWX / AviationWeather |
-| L (fulmini) | `dmi_lightning` | DMI Lightning |
-| M (idro TA-A) | `floods_it_monitoring` | floods.it |
-| M (idro Veneto) | `arpav_idro` | ARPAV livelli idrometrici stazioni (Veneto) |
-| D (ARPA Veneto) | `arpav_bollettino` | Previsione ARPAV per 15 zone |
-| D (ARPA Trentino) | `meteotrentino_osservazioni` | Osservazioni stazioni P.A. Trento |
-| D (ARPA Emilia-Romagna) | `arpae_bollettino` | Bollettino ARPAE fino 4gg |
-| D (ARPA FVG) | `arpafvg_previsioni` / `arpafvg_stazione` | Previsioni OSMER + osservazioni stazione |
-| D (ARPA Marche) | `arpa_marche_stazioni` / `arpa_marche_stazione` / `arpa_marche_grandezze` | Stazioni AMAP Agrometeo |
-| D (ARPA Lombardia) | `arpa_lombardia_stazioni` / `arpa_lombardia_osservazioni` | Osservazioni Socrata Open Data |
-| D (ARPA Piemonte) | `arpa_piemonte_stazioni` | Stazioni meteo Piemonte |
-| N (satellite) | `eumetsat_satellite_info` | EUMETSAT (metadata) |
-| **Outlook stagionale** | `open_meteo_seasonal` | ECMWF SEAS5 (6-ore, fino a 7 mesi) |
-| **Ref: Climatologia** | `meteo_climatology` | Ottieni medie e anomalie storiche per 110 città italiane |
-| **Ref: Indici / Soglie** | `meteo_bioclimatic_indices` | Calcola Heat Index, Wind Chill, GDD, Water Balance, soglie Vite, Api, Olivo, Quota Neve, Rischio Incendi (NFR), Energia FV/Eolico |
-| **Ref: Fenomeni Locali** | `meteo_local_phenomena` | Riconoscimento automatico Bora, Foehn, Scirocco, Maestrale, Nebbia, Gelicidio, Libeccio, Tramontana, Garbino, Breva/Tivano, ecc. |
-| **Ref: Bias e Pesi** | `meteo_model_tuning` | Recupera pesi zone, bias modelli e correzione UHI |
-| **Ref: Affidabilità** | `meteo_event_reliability` | Matrice di affidabilità forecast per orizzonte e tipo evento |
-| **Ref: Linee Guida e Scale** | `meteo_reference_guidelines` | Tabelle statiche per categorie (models, marine, air_quality, mountain, hydro, nowcasting, satellite, lightning, aviation, portals, pollen, uv, construction, tourism) |
-| **Ref: Verifica Storica** | `meteo_verification` | Confronta forecast passati con ERA5 reanalysis (MAE, bias, RMSE) |
-| **Ref: Confronto Annuale** | `meteo_year_compare` | Confronta meteo attuale vs stesso periodo anno scorso (ERA5) |
-| **Ref: Pollini** | `meteo_pollen` | Previsione pollini Italia |
+| **0** | **Aggregatore Multi-Fonte** | `meteo_brief` (NWP + allerte PC + radar + METAR + ARPA + ensemble) |
+| **Geocoding** | Risoluzione coordinate | `open_meteo_geocode` (filtro `country_code == 'IT'`) |
+| **Step A** | Previsioni numeriche (NWP) | `open_meteo_forecast` / `open_meteo_forecast_summary` |
+| **Step B** | Climatologia ERA5 | `meteo_climatology` / `open_meteo_archive` |
+| **Step E** | Allerta Protezione Civile | `pc_allerte` (comune/regione) |
+| **Step D** | Osservazioni ARPA regionali| `arpav_*`, `meteotrentino_*`, `arpae_*`, `arpafvg_*`, `arpa_marche_*`, `arpa_lombardia_*`, `arpa_piemonte_*` |
+| **Step F** | Condizioni Marine | `open_meteo_marine` |
+| **Step H** | Qualità aria & Pollini | `open_meteo_air_quality` / `meteo_pollen` |
+| **Step I** | Nowcasting Radar DPC | `dpc_radar` (VMI) |
+| **Step J** | Incertezza & Ensemble | `open_meteo_ensemble` |
+| **Step K** | Validazione METAR/TAF | `checkwx_metar_taf` / `aviationweather_metar` |
+| **Step L** | Rete Fulmini | `dmi_lightning` |
+| **Step M** | Rischio Idrico & Fiumi | `floods_it_monitoring` / `arpav_idro` / `open_meteo_flood` (GloFAS) |
+| **Step N** | Satellite Meteosat | `eumetsat_satellite_info` |
+| **Riferimenti**| Matrici & Scale statiche | `meteo_reference_guidelines` (categorie: `models`, `marine`, `air_quality`, `mountain`, `hydro`, `nowcasting`, `satellite`, `lightning`, `aviation`, `portals`, `pollen`, `uv`, `construction`, `tourism`) |
+| **Riferimenti**| Calibrazione, Pesi & UHI | `meteo_model_tuning` |
+| **Riferimenti**| Indici & Formule fisiche | `meteo_bioclimatic_indices` |
+| **Riferimenti**| Affidabilità forecast | `meteo_event_reliability` |
+| **Riferimenti**| Verifica Storica & YoY | `meteo_verification` / `meteo_year_compare` |
 
 ---
 
 ## Flusso di lavoro
 
 ### 1. Determina Parametri
-
-| Parametro | Default se non specificato |
-|---|---|
-| Luogo | Chiedi se ambiguo |
-| Periodo | Oggi (giornata corrente) |
-| Variabili | Temperatura, precipitazioni, vento, temporali, weather code |
-| Output | Report strutturato + widget visuale |
-| Response Mode | **Lite** (query semplici) o **Pro** (analisi/use case) |
-| Use case | Generico (vedi sezione Use Case per specializzazioni) |
-
-Identifica subito: **macroarea** (→ set modelli) + **regione amministrativa** (→ ARPA + allerte PC).
+Identifica subito: **luogo, periodo, variabili, use case, macroarea geografica** (per pesare i modelli) e **regione amministrativa** (per ARPA e allerte).
+*Response Mode:* **Lite** (sintesi rapida) o **Pro** (analisi dettagliata e use case).
 
 ### 2. Geocoding
-> **Via MCP:** `open_meteo_geocode` con `count=10`.
-Filtra per `country_code == 'IT'`. Gestisci la conferma manuale per risultati esteri e mostra un prompt di disambiguazione all'utente se ci sono più di 3 corrispondenze italiane. Annota lat, lon, `elevation`.
+Risolvi le coordinate via `open_meteo_geocode` con `count=10`. Filtra strettamente per `country_code == 'IT'`. In caso di omonimi (>3 corrispondenze), chiedi chiarimenti all'utente.
 
 ### 3. Fetch sequenziale prioritizzato
 
-**STEP 0 (OBBLIGATORIO, SEMPRE): `meteo_brief`** — Prima di qualsiasi analisi, chiama `meteo_brief` (nome o lat/lon) per interrogare in parallelo NWP multi-modello, allerte PC, radar DPC, METAR vicini, ARPA regionale se coperta, ed ensemble spread. Analizza le divergenze calcolate dal brief e usa i tool singoli solo per approfondire anomalie o dati mancanti.
+**STEP 0 (MANDATORIO): `meteo_brief`**
+Chiama sempre `meteo_brief` prima di procedere. Analizza il report sintetico del brief e interroga i singoli tool specifici di Tier 1, 2 e 3 solo in presenza di anomalie, divergenze o per approfondire use case.
 
 Esegui il workflow in 3 Tier. Completa il **TIER 1** prima di procedere al **TIER 2**.
-*Regola del contesto:* Se il contesto supera 80k token dopo il TIER 1, esegui solo gli step TIER 2 con condizione TRUE e salta completamente il TIER 3.
+*Regola del contesto:* Se il contesto dell'agente supera 80k token dopo il TIER 1, esegui solo i passi di TIER 2 con condizione attiva (`TRUE`) e salta completamente il TIER 3.
 
-| Tier | Step | Nome | Condizione | Tool di riferimento / Guideline |
+| Tier | Step | Nome | Condizione di Attivazione | Riferimenti |
 |---|---|---|---|---|
-| **TIER 1** | A | Previsioni numeriche (Open-Meteo) | Sempre | `meteo_model_tuning` (pesi/bias) |
-| | B | Climatologia ERA5 | Sempre (10y baseline) | `meteo_climatology` |
-| | E | Allerta (Dati Pubblici) | Sempre | `pc_allerte` |
-| **TIER 2** | D | Osservazioni ARPA | Sempre | `meteo_brief` o tool ARPA specifici |
-| | F | Dati marini | Se costiero/nautica/ASE/Caligo | `meteo_reference_guidelines` (marine) |
-| | H | Qualità aria CAMS | Pianura Padana (ott-mar), salute, inversione, scirocco | `meteo_reference_guidelines` (air_quality) |
-| | J | Ensemble Spread | Orizzonte >3gg, eventi significativi, allerta ≥gialla, divergenza modelli | `meteo_reference_guidelines` (models) |
-| **TIER 3** | I | Nowcasting Radar DPC | Allerta ≥gialla, CAPE>800, weather_code 80-99, richiesta 1-3h | `meteo_reference_guidelines` (nowcasting) |
-| | K | METAR/TAF | Aviazione/droni, validazione forecast, ARPA non disp., divergenza >2°C | `meteo_reference_guidelines` (aviation) |
-| | L | Lightning Detection | Allerta ≥gialla per temporali, CAPE>800, nautica/montagna/outdoor | `meteo_reference_guidelines` (lightning) |
-| | M | Dati Idrologici (Trentino real-time + bacini nazionali via soglie) | Allerta ≥gialla idro, pioggia>30mm/24h, cumulata 7gg>100mm, agricoltura | `meteo_reference_guidelines` (hydro) |
-| | N | Satellite Meteosat | Allerta ≥gialla, divergenza modelli >1.5σ, nebbia prevista, nautica/aero | `meteo_reference_guidelines` (satellite) |
+| **TIER 1** | **A** | Previsioni numeriche (NWP) | Sempre | `meteo_model_tuning` |
+| | **B** | Climatologia ERA5 | Sempre | `meteo_climatology` |
+| | **E** | Allerta Protezione Civile | Sempre | `pc_allerte` |
+| **TIER 2** | **D** | Osservazioni ARPA | Sempre (dove coperte) | Tool ARPA regionali |
+| | **F** | Dati marini | Se costiero/nautico | `open_meteo_marine` |
+| | **H** | Qualità aria CAMS / Pollini | Pianura Padana (ott-mar), salute, fioritura, scirocco | `open_meteo_air_quality` / `meteo_pollen` |
+| | **J** | Ensemble Spread | Orizzonte >3gg, eventi intensi, divergenza modelli | `open_meteo_ensemble` |
+| **TIER 3** | **I** | Nowcasting Radar DPC | Allerta ≥gialla, precipitazioni orarie, short-term | `dpc_radar` |
+| | **K** | METAR/TAF | Validazione locale, aeroporti, divergenza NWP >2°C | `checkwx_metar_taf` |
+| | **L** | Rete Fulmini | Allerta temporali, outdoor, attività elettrica | `dmi_lightning` |
+| | **M** | Monitoraggio Fiumi & Idro | Allerta idro, pioggia >30mm/24h, cumulata 7gg >100mm | Tool idro / `open_meteo_flood` |
+| | **N** | Satellite Meteosat | Allerta ≥gialla, nebbia prevista, divergenza >1.5σ | `eumetsat_satellite_info` |
 
-*Nota: Gli Step C (Analisi Storico) e G (UV Index) sono inclusi o derivati dallo Step A.*
-
-#### TIER 1 (Obbligatori sempre)
-
-#### A — Previsioni numeriche (Open-Meteo) — Strategia a 3 Livelli
-> **Via MCP:** Usa `open_meteo_forecast` (con `level="auto"` per delegare la gestione automatica dei 3 livelli) o `open_meteo_forecast_summary` (raccomandato per report di sintesi).
-Dichiara nel report `levelUsed` restituito dal tool.
-
-#### C — Storico recente (ultimi 7gg)
-Disponibile se attivato il **LIVELLO 2** di Step A (`past_days=7`). Includi nel report in caso di piogge previste >20mm, allerte, ondate estreme o use case Agricoltura. Per calcolare indici specifici (es. Bilancio Idrico Nimbus) usa `meteo_bioclimatic_indices`.
-
-#### G — UV Index
-Già incluso nel fetch A. Includi nel report se `uv_index_max` >5, o per spiaggia/montagna. Usa `meteo_reference_guidelines` (uv) per le raccomandazioni.
-
-#### B — Climatologia ERA5
-> **Via MCP:** Confronta il forecast con la norma storica tramite `meteo_climatology` o `open_meteo_archive` per valutare le anomalie.
-
-#### E — Allerta (Dati Pubblici)
-> **Via MCP:** Usa `pc_allerte` (comune/regione). Se `allertaMaxOggi` ≥1 (gialla) attiva gli step condizionali (I, L, M, N).
-
-#### TIER 2 (Condizionali ad alta priorità)
-
-#### D — Osservazioni ARPA
-> **Via MCP:** Usa `meteo_brief` o tool ARPA regionali dedicati. Se disponibile, confronta con forecast per stimare il bias del giorno. Altrove usa METAR (Step K) o Radar (Step I).
-
-#### F — Dati marini (solo se costa o uso nautico)
-> **Via MCP:** Usa `open_meteo_marine`. Per le scale Beaufort/Douglas e matrici di traversia, usa `meteo_reference_guidelines` con categoria "marine" (coste adriatiche, Maccaja/Caligo a NW, Lupa di mare al Sud/Sicilia).
-
-#### H — Qualità aria CAMS (condizionale)
-> **Via MCP:** Usa `open_meteo_air_quality`. Per interpretare AQI, pollini e limiti, usa `meteo_reference_guidelines` con categoria "air_quality".
-
-#### J — Ensemble Spread (condizionale)
-> **Via MCP:** Usa `open_meteo_ensemble`. Per lo spread e l'incertezza, usa `meteo_reference_guidelines` con categoria "models".
-
-#### TIER 3 (Condizionali a bassa priorità)
-
-#### I — Nowcasting Radar DPC (condizionale)
-> **Via MCP:** Usa `dpc_radar` (VMI). Esegui analisi Vision qualitativa (nuclei, intensità dBZ, posizione) o fallback testuale. Usa `meteo_reference_guidelines` con categoria "nowcasting" per dBZ e blending.
-
-#### K — METAR/TAF (condizionale)
-> **Via MCP:** Usa `checkwx_metar_taf` o `aviationweather_metar`. Usa `meteo_reference_guidelines` con categoria "aviation" per la lista aeroporti ICAO e regole di validazione (scarti T, vento, visibilità).
-
-#### L — Lightning Detection (Nowcasting Temporali)
-> **Via MCP:** Usa `dmi_lightning`. Rileva densità, trend e distanza. Usa `meteo_reference_guidelines` con categoria "lightning" per la scala di pericolo.
-
-#### M — Dati Idrologici (Trentino real-time + bacini nazionali via soglie)
-> **Via MCP:** Usa `floods_it_monitoring` (Trentino), `arpav_idro` (Veneto) o `open_meteo_flood` (portata simulata GloFAS v4 per qualsiasi bacino).
-- **TIER A (API Real-time)**: floods.it, ARPAV o GloFAS.
-- **TIER B (Soglie manuali)**: Po, Adige, Arno, Tevere, Reno, Volturno. Incrocia stazioni e soglie critiche tramite `meteo_reference_guidelines` con categoria "hydro" (ad es. Casalecchio Reno: 0.80m, 1.60m, 2.20m; Volturno Capua via Bollettino Campania).
-- **TIER C (Fallback)**: Altre zone → dichiara *"dati idrologici real-time non disponibili per questa zona"* e stima il rischio idraulico potenziale (Rischio Idraulico Nimbus).
-
-#### N — Satellite Meteosat (condizionale)
-> **Via MCP:** Usa `eumetsat_satellite_info`. Esegui descrizione qualitativa di fronti, celle o nebbie. Usa `meteo_reference_guidelines` con categoria "satellite".
+*Nota: Lo Step C (Storico 7gg) e G (UV Index) sono estratti o calcolati direttamente dallo Step A.*
 
 ---
 
-### 4. Analisi Comparativa
+### 4. Analisi Comparativa & Raffinamenti (Dettagli in `references/mcp_reference.md`)
 
-- **Consensus**: Calcola media/spread usando `meteo_model_tuning` per i pesi dinamici (consensando scenari vento forte/neve).
-- **Affidabilità**: Determina l'affidabilità con `meteo_event_reliability`.
-- **Raffinamenti**: Calcola quota neve (Nimbus formula in `meteo_bioclimatic_indices`), UHI e bias locali tramite `meteo_model_tuning` e verifica storica con `meteo_verification`.
-- **Nowcasting Blending**: 0-15m Radar (100%), 15-45m (80/20), 45-90m (40/60), 90-120m (10/90), >120m (100% NWP).
-
-### 5. Output
-Riconosci la richiesta dell'utente e adatta l'output (LITE per sintesi, PRO per report completo o use-case specifico).
+-   **Consensus multi-modello**: Applica i pesi di `meteo_model_tuning` per la macroarea corrente.
+-   **Effetto Isola di Calore (UHI)**: Correggi le temperature minime/massime dei grandi centri urbani in condizioni ottimali via `meteo_model_tuning`.
+-   **Quota Neve Nimbus**: Calcola il limite dell'accumulo nevoso con la formula di omotermia umida ed intensità precipitativa via `meteo_bioclimatic_indices`.
+-   **Rischio Incendi (NFR)**: Valuta le condizioni fisiche di accensione tramite VPD, vento e umidità del suolo via `meteo_bioclimatic_indices`.
+-   **Nowcasting Blending**: Combina i dati radar con il NWP usando la matrice di decadimento temporale (100% radar a 15m -> 100% NWP oltre i 120m).
 
 ---
 
 ## Use Case Specializzati
-Riconosci il contesto dall'input e calcola soglie/indici tramite `meteo_bioclimatic_indices`:
-- **🏔️ Montagna**: Quota neve (Nimbus formula), temporali, UV, vento, indici sci (Ski Index).
-- **🐝 Apicoltura**: Finestre di volo, secrezione nettarifera.
-- **⚽ Evento sportivo**: Precipitazioni in fascia oraria, vento, fulmini.
-- **🌾 Agricoltura**: Gelate, GDD, bilancio idrico, umidità suolo (Bagnatura Fogliare proxy `RH > 90% OR Precip > 0`), regola dei tre dieci per peronospora vite.
-- **🏗️ Cantiere**: Limiti vento gru/ponteggi, temperatura getto calcestruzzo via `meteo_reference_guidelines` (construction).
-- **🚗 Viabilità**: Neve, nebbia, gelicidio, acquaplaning, vento.
-- **🏖️ Mare/Nautica**: Douglas/Beaufort, swell, balneazione, Beach Index.
-- **🌡️ Salute**: Heat Index, THI stress bestiame, AQI, pollini.
-- **⚡ Energia (Eolico/Solare)**: Vento a 80-120m, cut-in/cut-out, irraggiamento, efficienza FV/Eolico.
-
----
-
-## Granularità Temporale
-
-- **Ora corrente**: Usa nowcasting o `current` dell'MCP.
-- **Oggi / Domani / Weekend / Settimana**: Imposta il parametro `days` (1-7) nell'MCP.
-- **Lungo termine / Stagionali**: Segnala ridotta affidabilità e usa `open_meteo_seasonal`.
+Riconosci il contesto dall'input e calcola soglie/indici tramite `meteo_bioclimatic_indices` e `references/mcp_reference.md`:
+-   🏔️ **Montagna**: Quota neve, pericolo valanghe (AINEVA), Wind Chill, temporali, Ski Index.
+-   🐝 **Apicoltura**: Finestre di volo api, secrezione nettarifera (acacia, castagno).
+-   ⚽ **Outdoor / Sport**: Probabilità pioggia oraria, vento per strutture, fulmini.
+-   🌾 **Agricoltura**: Gelate tardive, bagnatura fogliare, GDD, bilancio idrico a 7gg, regola dei tre dieci per peronospora vite.
+-   🏗️ **Cantiere**: Limiti vento gru/ponteggi, getto calcestruzzo (temperatura, pioggia, gelo).
+-   🚗 **Viabilità**: Neve, nebbia, gelicidio (black ice), pioggia intensa.
+-   🏖️ **Mare / Nautica**: Douglas (stato mare), Beaufort (vento), traversia costiera, Beach Index.
+-   🌡️ **Salute & Comfort**: Heat Index, THI stress bestiame, AQI, pollini.
+-   ⚡ **Energia (Eolico/Solare)**: Vento a 80-120m, cut-in/cut-out e rated power, irraggiamento, efficienza fotovoltaica.
 
 ---
 
 ## Template Report
 
-Tutti i report generati (sia LITE che PRO) devono **OBBLIGATORIAMENTE** iniziare con il seguente disclaimer immutabile:
+### ⚠️ REQUISITO DI DISCLAIMER IMMUTABILE
+Tutti i report (LITE e PRO) devono iniziare **tassativamente** con questo blocco di avviso:
 
 ```markdown
 ---
@@ -220,139 +137,113 @@ agricolo o di protezione civile. Per questi use case consultare:
 ```
 
 ### 📋 Execution Manifest (OBBLIGATORIO)
-Includi sempre questa tabella prima del report. Se lo **Step A** è in stato "**🧠 Stima interna**", inserisci un avviso in rosso all'inizio.
+Mostrare la tabella dello stato di fetch delle fonti subito sotto il disclaimer. Se lo **Step A** è in stato "**🧠 Stima interna**", premettere un banner di avviso in rosso all'inizio del report.
 
-| Step | Nome | Stato | Fonte | Livello Fetch | Timestamp |
+| Step | Nome Fonte / Tool | Stato | Fonte Dati | Livello Fetch (A) | Timestamp |
 |---|---|---|---|---|---|
-| A | Previsioni numeriche | ✅ / ⚠️ / ❌ / 🧠 | | 1 / 2 / 3 | |
-| B | Climatologia ERA5 | | | - | |
+| **A** | Previsioni numeriche (NWP) | ✅ / ⚠️ / ❌ / 🧠 | | 1 / 2 / 3 | |
+| **B** | Climatologia ERA5 | | | - | |
 | ... | ... | ... | ... | ... |
 
-*(Stati: ✅ Eseguito, ⚠️ Parziale, ❌ Saltato, 🧠 Stima interna)*
+*(Stati: ✅ Eseguito con successo, ⚠️ Eseguito parzialmente/cached, ❌ Saltato, 🧠 Stima interna)*
+
+### 🎖️ Regola Generale per i Badge di Confidenza
+Per evitare la ridondanza visiva e il consumo eccessivo di token nel prompt, i template sottostanti sono definiti in modo asciutto. **Tuttavia, l'agente deve applicare la seguente regola ferrea nella generazione dell'output**:
+Ogni singola intestazione principale (`##`) e secondaria (`###`) del report finale deve terminare con il rispettivo badge di confidenza in base all'origine del dato:
+-   `[🟢 REALE]` se i dati provengono da un fetch in tempo reale effettuato nella sessione corrente (es. radar, osservazioni ARPA, METAR, bollettini recenti).
+-   `[🟡 PARZIALE]` se i dati sono parziali, provengono da cache o presentano parziali anomalie di acquisizione.
+-   `[🔴 STIMA]` se i dati derivano dalla conoscenza interna dell'LLM (stima qualitativa), da archivi non aggiornati o se la fonte di Step A è `🧠 Stima interna`.
 
 ---
 
 ### 🟢 Report Sintetico (Response Mode: LITE)
 
-`[MANDATORIO: DISCLAIMER IMMUTABILE IN CIMA]`
+`[DISCLAIMER IMMUTABILE IN CIMA]`
 
-## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
+## 📋 Execution Manifest `[BADGE]`
 {Tabella Manifest con Livello Fetch Step A}
 
-## 🌤️ Meteo {LUOGO} — {DATA} [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-**Sintesi**: {2-3 righe su cielo, precipitazioni, vento}
-**🌡️ Temp**: {min} / {max}°C (Percepita: {max_app}°C)
-**🚨 Allerta**: {Semaforo e tipo}
-**☔ Pioggia**: {P}% ({range mm})
-**💨 Vento**: {intensità} km/h da {DIR}
+## 🌤️ Meteo {LUOGO} — {DATA} `[BADGE]`
+**Sintesi**: {Breve descrizione del cielo, precipitazioni, vento, temperature}
+**🌡️ Temperatura**: {min} / {max}°C (Percepita massima: {max_app}°C)
+**🚨 Allerta**: {Semaforo del livello e tipologia di criticità Protezione Civile}
+**☔ Precipitazioni**: {Probabilità pioggia}% | Accumulo stimato: {range mm}
+**💨 Vento**: {velocità} km/h con raffiche a {max_raf} km/h da {DIREZIONE}
 
 ---
 
 ### 🔵 Report Completo (Response Mode: PRO)
 
-`[MANDATORIO: DISCLAIMER IMMUTABILE IN CIMA]`
+`[DISCLAIMER IMMUTABILE IN CIMA]`
 
-## 📋 Execution Manifest [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
+## 📋 Execution Manifest `[BADGE]`
 {Tabella Manifest con Livello Fetch Step A}
 
-## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA} [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
+## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA} `[BADGE]`
 
-{⚠️ ALERT: UTILIZZO FONTI ESTERNE - Solo se Open-Meteo non disponibile}
+{⚠️ ALERT: UTILIZZO FONTI ESTERNE - Da includere in rosso solo se Open-Meteo è fallito e si è ricorso a portali manuali}
 
-### 📡 Nowcasting Radar (0-6h) (Step I) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-{Analisi visiva Vision o fallback testuale}
+### 📡 Nowcasting Radar (0-6h) (Step I) `[BADGE]`
+{Analisi qualitativa della riflettività dBZ VMI ed evoluzione cellulare, oppure fallback se non attivo}
 
-### 🚨 Allerta {COLORE} (Step E) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-{Dettaglio allerta}
+### 🚨 Allerta Protezione Civile (Step E) `[BADGE]`
+{Livello colore e dettaglio zone di allertamento per rischio idraulico, idrogeologico, temporali}
 
-### Consensus Multi-Modello [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Modelli: {N} | Pesi e concordanza
+### 📅 Ultimi 7 giorni (Step C) `[BADGE]`
+{Accumuli settimanali, scostamenti e stato del bilancio idrico Nimbus}
 
-### 📅 Ultimi 7 giorni (Step C) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Precipitazioni cumulate, Bilancio Idrico Nimbus, anomalia T.
+### 📊 Confronto Climatologico (Step B) `[BADGE]`
+{Anomalia termica e pluviometrica rispetto alle medie ERA5 1991-2020 per la stazione di riferimento}
 
-### 📊 vs Climatologia (Step B) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Confronto T max/min e precipitazioni vs medie storiche ERA5.
+### 📡 Osservazioni Reali ARPA (Step D) `[BADGE]`
+{Valori registrati dalle stazioni regionali più vicine, scostamento rispetto alla previsione NWP}
 
-### 📡 Osservato (stazione {NOME}, Step D) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-T, pioggia, vento misurati e scarto modelli.
+### 🌡️ Temperature e Sensazione Termica `[BADGE]`
+{Dettaglio Tmin/Tmax, percepite, livello di afa (Heat Index) o Wind Chill, correzione UHI urbana}
 
-### Scenario del giorno [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Descrizione narrativa. Visibilità.
+### ☔ Precipitazioni e Fenomeni Convettivi `[BADGE]`
+{Modelli concordi/discordi, millimetri attesi, CAPE/Lifted Index, rischio grandine o quota neve Nimbus}
 
-### Temperatura [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Range, percepita, consensus deviazione standard, anomalia.
+### 💨 Vento e Fenomeni Locali Speciali `[BADGE]`
+{Velocità, raffiche massime, flag di attivazione fenomeni locali: Foehn, Bora, Scirocco, Maccaja, ecc.}
 
-### Precipitazioni [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Modelli favorevoli, quantitativi, probabilità, CAPE/LI, rischio grandine.
+### 🌊 Condizioni Marine (Step F) `[BADGE]`
+{Scala Douglas per mare e swell, Beaufort, SST, traversia costiera e idoneità nautica}
 
-### Vento [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Velocità, raffiche, flag fenomeni locali (Bora, Foehn, Scirocco, ecc.).
+### 💨 Qualità dell'Aria e Pollini (Step H) `[BADGE]`
+{Indice AQI europeo, inquinanti dominanti, altezza boundary layer, rischio pollini per allergeni attivi}
 
-### ☀️ UV Index (Step G) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Picco e raccomandazioni protezione.
+### ✈️ Validazione METAR Aeroportuale (Step K) `[BADGE]`
+{Codice ICAO, confronto parametri reali T/Vento vs previsioni, nubi e visibilità}
 
-### 🌊 Condizioni Marine (Step F) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Douglas, onde, Beaufort, swell, SST, idoneità balneazione/nautica.
+### ⚡ Rilevamento Fulmini (Step L) `[BADGE]`
+{Strikes recenti, trend di intensificazione, distanza dal target e rischio temporali violenti}
 
-### 📊 Ensemble Spread (Step J) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Percentili T, precipitazioni, vento, concordanza e scenari p10/p90.
+### 🌊 Dati Idrologici (Step M) `[BADGE]`
+{Livello idrometrico dei fiumi limitrofi, superamento soglie d'allerta locali, trend e portata GloFAS}
 
-### 💨 Qualità dell'Aria (Step H) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-AQI, PM2.5, PM10, polvere sahariana, incendi, pollini, misure limitative.
+### 🛰️ Satellite (Step N) `[BADGE]`
+{Analisi qualitativa canali visibile/infrarosso, transito fronti perturbati, nebbia o polvere sahariana}
 
-### ✈️ Validazione METAR (Step K) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-ICAO, T osservata vs prevista, vento, visibilità, nubi, anomalie.
+### 📊 Incertezza ed Ensemble Spread (Step J) `[BADGE]`
+{Concordanza probabilistica dei modelli, spread percentili T e pioggia}
 
-### ⚡ Fulmini in Tempo Reale (Step L) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Fulmini, densità, trend, distanza minima, rischio supercelle/grandine/incendi.
+### ⚠️ Sintesi Anomalie e Incertezze `[BADGE]`
+{Spiegazione fisica dei meccanismi in gioco e divergenze principali tra i modelli ad alta e bassa risoluzione}
 
-### 🌊 Dati Idrologici (Step M) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Fiume, livello, soglie, stato di rischio, trend, rischio piena lampo.
-
-### 🛰️ Satellite (Step N) [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Analisi qualitativa canali IR/VIS, transito fronti, celle convettive, nebbia.
-
-### ⚠️ Fenomeni speciali e Incertezze [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Spiegazione meccanismi fisici e divergenze modelli.
-
-### Raccomandazione operativa [🟢 REALE | 🟡 PARZIALE | 🔴 STIMA]
-Scenario più probabile e consigli pratici diretti.
+### 📋 Raccomandazione Operativa `[BADGE]`
+{Scenario finale ritenuto più probabile ed indicazioni pratiche/consigli personalizzati per lo use case richiesto}
 
 ---
-Fonti: Open-Meteo, ARPA regionali, DPC, CheckWX, EUMETSAT, AIA, floods.it.
-```
+Fonti: Open-Meteo, ARPA regionali, DPC, CheckWX, EUMETSAT, DMI, floods.it.
 
 ---
 
-## Note Operative
+## Note Operative ed Error Handling
 
-- `timezone=Europe/Rome` sempre per l'Italia (mai `auto`).
-- Isole: usa sempre ECMWF come backbone.
-- Montagna >1500m: imposta `elevation`.
-- **Badge Confidence**: Assegna il colore in base alla fonte: 🟢 REALE (fetch sessione corrente), 🟡 PARZIALE (cache/parziale), 🔴 STIMA (conoscenza interna). Obbligatorio su ogni sezione ## e ###. Default: 🔴 STIMA.
-- **Rate limits, retry e fallback**: I rate limit e retry automatici (es. CheckWX, DMI, Open-Meteo, floods.it) sono gestiti direttamente a livello di server MCP.
-
-## Fallback Strategy
-
-Se Open-Meteo API restituisce errore 5xx o timeout >10s:
-1. Prova l'archivio storico o i portali di fallback in `meteo_reference_guidelines` (portals).
-2. Se non disponibili, dichiara *"dati NWP non disponibili"*, produci solo sezioni E (allerte), D (ARPA) e stima qualitativa basata su `meteo_climatology` (o ERA5).
-3. **MANDATORIO**: NON produrre numeri specifici di temperatura o precipitazioni senza fonte reale.
-
-## Validation Status
-
-### Componenti verificati
-- [ ] `meteo_climatology` vs ARPA dati storici
-- [ ] `meteo_model_tuning` vs ECMWF verification scores
-- [ ] `meteo_event_reliability` vs SMI bollettini storici
-- [ ] `meteo_local_phenomena` vs Atlante Climatico CNR
-- [ ] Output report vs esperto meteorologo (almeno 10 casi)
-- [ ] Output nautico vs Meteo AM bollettino comparato
-- [ ] Output montagna vs AINEVA bollettino comparato
-
-### Come contribuire alla validazione
-Per ogni campo numerico verificato, aprire una PR con:
-- valore attuale nel reference
-- valore corretto dalla fonte primaria
-- link alla fonte primaria
+-   **Fuso Orario**: Impostare sempre `timezone=Europe/Rome` (non `auto`).
+-   **Quota Montana**: Se la quota è >1500m, impostare manualmente l'altezza (`elevation`) nel fetch NWP.
+-   **Strategia di Fallback (Open-Meteo down)**:
+    1. Richiedere le linee guida sui portali di fallback (`references/mcp_reference.md`).
+    2. Dichiarare *"dati NWP non disponibili"*, omettere i dati numerici specifici senza fonte e compilare unicamente le sezioni E (allerte), D (ARPA) ed una descrizione qualitativa basata sul clima.
+-   **Rate Limiting & Retries**: Gestiti direttamente a livello di server MCP.
