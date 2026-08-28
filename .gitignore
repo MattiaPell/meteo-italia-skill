@@ -5,3 +5,7 @@ mcp/dist/
 
 # Env / secrets
 .env
+
+# OpenCode runtime state
+.omo/run-continuation/
+.omo/boulder.json
