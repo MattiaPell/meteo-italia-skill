@@ -120,24 +120,8 @@ Riconosci il contesto dall'input e calcola soglie/indici tramite `meteo_bioclima
 
 ## Template Report
 
-### ⚠️ REQUISITO DI DISCLAIMER IMMUTABILE
-Tutti i report (LITE e PRO) devono iniziare **tassativamente** con questo blocco di avviso:
-
-```markdown
----
-⚠️ USO PERSONALE E INFORMATIVO
-Questo report è generato da un sistema AI sperimentale basato su
-fetch di dati pubblici e knowledge base non certificata.
-NON è adatto a decisioni professionali in ambito nautico, alpinistico,
-agricolo o di protezione civile. Per questi use case consultare:
-- Meteo AM (Aeronautica Militare): meteoam.it
-- Protezione Civile: protezionecivile.gov.it
-- ARPA regionale di riferimento
----
-```
-
-### 📋 Execution Manifest (OBBLIGATORIO)
-Mostrare la tabella dello stato di fetch delle fonti subito sotto il disclaimer. Se lo **Step A** è in stato "**🧠 Stima interna**", premettere un banner di avviso in rosso all'inizio del report.
+### 📋 Execution Manifest (SOLO SU RICHIESTA)
+Mostrare la tabella dello stato di fetch delle fonti **solo se l'utente la richiede esplicitamente** (es. debug, verifica fonti). Non includerla nei report di default. Se lo **Step A** è in stato "**🧠 Stima interna**", premettere comunque un banner di avviso in rosso all'inizio del report.
 
 | Step | Nome Fonte / Tool | Stato | Fonte Dati | Livello Fetch (A) | Timestamp |
 |---|---|---|---|---|---|
@@ -158,11 +142,6 @@ Ogni singola intestazione principale (`##`) e secondaria (`###`) del report fina
 
 ### 🟢 Report Sintetico (Response Mode: LITE)
 
-`[DISCLAIMER IMMUTABILE IN CIMA]`
-
-## 📋 Execution Manifest `[BADGE]`
-{Tabella Manifest con Livello Fetch Step A}
-
 ## 🌤️ Meteo {LUOGO} — {DATA} `[BADGE]`
 **Sintesi**: {Breve descrizione del cielo, precipitazioni, vento, temperature}
 **🌡️ Temperatura**: {min} / {max}°C (Percepita massima: {max_app}°C)
@@ -173,11 +152,6 @@ Ogni singola intestazione principale (`##`) e secondaria (`###`) del report fina
 ---
 
 ### 🔵 Report Completo (Response Mode: PRO)
-
-`[DISCLAIMER IMMUTABILE IN CIMA]`
-
-## 📋 Execution Manifest `[BADGE]`
-{Tabella Manifest con Livello Fetch Step A}
 
 ## 🌤️ Analisi Meteo — {LUOGO} ({REGIONE}) — {DATA} `[BADGE]`
 

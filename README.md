@@ -1,12 +1,5 @@
 # Meteo Italia Skill (+ MCP)⛅
 
----
-⚠️ USO PERSONALE E INFORMATIVO
-Questo sistema è basato su fetch di dati pubblici e knowledge base non certificata.
-NON è adatto a decisioni professionali in ambito nautico, alpinistico,
-agricolo o di protezione civile. Per questi use case consultare i siti ufficiali (Meteo AM, Protezione Civile, ARPA).
----
-
 Skill per **analisi comparativa multi-modello delle previsioni meteo** (uso personale e informativo) specializzata per il territorio italiano. Integra modelli numerici, osservazioni ARPA e climatologia di riferimento.
 
 Progettata principalmente per agenti AI (OpenClaw, Hermes...): l'agente carica `SKILL.md` come istruzioni operative per eseguire analisi meteo complete e strutturate.
@@ -39,7 +32,7 @@ dati e i calcoli, seguendo il flusso:
 2. **Geocoding** — risoluzione città italiane via `open_meteo_geocode`
 3. **`meteo_brief`** — aggregatore multi-fonte obbligatorio (NWP + allerte + radar + METAR + ARPA + ensemble)
 4. **Approfondimento selettivo** — solo se il brief segnala anomalie, attiva i tool dei Tier 2-3
-5. **Report finale** — output strutturato con Execution Manifest, badge confidence, widget visuale
+5. **Report finale** — output strutturato con badge confidence e widget visuale (Execution Manifest solo su richiesta)
 
 ## Architettura Skill + MCP
 
