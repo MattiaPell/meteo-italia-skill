@@ -41,7 +41,7 @@ Il progetto è composto da due livelli:
 | Livello | File | Ruolo |
 |---|---|---|
 | **Skill** | `SKILL.md` | Workflow operativo: parametri → geocoding → tier system → analisi → report. È il "prompt di sistema" che l'agente carica. |
-| **MCP Server** | `mcp/` | **35 tool** che espongono API esterne + knowledge base (climatologia, bias, indici, fenomeni locali). L'agente chiama i tool invece di leggere file o fare fetch HTTP. |
+| **MCP Server** | `mcp/` | **38 tool** che espongono API esterne + knowledge base (climatologia, bias, indici, fenomeni locali). L'agente chiama i tool invece di leggere file o fare fetch HTTP. |
 
 L'MCP server **non è opzionale**: la skill è progettata per delegare dati e calcoli ai
 tool MCP. Senza, l'agente può solo produrre stime qualitative usando la propria
@@ -162,13 +162,6 @@ METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
 | `arpa_lombardia_osservazioni` | ARPA Lombardia osservazioni recenti | API |
 | `arpa_piemonte_stazioni` | ARPA Piemonte elenco stazioni (336 stazioni) | API |
 | `eumetsat_satellite_info` | EUMETSAT (metadata satellite) | API |
-
-> **Breaking changes 2026-07**: `pc_allerte_wms` → `pc_allerte` (host bollettini defunto,
-> nuova fonte GitHub pcm-dpc), `dpc_radar_vmi` → `dpc_radar` (parsing risposta REST
-> aggiornata alla nuova piattaforma), `arpav_idro` nuova firma.
-> **Nuovi 2026-07**: `meteo_brief`, `arpae_bollettino`, `arpafvg_previsioni`,
-> `arpafvg_stazione`, `arpa_marche_*`, `arpa_lombardia_*`, `arpa_piemonte_stazioni`,
-> `open_meteo_flood`, `open_meteo_seasonal`, `meteo_verification`. Dettagli in SKILL.md.
 | `meteo_climatology` | Climatologia ERA5 (110 città, anomalie/σ) | Locale |
 | `meteo_bioclimatic_indices` | Heat Index, Wind Chill, GDD, quota neve, incendi, energia FV/Eolico | Locale |
 | `meteo_local_phenomena` | Riconoscimento Bora, Foehn, Scirocco, Libeccio, Tramontana, Garbino, Breva/Tivano, Nebbia, Gelicidio | Locale |
@@ -179,9 +172,16 @@ METEO_MCP_DEBUG_PORT=3000 node mcp/dist/index.js
 | `meteo_year_compare` | Confronto annuale: meteo attuale vs anno scorso (ERA5) | Locale |
 | `meteo_pollen` | Previsione pollini Italia (calendario + meteo) | Locale |
 
+> **Breaking changes 2026-07**: `pc_allerte_wms` → `pc_allerte` (host bollettini defunto,
+> nuova fonte GitHub pcm-dpc), `dpc_radar_vmi` → `dpc_radar` (parsing risposta REST
+> aggiornata alla nuova piattaforma), `arpav_idro` nuova firma.
+> **Nuovi 2026-07**: `meteo_brief`, `arpae_bollettino`, `arpafvg_previsioni`,
+> `arpafvg_stazione`, `arpa_marche_*`, `arpa_lombardia_*`, `arpa_piemonte_stazioni`,
+> `open_meteo_flood`, `open_meteo_seasonal`, `meteo_verification`. Dettagli in SKILL.md.
+
 ### Base URL utilizzati dal progetto
 
-Tutti gli endpoint contattati dal server MCP (elenco completo e verificato; l'host originale `api.protezionecivile.gov.it` è stato rimosso perché il DNS è-morto).
+Tutti gli endpoint contattati dal server MCP (elenco completo e verificato; l'host originale `api.protezionecivile.gov.it` è stato rimosso perché il DNS è morto).
 
 **Open-Meteo (NWP, clima, marine, qualità aria, ensemble, alluvioni, stagionale)**
 - `https://geocoding-api.open-meteo.com/v1/search` — geocoding città italiane
