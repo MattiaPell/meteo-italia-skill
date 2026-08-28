@@ -4,7 +4,7 @@ import { apiGet, toToolResult } from "./http.js";
 import { haversine } from "./geo.js";
 import { summarizeForecast } from "./summaries.js";
 import { parseMetarStation } from "./italian_sources.js";
-import { fetchLatestBulletin, fetchRadarLatest } from "./dpc.js";
+import { fetchLatestBulletin, fetchRadarLatest, filterZones, maxLevel } from "./dpc.js";
 import { runBriefArpa as arpaVeneto } from "./regioni/arpav.js";
 import { runBriefArpa as arpaTrentino } from "./regioni/meteotrentino.js";
 import { runBriefArpa as arpaMarche } from "./regioni/arpa-marche.js";
@@ -212,31 +212,50 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
         errori.push(`Open-Meteo: ${nwpR.value.error ?? "errore"}`);
       }
 
-      // Allerte PC per il comune
+      // Allerte PC — fallback comune → regione → nazionale, mai silenzioso.
+      // Il bollettino DPC è a zone: il match per comune è preciso ma fallisce
+      // se il comune non è elencato o se il brief riceve solo lat/lon.
       let allerte: any = { status: sourceStatus(allerteR) };
       if (allerteR.status === "fulfilled" && allerteR.value.ok) {
         const b = allerteR.value;
-        const norm = (s: string) =>
-          s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`]/g, " ").replace(/\s+/g, " ").trim();
-        const zoneOggi = comune
-          ? b.today.filter((z: any) => z.comuni.some((x: string) => norm(x) === norm(comune)))
-          : [];
-        const zoneDomani = comune
-          ? b.tomorrow.filter((z: any) => z.comuni.some((x: string) => norm(x) === norm(comune)))
-          : [];
-        const maxL = (zs: any[]) =>
-          zs.length
-            ? Math.max(...zs.flatMap((z) => [z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico]))
-            : null;
+        const zoneOggi = comune ? filterZones(b.today, comune) : [];
+        const zoneDomani = comune ? filterZones(b.tomorrow, comune) : [];
+        const livelloComune = zoneOggi.length > 0 || zoneDomani.length > 0;
+        let zoneOggiEff = zoneOggi;
+        let zoneDomaniEff = zoneDomani;
+        let matching: "comune" | "regione" | "nazionale" = livelloComune ? "comune" : "nazionale";
+        if (!livelloComune && regioneEff) {
+          zoneOggiEff = filterZones(b.today, undefined, regioneEff);
+          zoneDomaniEff = filterZones(b.tomorrow, undefined, regioneEff);
+          matching = "regione";
+        }
+        if (!zoneOggiEff.length && !zoneDomaniEff.length) {
+          zoneOggiEff = b.today;
+          zoneDomaniEff = b.tomorrow;
+          matching = "nazionale";
+        }
+        const maxL = (zs: any[]): number | null => {
+          const m = maxLevel(zs);
+          return m >= 0 ? m : null;
+        };
+        const nota =
+          matching === "comune"
+            ? null
+            : matching === "regione"
+              ? `Comune non individuato nel bollettino ('${comune ?? "non fornito"}'); allerta a livello regione '${regioneEff}'.`
+              : `Né comune né regione ('${regioneEff ?? "sconosciuta"}') individuati; riportato il massimo nazionale.`;
         allerte = {
           status: "ok",
           bollettino: { nome: b.nome, emissione: b.emissione },
           comune: comune ?? null,
-          oggi: zoneOggi.map((z: any) => ({ zona: z.zona, livelli: z.livelli })),
-          domani: zoneDomani.map((z: any) => ({ zona: z.zona, livelli: z.livelli })),
-          allertaMaxOggi: maxL(zoneOggi),
-          allertaMaxDomani: maxL(zoneDomani),
-          comuneTrovato: zoneOggi.length > 0 || zoneDomani.length > 0,
+          regione: regioneEff ?? null,
+          matching,
+          ...(nota ? { nota } : {}),
+          oggi: zoneOggiEff.map((z: any) => ({ zona: z.zona, regione: z.regione, livelli: z.livelli })),
+          domani: zoneDomaniEff.map((z: any) => ({ zona: z.zona, regione: z.regione, livelli: z.livelli })),
+          allertaMaxOggi: maxL(zoneOggiEff),
+          allertaMaxDomani: maxL(zoneDomaniEff),
+          comuneTrovato: livelloComune,
         };
       } else if (allerteR.status === "fulfilled") {
         allerte = { status: "errore", error: allerteR.value?.error ?? "bollettino non disponibile" };

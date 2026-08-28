@@ -178,11 +178,18 @@ export async function fetchLatestBulletin(): Promise<BulletinResult> {
   return out;
 }
 
-function filterZones(zones: BulletinZone[], comune?: string, regione?: string): BulletinZone[] {
+export function filterZones(zones: BulletinZone[], comune?: string, regione?: string): BulletinZone[] {
   let out = zones;
   if (regione) {
-    const r = normalizeName(regione);
-    out = out.filter((z) => z.regione && normalizeName(z.regione).includes(r));
+    // Normalizza anche i trattini e confronta in entrambe le direzioni: il
+    // geocoder può dare "Friuli-Venezia Giulia", il bollettino DPC
+    // "Friuli Venezia Giulia" (o admin1 più lungo tipo ".../Südtirol").
+    const r = normalizeName(regione).replace(/-/g, " ");
+    out = out.filter((z) => {
+      if (!z.regione) return false;
+      const zr = normalizeName(z.regione).replace(/-/g, " ");
+      return zr.includes(r) || r.includes(zr);
+    });
   }
   if (comune) {
     const c = normalizeName(comune);
@@ -191,7 +198,7 @@ function filterZones(zones: BulletinZone[], comune?: string, regione?: string): 
   return out;
 }
 
-function maxLevel(zones: BulletinZone[]): number {
+export function maxLevel(zones: BulletinZone[]): number {
   return zones.reduce(
     (m, z) => Math.max(m, z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico),
     -1
