@@ -137,7 +137,11 @@ function runBriefCore({ nome, latitude, longitude, regione, days, models }: {
       const nwpTask = apiGet("https://api.open-meteo.com/v1/forecast", {
         latitude: lat, longitude: lon,
         models: chosenModels,
-        hourly: ["temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m"],
+        hourly: [
+          "temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m",
+          "wind_speed_10m", "wind_direction_10m", "freezing_level_height", "snowfall",
+          "boundary_layer_height", "visibility", "convective_inhibition",
+        ],
         daily: [
           "temperature_2m_max", "temperature_2m_min", "precipitation_sum",
           "precipitation_probability_max", "wind_gusts_10m_max", "uv_index_max", "weather_code",
