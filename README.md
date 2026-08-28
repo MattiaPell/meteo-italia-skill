@@ -1,6 +1,6 @@
 # Meteo Italia Skill (+ MCP)⛅
 
-Skill per **analisi comparativa multi-modello delle previsioni meteo** (uso personale e informativo) specializzata per il territorio italiano. Integra modelli numerici, osservazioni ARPA e climatologia di riferimento.
+Skill per **analisi comparativa multi-modello delle previsioni meteo** specializzata per il territorio italiano. Integra modelli numerici, osservazioni ARPA e climatologia di riferimento.
 
 Progettata principalmente per agenti AI (OpenClaw, Hermes...): l'agente carica `SKILL.md` come istruzioni operative per eseguire analisi meteo complete e strutturate.
 

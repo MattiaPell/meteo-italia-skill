@@ -1,7 +1,7 @@
 ---
 name: meteo-italia
 description: >
-  Analisi meteo multi-modello Italia (uso personale e informativo). Previsioni, confronto ECMWF/ICON/GFS, fenomeni locali (foehn, bora, scirocco), qualità aria, nowcasting temporali. Trigger: qualsiasi domanda meteo su città/regione italiana.
+  Analisi meteo multi-modello Italia. Previsioni, confronto ECMWF/ICON/GFS, fenomeni locali (foehn, bora, scirocco), qualità aria, nowcasting temporali. Trigger: qualsiasi domanda meteo su città/regione italiana.
 ---
 
 # Weather Forecast Analysis — Italia
@@ -11,7 +11,7 @@ description: >
 
 ---
 
-Analisi comparativa multi-modello specializzata per il territorio italiano (uso personale e informativo).
+Analisi comparativa multi-modello specializzata per il territorio italiano.
 Integra: previsioni numeriche (Open-Meteo), osservazioni in tempo reale (reti ARPA regionali),
 climatologia di riferimento (ERA5) e bias noti dei modelli.
 
