@@ -1,4 +1,30 @@
-export const climatologyData: Record<string, any[]> = {
+/** Normale climatica mensile (ERA5 1991-2020) per una stazione. */
+export interface ClimatologyMonth {
+  /** Abbreviazione italiana del mese: "Gen", "Feb", ... "Dic". */
+  month: string;
+  tmax: number;
+  tmin: number;
+  /** Precipitazione cumulata mensile in mm. */
+  precip: number;
+}
+
+/** Stazione/climatologia nel dataset: coordinate, quota e 12 mesi. */
+export interface ClimatologyStation {
+  name: string;
+  lat: number;
+  lon: number;
+  elevation: number;
+  months: ClimatologyMonth[];
+}
+
+/**
+ * Normali climatologiche ERA5 1991-2020 per ~100 stazioni italiane,
+ * chiave = regione (lowercase). Dati statici compilati in TS (non JSON):
+ * verificati dal compilatore a build time, zero parsing a runtime e nessuna
+ * preoccupazione di packaging (il JSON richiederebbe resolveJsonModule o
+ * readFileSync con path fragile tra src e dist).
+ */
+export const climatologyData: Record<string, ClimatologyStation[]> = {
   "abruzzo": [
     {
       "name": "L'Aquila",
