@@ -22,8 +22,11 @@ effort e benefici. Da approvare esplicitamente prima di eseguire.
 ## E3 — Observability / metrics hit-miss ✅ IMPLEMENTATA
 - **Implementazione**: `mcp/src/http.ts` tiene `metrics` per host (hits, errors,
   latenciesMs) e `getCacheStats()`. `mcp/src/debug.ts` espone `/api/metrics`.
-- **Nota**: resta un bug minore in `http.ts:168-184` dove `recordMetrics` per
-  errori 4xx non-ritriabili è unreachable code.
+- **Bug minore risolto**: il problema del `recordMetrics` unreachable per 4xx
+  non-ritriabili (originariamente segnalato su `http.ts:168-184`) non è più
+  presente: `requestWithRetry` registra le metriche su ogni terminale 4xx/5xx
+  prima di ritornare `ok:false`. Coperto da test di regressione
+  (`http.test.ts` › "registra metriche di errore su 4xx terminale").
 
 ## E4 — Risorse MCP statiche per i tool solo-KB
 - **Problema**: `meteo_model_tuning`, `meteo_event_reliability`,
@@ -35,18 +38,27 @@ effort e benefici. Da approvare esplicitamente prima di eseguire.
 - **Beneficio**: superficie tool piú pulita, meno calcolo inutile.
 - **Stato**: proposta non implementata.
 
-## E5 — Normalizzazione alias modelli end-to-end ✅ PARZIALE
+## E5 — Normalizzazione alias modelli end-to-end ✅ RISOLTA
 - **Implementazione**: `normalizeModelId` in `mcp/src/reference_tools.ts` unifica
   dash/underscore in `open_meteo_forecast`, `open_meteo_ensemble` e nel lookup
   pesi di `meteo_model_tuning`.
-- **Gap**: `mcp/src/summaries.ts` `inferModels()` non usa `normalizeModelId` e il
-  set `KNOWN_MODELS` è disallineato rispetto ai nomi reali usati dai tool.
+- **Gap risolto**: `mcp/src/summaries.ts` `inferModels()` ora usa
+  `normalizeModelId` e matcha il suffisso più lungo contro `KNOWN_MODELS`
+  (evita falsi match tipo `meteoswiss_icon_seamless` → `icon_seamless`).
+  Copertura: `summaries.test.ts` (inferModels + summarizeForecast).
+  Nota: `ecmwf_ifs` resta deliberatamente escluso da `KNOWN_MODELS` —
+  Open-Meteo serve `ecmwf_ifs025`.
 
 ## E6 — Allineamento nomi modello in tutta la knowledge base
 - **Problema**: `meteo_reference_guidelines` (models), `meteo_model_tuning` pesi,
   `summaries.ts` e `open_meteo.ts` usano set di id modello parzialmente divergenti
   (es. `iconeu` vs `icon_eu`, `arome` vs `arome_france`, modelli come
   `meteoswiss_icon_seamless` citati ma non documentati).
+- **Stato (aggiornato)**: `summaries.ts` ora è allineato (E5 risolta). Resta
+  aperta la divergenza KB: `reference_guidelines` e `model_tuning` documentano
+  `ecmwf_ifs` (HRES 9km) come modello/peso, ma Open-Meteo non lo espone più
+  (`ecmwf_ifs025` è l'id attivo) — le raccomandazioni KB vanno riscritte o
+  marcate come non serveabili. Serve un catalogo canonico condiviso.
 - **Soluzione**: definire un `MODEL_ALIASES` canonico condiviso e un catalogo
   unico; rimuovere i riferimenti a modelli non documentati.
 - **Effort**: Small-Medium.
