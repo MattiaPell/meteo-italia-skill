@@ -1,0 +1,7 @@
+dist/
+node_modules/
+coverage/
+package-lock.json
+
+# Dataset statico: riformattarlo produrrebbe diff inutili su 8800 righe di dati
+src/climatology_data.ts

@@ -47,10 +47,7 @@ export function parseStation(row: any): ArpaPiemonteStation {
 
 // --- Adapter per brief.ts (Piemonte) ----------------------------------------
 export async function runBriefArpa(lat: number, lon: number): Promise<any> {
-  const stazioniR = await apiGet(
-    `${API_BASE}/meteoidro/stazione_meteorologica/`,
-    { limit: 500, format: "json" }
-  );
+  const stazioniR = await apiGet(`${API_BASE}/meteoidro/stazione_meteorologica/`, { limit: 500, format: "json" });
   if (!stazioniR.ok) return { ok: false, agenzia: "ARPA Piemonte", error: stazioniR.error };
   const items: any[] = (stazioniR.data as any)?.results ?? [];
   let best: any = null;
@@ -83,15 +80,12 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   const today = new Date();
   const threeDaysAgo = new Date(today.getTime() - 3 * 86400000);
   const dataMin = threeDaysAgo.toISOString().slice(0, 10);
-  const datiR = await apiGet(
-    `${API_BASE}/meteoidro/dati_giornalieri_meteo/`,
-    {
-      fk_id_punto_misura_meteo: puntoId,
-      data_min: dataMin,
-      limit: 5,
-      format: "json",
-    }
-  );
+  const datiR = await apiGet(`${API_BASE}/meteoidro/dati_giornalieri_meteo/`, {
+    fk_id_punto_misura_meteo: puntoId,
+    data_min: dataMin,
+    limit: 5,
+    format: "json",
+  });
   const dati = datiR.ok ? ((datiR.data as any)?.results ?? []) : [];
 
   return {
@@ -130,7 +124,10 @@ export function registerArpaPiemonte(server: McpServer) {
       description:
         "Elenco delle stazioni meteo della rete ARPA Piemonte (336 stazioni). Include denominazione, comune, provincia, coordinate WGS84, quota e tipo. Fonte: utility.arpa.piemonte.it (CC BY).",
       inputSchema: {
-        provincia: z.string().optional().describe("Sigla provincia (TO, CN, NO, AL, AT, BI, VB, VC, VCO). Omesso = tutte."),
+        provincia: z
+          .string()
+          .optional()
+          .describe("Sigla provincia (TO, CN, NO, AL, AT, BI, VB, VC, VCO). Omesso = tutte."),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
@@ -153,6 +150,6 @@ export function registerArpaPiemonte(server: McpServer) {
           stazioni: stations,
         },
       });
-    }
+    },
   );
 }

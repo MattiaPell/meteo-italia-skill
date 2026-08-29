@@ -14,12 +14,16 @@ const geocodeSchema = z.object({
         latitude: z.number(),
         longitude: z.number(),
         elevation: z.number().optional(),
-      })
+      }),
     )
     .optional(),
 });
 
-const csv = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
+const csv = (s: string) =>
+  s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 export function registerOpenMeteo(server: McpServer) {
   // --- Geocoding ---------------------------------------------------------
@@ -47,9 +51,7 @@ export function registerOpenMeteo(server: McpServer) {
       if (!r.ok) return toToolResult(r);
       const parsed = validateApiData(r, geocodeSchema, "Open-Meteo Geocoding");
       const results = parsed.results ?? [];
-      const itResults = results.filter(
-        (x: any) => x.country_code === "IT"
-      );
+      const itResults = results.filter((x: any) => x.country_code === "IT");
       const chosen = itResults[0] ?? null;
       const candidates = itResults.map((x: any) => ({
         name: x.name,
@@ -67,15 +69,12 @@ export function registerOpenMeteo(server: McpServer) {
           chosen,
           needsDisambiguation: itResults.length > 3,
           candidates,
-          fallbackSuggestion:
-            chosen === null && nonIt
-              ? `${nonIt.name} (${nonIt.admin1 ?? nonIt.country_code})`
-              : null,
+          fallbackSuggestion: chosen === null && nonIt ? `${nonIt.name} (${nonIt.admin1 ?? nonIt.country_code})` : null,
           raw: r.data,
         },
       };
       return toToolResult(enriched);
-    }
+    },
   );
 
   // --- Forecast (TIER 1, LIVELLI 1-3) -----------------------------------
@@ -88,11 +87,19 @@ export function registerOpenMeteo(server: McpServer) {
       inputSchema: {
         ...latLon,
         ...openMeteoCommon,
-        models: z.string().optional().describe("Comma-separated model list, e.g. ecmwf_ifs025,icon_seamless,gfs_seamless"),
+        models: z
+          .string()
+          .optional()
+          .describe("Comma-separated model list, e.g. ecmwf_ifs025,icon_seamless,gfs_seamless"),
         hourly: z.string().optional().describe("Comma-separated hourly variables"),
         daily: z.string().optional().describe("Comma-separated daily variables"),
         current: z.string().optional().describe("Comma-separated current variables"),
-        level: z.enum(["1", "2", "3", "auto"]).default("auto").describe("Fetch detail level: 1=core, 2=event-driven advanced, 3=use-case specialized, auto=decide from Level-1 triggers"),
+        level: z
+          .enum(["1", "2", "3", "auto"])
+          .default("auto")
+          .describe(
+            "Fetch detail level: 1=core, 2=event-driven advanced, 3=use-case specialized, auto=decide from Level-1 triggers",
+          ),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
@@ -100,23 +107,40 @@ export function registerOpenMeteo(server: McpServer) {
     async ({ latitude, longitude, models, hourly, daily, current, timezone, past_days, forecast_days, level }) => {
       const chosenModels = models ? csv(models).map(normalizeModelId) : undefined;
       const coreHourly = [
-        "temperature_2m", "precipitation", "wind_speed_10m", "wind_gusts_10m",
-        "weather_code", "cloud_cover", "precipitation_probability", "cape",
+        "temperature_2m",
+        "precipitation",
+        "wind_speed_10m",
+        "wind_gusts_10m",
+        "weather_code",
+        "cloud_cover",
+        "precipitation_probability",
+        "cape",
       ];
       const coreDaily = [
-        "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max",
-        "apparent_temperature_min", "precipitation_sum", "snowfall_sum",
-        "precipitation_probability_max", "wind_speed_10m_max", "wind_gusts_10m_max",
-        "weather_code", "uv_index_max", "et0_fao_evapotranspiration",
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "apparent_temperature_max",
+        "apparent_temperature_min",
+        "precipitation_sum",
+        "snowfall_sum",
+        "precipitation_probability_max",
+        "wind_speed_10m_max",
+        "wind_gusts_10m_max",
+        "weather_code",
+        "uv_index_max",
+        "et0_fao_evapotranspiration",
       ];
 
       const l1 = await apiGet("https://api.open-meteo.com/v1/forecast", {
-        latitude, longitude,
+        latitude,
+        longitude,
         models: chosenModels,
         hourly: hourly ? csv(hourly) : coreHourly,
         daily: daily ? csv(daily) : coreDaily,
         current: current ? csv(current) : undefined,
-        timezone, past_days: past_days ?? 0, forecast_days: forecast_days ?? 7,
+        timezone,
+        past_days: past_days ?? 0,
+        forecast_days: forecast_days ?? 7,
       });
       if (!l1.ok) return toToolResult(l1);
 
@@ -136,33 +160,63 @@ export function registerOpenMeteo(server: McpServer) {
       if (level === "3") {
         levelUsed = "3";
         finalRes = await apiGet("https://api.open-meteo.com/v1/forecast", {
-          latitude, longitude, models: chosenModels,
-          hourly: hourly ? csv(hourly) : [
-            "temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m",
-            "wind_speed_80m", "wind_direction_80m", "wind_speed_120m", "wind_direction_120m",
-            "shortwave_radiation", "direct_radiation", "diffuse_radiation",
-            "direct_normal_irradiance", "terrestrial_radiation",
-            "soil_temperature_6cm", "soil_temperature_18cm", "soil_moisture_1_to_3cm",
-            "wet_bulb_temperature_2m", "geopotential_height_1000hPa",
-            "geopotential_height_925hPa", "geopotential_height_700hPa",
-          ],
+          latitude,
+          longitude,
+          models: chosenModels,
+          hourly: hourly
+            ? csv(hourly)
+            : [
+                "temperature_2m",
+                "precipitation",
+                "weather_code",
+                "cape",
+                "wind_gusts_10m",
+                "wind_speed_80m",
+                "wind_direction_80m",
+                "wind_speed_120m",
+                "wind_direction_120m",
+                "shortwave_radiation",
+                "direct_radiation",
+                "diffuse_radiation",
+                "direct_normal_irradiance",
+                "terrestrial_radiation",
+                "soil_temperature_6cm",
+                "soil_temperature_18cm",
+                "soil_moisture_1_to_3cm",
+                "wet_bulb_temperature_2m",
+                "geopotential_height_1000hPa",
+                "geopotential_height_925hPa",
+                "geopotential_height_700hPa",
+              ],
           daily: daily ? csv(daily) : coreDaily,
           current: current ? csv(current) : undefined,
-          timezone, past_days: past_days ?? 0, forecast_days: 16,
+          timezone,
+          past_days: past_days ?? 0,
+          forecast_days: 16,
         });
       } else if (level === "2" || (level === "auto" && triggered)) {
         levelUsed = "2";
         finalRes = await apiGet("https://api.open-meteo.com/v1/forecast", {
-          latitude, longitude, models: chosenModels,
-          hourly: hourly ? csv(hourly) : [
-            ...coreHourly,
-            "temperature_850hPa", "temperature_500hPa", "lifted_index",
-            "convective_inhibition", "freezing_level_height", "visibility",
-            "boundary_layer_height",
-          ],
+          latitude,
+          longitude,
+          models: chosenModels,
+          hourly: hourly
+            ? csv(hourly)
+            : [
+                ...coreHourly,
+                "temperature_850hPa",
+                "temperature_500hPa",
+                "lifted_index",
+                "convective_inhibition",
+                "freezing_level_height",
+                "visibility",
+                "boundary_layer_height",
+              ],
           daily: daily ? csv(daily) : coreDaily,
           current: current ? csv(current) : undefined,
-          timezone, past_days: 7, forecast_days: forecast_days ?? 7,
+          timezone,
+          past_days: 7,
+          forecast_days: forecast_days ?? 7,
         });
       }
 
@@ -175,7 +229,7 @@ export function registerOpenMeteo(server: McpServer) {
         },
       };
       return toToolResult(enriched);
-    }
+    },
   );
 
   // --- Archive / ERA5 climatology (Step B) ------------------------------
@@ -187,8 +241,14 @@ export function registerOpenMeteo(server: McpServer) {
         "Historical reanalysis (ERA5) for climatology baselines. Provide start_date and end_date (YYYY-MM-DD). Used by skill Step B.",
       inputSchema: {
         ...latLon,
-        start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Start date YYYY-MM-DD"),
-        end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("End date YYYY-MM-DD"),
+        start_date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .describe("Start date YYYY-MM-DD"),
+        end_date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .describe("End date YYYY-MM-DD"),
         daily: z.string().optional().describe("Comma-separated daily variables"),
         hourly: z.string().optional().describe("Comma-separated hourly variables"),
         timezone: z.string().default("Europe/Rome"),
@@ -207,7 +267,7 @@ export function registerOpenMeteo(server: McpServer) {
         timezone,
       });
       return toToolResult(r);
-    }
+    },
   );
 
   // --- Marine (Step F) --------------------------------------------------
@@ -237,7 +297,7 @@ export function registerOpenMeteo(server: McpServer) {
         forecast_days,
       });
       return toToolResult(r);
-    }
+    },
   );
 
   // --- Air Quality / CAMS (Step H) --------------------------------------
@@ -269,7 +329,7 @@ export function registerOpenMeteo(server: McpServer) {
         forecast_days,
       });
       return toToolResult(r);
-    }
+    },
   );
 
   // --- Ensemble (Step J) ------------------------------------------------
@@ -301,7 +361,7 @@ export function registerOpenMeteo(server: McpServer) {
         forecast_days,
       });
       return toToolResult(r);
-    }
+    },
   );
 
   // --- Flood (GloFAS) ------------------------------------------------------
@@ -314,8 +374,18 @@ export function registerOpenMeteo(server: McpServer) {
       inputSchema: {
         ...latLon,
         ...openMeteoCommon,
-        daily: z.string().optional().describe("Comma-separated daily flood variables: river_discharge, river_discharge_mean, river_discharge_median, river_discharge_max, river_discharge_min, river_discharge_p25, river_discharge_p75"),
-        model: z.string().optional().describe("Flood model (default: GloFAS v4 Seamless). Valid: seo_v4_forecast, seo_v4_consolidated, glofas_v3_seamless, glofas_v3_forecast, glofas_v3_consolidated"),
+        daily: z
+          .string()
+          .optional()
+          .describe(
+            "Comma-separated daily flood variables: river_discharge, river_discharge_mean, river_discharge_median, river_discharge_max, river_discharge_min, river_discharge_p25, river_discharge_p75",
+          ),
+        model: z
+          .string()
+          .optional()
+          .describe(
+            "Flood model (default: GloFAS v4 Seamless). Valid: seo_v4_forecast, seo_v4_consolidated, glofas_v3_seamless, glofas_v3_forecast, glofas_v3_consolidated",
+          ),
         ensemble: z.boolean().default(false).describe("Set true to return all 50 ensemble members"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
@@ -333,7 +403,7 @@ export function registerOpenMeteo(server: McpServer) {
         forecast_days,
       });
       return toToolResult(r);
-    }
+    },
   );
 
   // --- Seasonal (ECMWF, 7 mesi) --------------------------------------------
@@ -346,8 +416,16 @@ export function registerOpenMeteo(server: McpServer) {
       inputSchema: {
         ...latLon,
         ...openMeteoCommon,
-        seasonal: z.string().optional().describe("Comma-separated seasonal variables: temperature_2m, precipitation, pressure_msl, cloud_cover, soil_moisture_total, geopotential_height_500hPa, temperature_850hPa, soil_temperature_0_to_7cm, etc."),
-        models: z.string().default("ecmwf_seasonal_seamless").describe("Seasonal model: ecmwf_seasonal_seamless (default)"),
+        seasonal: z
+          .string()
+          .optional()
+          .describe(
+            "Comma-separated seasonal variables: temperature_2m, precipitation, pressure_msl, cloud_cover, soil_moisture_total, geopotential_height_500hPa, temperature_850hPa, soil_temperature_0_to_7cm, etc.",
+          ),
+        models: z
+          .string()
+          .default("ecmwf_seasonal_seamless")
+          .describe("Seasonal model: ecmwf_seasonal_seamless (default)"),
         temporal_resolution: z.string().optional().describe("Time aggregation (default: hourly_6)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
@@ -367,6 +445,6 @@ export function registerOpenMeteo(server: McpServer) {
 
       const r = await apiGet("https://seasonal-api.open-meteo.com/v1/seasonal", params);
       return toToolResult(r);
-    }
+    },
   );
 }

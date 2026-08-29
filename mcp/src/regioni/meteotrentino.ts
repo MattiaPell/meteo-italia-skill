@@ -54,12 +54,12 @@ export function parseMeteoTrentinoObs(xml: string): MeteoTrentinoObs {
     const m = xml.match(new RegExp(`<${tag}>([-\\d.]+)</${tag}>`));
     return m ? parseFloat(m[1]) : null;
   };
-  const temps = [...xml.matchAll(/<temperatura_aria[^>]*>\s*<data>([^<]+)<\/data>\s*<temperatura>([-\d.]+)<\/temperatura>/g)];
+  const temps = [
+    ...xml.matchAll(/<temperatura_aria[^>]*>\s*<data>([^<]+)<\/data>\s*<temperatura>([-\d.]+)<\/temperatura>/g),
+  ];
   const lastTemp = temps.at(-1);
   const rains = [...xml.matchAll(/<precipitazione[^>]*>\s*<data>[^<]+<\/data>\s*<pioggia>([-\d.]+)<\/pioggia>/g)];
-  const precipSum = rains.length
-    ? Math.round(rains.reduce((a, m) => a + parseFloat(m[1]), 0) * 10) / 10
-    : null;
+  const precipSum = rains.length ? Math.round(rains.reduce((a, m) => a + parseFloat(m[1]), 0) * 10) / 10 : null;
   return {
     tmin: num("tmin"),
     tmax: num("tmax"),
@@ -83,10 +83,12 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   if (!best) return { ok: false, agenzia: "Meteotrentino", error: "nessuna stazione" };
   const obs = await apiGet(
     `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${best.codice}`,
-    {}, { acceptText: true }
+    {},
+    { acceptText: true },
   );
   return {
-    ok: obs.ok, agenzia: "Meteotrentino (P.A. Trento)",
+    ok: obs.ok,
+    agenzia: "Meteotrentino (P.A. Trento)",
     stazione: { codice: best.codice, nome: best.nome, distKm: best.distKm, quota: best.quota },
     osservazioni: obs.ok ? parseMeteoTrentinoObs(String(obs.data)) : null,
   };
@@ -101,7 +103,10 @@ export function registerMeteotrentino(server: McpServer) {
       description:
         "Dati recenti (dalla mezzanotte di ieri) delle stazioni meteo del Trentino: tmin/tmax, pioggia cumulata, ultima temperatura. Seleziona la stazione per codice (es. T0383) o la più vicina a lat/lon. Fonte open data Provincia Autonoma di Trento (CC BY).",
       inputSchema: {
-        codice: z.string().optional().describe("Codice stazione (es. T0383). Omesso = stazione attiva più vicina a lat/lon"),
+        codice: z
+          .string()
+          .optional()
+          .describe("Codice stazione (es. T0383). Omesso = stazione attiva più vicina a lat/lon"),
         latitude: z.coerce.number().optional().describe("Lat per stazione più vicina"),
         longitude: z.coerce.number().optional().describe("Lon per stazione più vicina"),
       },
@@ -137,14 +142,18 @@ export function registerMeteotrentino(server: McpServer) {
       }
       if (!stationCode) {
         return toToolResult({
-          ok: false, url: "https://dati.meteotrentino.it/service.asmx/listaStazioni",
-          status: 200, data: null, error: "Nessuna stazione trovata", elapsedMs: 0,
+          ok: false,
+          url: "https://dati.meteotrentino.it/service.asmx/listaStazioni",
+          status: 200,
+          data: null,
+          error: "Nessuna stazione trovata",
+          elapsedMs: 0,
         });
       }
       const r = await apiGet(
         `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${stationCode}`,
         {},
-        { acceptText: true }
+        { acceptText: true },
       );
       if (!r.ok) return toToolResult(r);
       const obs = parseMeteoTrentinoObs(String(r.data));
@@ -156,6 +165,6 @@ export function registerMeteotrentino(server: McpServer) {
           osservazioni: obs,
         },
       });
-    }
+    },
   );
 }

@@ -31,14 +31,14 @@ describe("parseRawMetar", () => {
 
 describe("inferModels", () => {
   it("handles multi-underscore ids without truncation", () => {
-    const daily = { "temperature_2m_max_metno_nve": [1], "precipitation_sum_ukmo_seamless": [0] };
+    const daily = { temperature_2m_max_metno_nve: [1], precipitation_sum_ukmo_seamless: [0] };
     const found = inferModels(daily, {});
     expect(found).toContain("metno_nve");
     expect(found).toContain("ukmo_seamless");
   });
 
   it("matches known Open-Meteo ids", () => {
-    const hourly = { "temperature_2m_ecmwf_ifs025": [1], "wind_gusts_10m_icon_d2": [1] };
+    const hourly = { temperature_2m_ecmwf_ifs025: [1], wind_gusts_10m_icon_d2: [1] };
     const found = inferModels({}, hourly);
     expect(found).toEqual(expect.arrayContaining(["ecmwf_ifs025", "icon_d2"]));
   });

@@ -108,10 +108,7 @@ type RetriableOpts = {
  * ApiResult (never throw) so tool output shape stays stable. GET responses are
  * served from an in-memory TTL cache (E2) to avoid duplicate upstream calls.
  */
-async function requestWithRetry(
-  url: string,
-  opts: RetriableOpts
-): Promise<ApiResult> {
+async function requestWithRetry(url: string, opts: RetriableOpts): Promise<ApiResult> {
   const host = (() => {
     try {
       return new URL(url).host;
@@ -145,9 +142,7 @@ async function requestWithRetry(
         headers: {
           "User-Agent": "meteo-italia-mcp/1.0",
           Accept: opts.acceptText ? "text/plain, */*" : "application/json, */*",
-          ...(opts.method === "POST"
-            ? { "Content-Type": "application/json" }
-            : {}),
+          ...(opts.method === "POST" ? { "Content-Type": "application/json" } : {}),
           ...(opts.headers ?? {}),
         },
         body: opts.body,
@@ -179,9 +174,8 @@ async function requestWithRetry(
       const retriable = res.status === 429 || res.status >= 500;
       if (retriable && attempt < HTTP_MAX_RETRIES) {
         const retryAfter = Number(res.headers.get("retry-after"));
-        const backoff = Number.isFinite(retryAfter) && retryAfter > 0
-          ? retryAfter * 1000
-          : HTTP_BACKOFF_BASE_MS * 2 ** attempt;
+        const backoff =
+          Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : HTTP_BACKOFF_BASE_MS * 2 ** attempt;
         await new Promise((r) => setTimeout(r, backoff));
         continue;
       }
@@ -214,11 +208,7 @@ async function requestWithRetry(
   }
 
   // Exhausted retries without resolving (shouldn't happen, but keeps TS happy).
-  throw new MeteoError(
-    "RETRY_EXHAUSTED",
-    `Request to ${url} failed after ${HTTP_MAX_RETRIES} retries`,
-    lastErr
-  );
+  throw new MeteoError("RETRY_EXHAUSTED", `Request to ${url} failed after ${HTTP_MAX_RETRIES} retries`, lastErr);
 }
 
 /**
@@ -228,7 +218,7 @@ async function requestWithRetry(
 export async function apiGet(
   baseUrl: string,
   params: Record<string, string | number | boolean | undefined | string[]>,
-  opts: { headers?: Record<string, string>; acceptText?: boolean; noCache?: boolean } = {}
+  opts: { headers?: Record<string, string>; acceptText?: boolean; noCache?: boolean } = {},
 ): Promise<ApiResult> {
   const url = buildUrl(baseUrl, params);
   return requestWithRetry(url, {
@@ -243,7 +233,7 @@ export async function apiGet(
 export async function apiPostJson(
   url: string,
   body: unknown,
-  opts: { headers?: Record<string, string> } = {}
+  opts: { headers?: Record<string, string> } = {},
 ): Promise<ApiResult> {
   return requestWithRetry(url, {
     headers: opts.headers,
@@ -254,7 +244,7 @@ export async function apiPostJson(
 
 export function buildUrl(
   base: string,
-  params: Record<string, string | number | boolean | undefined | string[]>
+  params: Record<string, string | number | boolean | undefined | string[]>,
 ): string {
   const u = new URL(base);
   for (const [k, v] of Object.entries(params)) {
@@ -274,7 +264,7 @@ export function buildUrl(
 
 /** Format an ApiResult as MCP tool content (text + structured). */
 export function toToolResult(result: ApiResult) {
-  const { cached, ...clean } = result;
+  const { cached: _cached, ...clean } = result;
   const text = JSON.stringify(clean, null, 2);
   return {
     content: [{ type: "text" as const, text }],
@@ -288,15 +278,11 @@ export function toToolResult(result: ApiResult) {
  * a non-ok response or a shape mismatch so malformed upstream JSON surfaces as
  * an actionable message instead of `undefined` fields downstream.
  */
-export function validateApiData<T>(
-  result: ApiResult,
-  schema: import("zod").ZodType<T>,
-  source: string
-): T {
+export function validateApiData<T>(result: ApiResult, schema: import("zod").ZodType<T>, source: string): T {
   if (!result.ok) {
     throw new MeteoError(
       "UPSTREAM_ERROR",
-      `${source} returned an error (HTTP ${result.status}): ${result.error ?? "unknown"}`
+      `${source} returned an error (HTTP ${result.status}): ${result.error ?? "unknown"}`,
     );
   }
   const parsed = schema.safeParse(result.data);
@@ -306,7 +292,7 @@ export function validateApiData<T>(
       `${source} returned an unexpected response shape: ${parsed.error.issues
         .slice(0, 3)
         .map((i) => i.path.join(".") || "<root>")
-        .join(", ")}`
+        .join(", ")}`,
     );
   }
   return parsed.data;

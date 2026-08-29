@@ -14,7 +14,10 @@ let publicWarned = false;
 /** Split a comma-joined query value into a list (mirrors the MCP tools). */
 function list(v: string | undefined): string[] | undefined {
   if (!v) return undefined;
-  const parts = v.split(",").map((x) => x.trim()).filter(Boolean);
+  const parts = v
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
   return parts.length ? parts : undefined;
 }
 
@@ -105,7 +108,11 @@ export function startDebugServer(port: number) {
       const summary = summarizeForecast(raw.data, modelList);
       const bytesRaw = JSON.stringify(raw.data).length;
       const bytesSum = JSON.stringify(summary).length;
-      return { ...raw, data: summary, compression: `${bytesRaw} -> ${bytesSum} bytes (${Math.round((1 - bytesSum / bytesRaw) * 100)}% smaller)` };
+      return {
+        ...raw,
+        data: summary,
+        compression: `${bytesRaw} -> ${bytesSum} bytes (${Math.round((1 - bytesSum / bytesRaw) * 100)}% smaller)`,
+      };
     },
     pc_allerte: async () => {
       const b = await fetchLatestBulletin();
@@ -128,10 +135,24 @@ export function startDebugServer(port: number) {
       const product = q.productType ?? "VMI";
       const latest = await fetchRadarLatest(product);
       if (!latest.ok || q.download !== "true" || latest.time == null) {
-        return { ok: latest.ok, url: "radar-api.protezionecivile.it", status: latest.ok ? 200 : 0, data: latest, error: latest.error, elapsedMs: 0 };
+        return {
+          ok: latest.ok,
+          url: "radar-api.protezionecivile.it",
+          status: latest.ok ? 200 : 0,
+          data: latest,
+          error: latest.error,
+          elapsedMs: 0,
+        };
       }
       const dl = await fetchRadarDownload(product, latest.time);
-      return { ok: dl.ok, url: dl.url, status: dl.status, data: { latest, download: dl.data }, error: dl.error, elapsedMs: dl.elapsedMs };
+      return {
+        ok: dl.ok,
+        url: dl.url,
+        status: dl.status,
+        data: { latest, download: dl.data },
+        error: dl.error,
+        elapsedMs: dl.elapsedMs,
+      };
     },
     checkwx: (q) => {
       if (!CHECKWX_API_KEY)
@@ -143,10 +164,17 @@ export function startDebugServer(port: number) {
           error: "CHECKWX_API_KEY non impostata",
           elapsedMs: 0,
         });
-      const codes = (q.icao ?? "").split(",").map((x) => x.trim().toUpperCase()).join(",");
-      return apiGet(`https://api.checkwx.com/v2/${q.type ?? "metar"}/${codes}/decoded`, {}, {
-        headers: { "X-API-KEY": CHECKWX_API_KEY },
-      });
+      const codes = (q.icao ?? "")
+        .split(",")
+        .map((x) => x.trim().toUpperCase())
+        .join(",");
+      return apiGet(
+        `https://api.checkwx.com/v2/${q.type ?? "metar"}/${codes}/decoded`,
+        {},
+        {
+          headers: { "X-API-KEY": CHECKWX_API_KEY },
+        },
+      );
     },
     aviationweather: (q) =>
       apiGet("https://aviationweather.gov/api/data/metar", { ids: q.ids, format: q.format ?? "json" }),
@@ -160,15 +188,14 @@ export function startDebugServer(port: number) {
       const path = q.sensor_id ? `${q.sensor_id}.json` : "index.json";
       return apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
     },
-    arpav_bollettino: () =>
-      apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
+    arpav_bollettino: () => apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
     arpav_idro: () =>
       apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
     meteotrentino: (q) =>
       apiGet(
         `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${q.codice ?? "T0383"}`,
         {},
-        { acceptText: true }
+        { acceptText: true },
       ),
     meteo_brief: async (q) => {
       const r = await runBrief({
@@ -180,8 +207,12 @@ export function startDebugServer(port: number) {
         models: q.models || undefined,
       });
       return {
-        ok: r.ok, url: "mcp://meteo_brief", status: r.ok ? 200 : 0,
-        data: r.data ?? null, error: r.error, elapsedMs: r.elapsedMs,
+        ok: r.ok,
+        url: "mcp://meteo_brief",
+        status: r.ok ? 200 : 0,
+        data: r.data ?? null,
+        error: r.error,
+        elapsedMs: r.elapsedMs,
       };
     },
     eumetsat: () =>
@@ -195,22 +226,21 @@ export function startDebugServer(port: number) {
         },
         elapsedMs: 0,
       }),
-    arpae_bollettino: () =>
-      apiGet("https://apps.arpae.it/REST/meteo_bollettini/", {}),
+    arpae_bollettino: () => apiGet("https://apps.arpae.it/REST/meteo_bollettini/", {}),
     arpafvg_previsioni: (q) => {
       const date = q.date ?? new Date().toISOString().slice(0, 10).replace(/-/g, "");
       return apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${date}.xml`, {}, { acceptText: true });
     },
     arpafvg_stazione: (q) =>
       apiGet(`http://dev.meteo.fvg.it/xml/stazioni/${q.codice ?? "UDI"}.xml`, {}, { acceptText: true }),
-    arpa_marche_stazioni: () =>
-      apiGet("https://apimeteo.regione.marche.it/Stazioni", {}),
-    arpa_marche_stazione: (q) =>
-      apiGet(`https://apimeteo.regione.marche.it/Stazione/${q.codice ?? ""}`, {}),
-    arpa_lombardia_stazioni: () =>
-      apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { "$limit": "10" }),
+    arpa_marche_stazioni: () => apiGet("https://apimeteo.regione.marche.it/Stazioni", {}),
+    arpa_marche_stazione: (q) => apiGet(`https://apimeteo.regione.marche.it/Stazione/${q.codice ?? ""}`, {}),
+    arpa_lombardia_stazioni: () => apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "10" }),
     arpa_lombardia_osservazioni: () =>
-      apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", { "$limit": "10", "$order": "data_osservazione DESC" }),
+      apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
+        $limit: "10",
+        $order: "data_osservazione DESC",
+      }),
     arpa_piemonte_stazioni: () =>
       apiGet("https://utility.arpa.piemonte.it/meteoidro/stazione_meteorologica/", { format: "json" }),
     open_meteo_flood: (q) =>
@@ -248,7 +278,7 @@ export function startDebugServer(port: number) {
           p50Ms: pct(m.latenciesMs, 50),
           p95Ms: pct(m.latenciesMs, 95),
         },
-      ])
+      ]),
     );
     res.json({ cache: getCacheStats(), perService });
   });

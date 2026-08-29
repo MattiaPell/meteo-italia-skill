@@ -83,16 +83,31 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
     const slon = s.longitudine ?? 0;
     if (!slat || !slon) continue;
     const d = haversine({ lat, lon }, { lat: slat, lon: slon });
-    if (!best || d < best.distKm) best = { codice: s.codice, nome: s.nome, comune: s.comune, provincia: s.provincia, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10, ultimoAgg: s.fine };
+    if (!best || d < best.distKm)
+      best = {
+        codice: s.codice,
+        nome: s.nome,
+        comune: s.comune,
+        provincia: s.provincia,
+        lat: slat,
+        lon: slon,
+        distKm: Math.round(d * 10) / 10,
+        ultimoAgg: s.fine,
+      };
   }
   if (!best) return { ok: false, agenzia: "ARPA Marche (AMAP)", error: "nessuna stazione vicina" };
   const dettaglio = await apiGet(`https://apimeteo.regione.marche.it/Stazione/${best.codice}`, {});
   return {
-    ok: true, agenzia: "ARPA Marche / AMAP Agrometeo",
+    ok: true,
+    agenzia: "ARPA Marche / AMAP Agrometeo",
     stazioneVicina: best,
-    sensori: dettaglio.ok ? ((dettaglio.data as any)?.listaSensori?.lista ?? []).map((sen: any) => ({
-      id: sen.idSensoreStazione, tipo: sen.descrizioneClasse, giornalieri: sen.haGiornalieri,
-    })) : [],
+    sensori: dettaglio.ok
+      ? ((dettaglio.data as any)?.listaSensori?.lista ?? []).map((sen: any) => ({
+          id: sen.idSensoreStazione,
+          tipo: sen.descrizioneClasse,
+          giornalieri: sen.haGiornalieri,
+        }))
+      : [],
   };
 }
 
@@ -105,7 +120,10 @@ export function registerArpaMarche(server: McpServer) {
       description:
         "Elenco delle stazioni meteo della rete AMAP Agrometeo Marche. Include coordinate, altitudine, provincia e data ultimo aggiornamento. Fonte: apimeteo.regione.marche.it (CC BY).",
       inputSchema: {
-        provincia: z.string().optional().describe("Filtra per sigla provincia (AN, AP, FM, MC, PU). Omesso = tutte le province."),
+        provincia: z
+          .string()
+          .optional()
+          .describe("Filtra per sigla provincia (AN, AP, FM, MC, PU). Omesso = tutte le province."),
         attive: z.boolean().optional().describe("Solo stazioni attive (default: true)."),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
@@ -129,7 +147,7 @@ export function registerArpaMarche(server: McpServer) {
           stazioni: filtered,
         },
       });
-    }
+    },
   );
 
   // --- ARPA Marche dettaglio stazione -------------------------------------
@@ -172,7 +190,7 @@ export function registerArpaMarche(server: McpServer) {
           stazione: detail,
         },
       });
-    }
+    },
   );
 
   // --- ARPA Marche grandezze disponibili ----------------------------------
@@ -197,6 +215,6 @@ export function registerArpaMarche(server: McpServer) {
           grandezze: (r.data as any)?.lista ?? [],
         },
       });
-    }
+    },
   );
 }

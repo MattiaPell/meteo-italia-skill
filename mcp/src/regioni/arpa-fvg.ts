@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
-import { haversine } from "../geo.js";
 
 // ---------------------------------------------------------------------------
 // ARPA FVG / OSMER — previsioni + dati stazioni (XML)
@@ -24,8 +23,7 @@ export function parseWfsStazioni(xml: string): FvgStation[] {
   const out: FvgStation[] = [];
   const members = xml.match(/<wfs:member>[\s\S]*?<\/wfs:member>/g) ?? [];
   for (const m of members) {
-    const get = (tag: string) =>
-      m.match(new RegExp(`<MONIT_AMB:${tag}>([^<]*)</MONIT_AMB:${tag}>`))?.[1]?.trim() ?? "";
+    const get = (tag: string) => m.match(new RegExp(`<MONIT_AMB:${tag}>([^<]*)</MONIT_AMB:${tag}>`))?.[1]?.trim() ?? "";
     const attiva = get("ATTIVA") === "S";
     const sospesa = get("SOSPENSIONE_OSSERVAZIONE") === "S";
     if (!attiva || sospesa) continue;
@@ -71,7 +69,6 @@ export function parseStazioneXml(xml: string): Record<string, unknown> | null {
 
   const obsMatch = xml.match(/<meteo_data>[\s\S]*?<\/meteo_data>/);
   if (!obsMatch) return null;
-  const obs = obsMatch[0];
 
   const cloudiness = getAttr("cloudiness", "descrizione") || get("cloudiness");
 
@@ -122,8 +119,7 @@ export function parsePrevisioniXml(xml: string): Record<string, unknown> {
       const zNome = zb.match(/nome="([^"]*)"/)?.[1];
       const zDesc = zb.match(/descrizione="([^"]*)"/)?.[1];
 
-      const getTag = (tag: string) =>
-        zb.match(new RegExp(`<${tag}(?:[^>]*>|>)([^<]*)</${tag}>`))?.[1]?.trim() ?? null;
+      const getTag = (tag: string) => zb.match(new RegExp(`<${tag}(?:[^>]*>|>)([^<]*)</${tag}>`))?.[1]?.trim() ?? null;
 
       zone.push({
         id: zId,
@@ -160,17 +156,26 @@ export function parsePrevisioniXml(xml: string): Record<string, unknown> {
 }
 
 // --- Adapter per brief.ts (FVG) ---------------------------------------------
-export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+export async function runBriefArpa(_lat: number, _lon: number): Promise<any> {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const r = await apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${today}.xml`, {}, { acceptText: true, noCache: true });
+  const r = await apiGet(
+    `http://dev.meteo.fvg.it/xml/previsioni/PW${today}.xml`,
+    {},
+    { acceptText: true, noCache: true },
+  );
   if (r.ok) {
     return { ok: true, agenzia: "ARPA FVG / OSMER (dev.meteo.fvg.it)", ...parsePrevisioniXml(String(r.data)) };
   }
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10).replace(/-/g, "");
-  const fb = await apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${yesterday}.xml`, {}, { acceptText: true, noCache: true });
+  const fb = await apiGet(
+    `http://dev.meteo.fvg.it/xml/previsioni/PW${yesterday}.xml`,
+    {},
+    { acceptText: true, noCache: true },
+  );
   if (!fb.ok) return { ok: false, agenzia: "ARPA FVG / OSMER", error: fb.error };
   return {
-    ok: true, agenzia: "ARPA FVG / OSMER (dev.meteo.fvg.it)",
+    ok: true,
+    agenzia: "ARPA FVG / OSMER (dev.meteo.fvg.it)",
     note: "Bollettino di ieri (quello di oggi non ancora disponibile)",
     ...parsePrevisioniXml(String(fb.data)),
   };
@@ -185,8 +190,14 @@ export function registerArpaFvg(server: McpServer) {
       description:
         "Previsioni meteorologiche per il Friuli Venezia Giulia (OSMER). Restituisce situazione generale, zone (REGIONE, Alpi Carniche, Prealpi, Pianura, Costa, ecc.) con attendibilità, probabilità precipitazioni/temporali, simboli e descrizione per mattina/pomeriggio/sera. Fonte: OSMER ARPA FVG, aggiornato 2x/giorno.",
       inputSchema: {
-        data: z.string().optional().describe("Data bollettino formato YYYYMMDD (es. 20260721). Omesso = ultimo disponibile."),
-        lingua: z.enum(["it", "en", "de", "sl", "fur"]).optional().describe("Lingua (it, en, de, sl, fur). Default: it."),
+        data: z
+          .string()
+          .optional()
+          .describe("Data bollettino formato YYYYMMDD (es. 20260721). Omesso = ultimo disponibile."),
+        lingua: z
+          .enum(["it", "en", "de", "sl", "fur"])
+          .optional()
+          .describe("Lingua (it, en, de, sl, fur). Default: it."),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
@@ -224,7 +235,7 @@ export function registerArpaFvg(server: McpServer) {
           ...parsePrevisioniXml(String(r.data)),
         },
       });
-    }
+    },
   );
 
   // --- Dati stazione FVG -------------------------------------------------
@@ -243,28 +254,36 @@ export function registerArpaFvg(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ codice, latitude, longitude }) => {
-      let stationCode = codice?.toUpperCase();
+      const stationCode = codice?.toUpperCase();
 
       // Se no codice, lista stazioni WFS e trova più vicina
       if (!stationCode) {
         if (latitude === undefined || longitude === undefined) {
           return toToolResult({
-            ok: false, url: "", status: 400, data: null,
+            ok: false,
+            url: "",
+            status: 400,
+            data: null,
             error: "Passa codice stazione oppure latitude+longitude",
             elapsedMs: 0,
           });
         }
 
         // Recupera la lista delle stazioni dal WFS
-        const wfsUrl = "https://serviziogc.regione.fvg.it/geoserver/MONIT_AMB/wfs?service=wfs&version=2.0.0&request=GetFeature&typeName=MONIT_AMB:STAZIONI_METEOROLOGICHE";
+        const wfsUrl =
+          "https://serviziogc.regione.fvg.it/geoserver/MONIT_AMB/wfs?service=wfs&version=2.0.0&request=GetFeature&typeName=MONIT_AMB:STAZIONI_METEOROLOGICHE";
         const wfs = await apiGet(wfsUrl, {}, { acceptText: true, noCache: true });
         if (!wfs.ok) return toToolResult(wfs);
 
         const stations = parseWfsStazioni(String(wfs.data));
         if (!stations.length) {
           return toToolResult({
-            ok: false, url: wfsUrl, status: 200, data: null,
-            error: "Nessuna stazione attiva trovata", elapsedMs: wfs.elapsedMs,
+            ok: false,
+            url: wfsUrl,
+            status: 200,
+            data: null,
+            error: "Nessuna stazione attiva trovata",
+            elapsedMs: wfs.elapsedMs,
           });
         }
 
@@ -291,7 +310,10 @@ export function registerArpaFvg(server: McpServer) {
       const parsed = parseStazioneXml(String(r.data));
       if (!parsed) {
         return toToolResult({
-          ok: false, url, status: 200, data: null,
+          ok: false,
+          url,
+          status: 200,
+          data: null,
           error: `Formato dati non riconosciuto per stazione ${stationCode}`,
           elapsedMs: r.elapsedMs,
         });
@@ -304,6 +326,6 @@ export function registerArpaFvg(server: McpServer) {
           ...parsed,
         },
       });
-    }
+    },
   );
 }

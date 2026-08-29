@@ -27,7 +27,9 @@ describe("extractZoneRegionMap", () => {
 describe("parseArpavIdroXml", () => {
   it("parses station blocks with last value and 6h trend", () => {
     const mk = (h: string, v: string) => `<DATI ISTANTE="${h}"><VM>${v}</VM></DATI>`;
-    const dati = Array.from({ length: 40 }, (_, i) => mk(`2026072100${String(i).padStart(2, "0")}`, i < 37 ? "0.50" : "0.80")).join("");
+    const dati = Array.from({ length: 40 }, (_, i) =>
+      mk(`2026072100${String(i).padStart(2, "0")}`, i < 37 ? "0.50" : "0.80"),
+    ).join("");
     const xml = `<CONTENITORE><STAZIONE><IDSTAZ>6</IDSTAZ><NOME><![CDATA[Adige a Verona]]></NOME><X>10.99</X><Y>45.44</Y><QUOTA>60</QUOTA><TIPOSTAZ>IDRO</TIPOSTAZ><PROVINCIA>VR</PROVINCIA><COMUNE><![CDATA[VERONA]]></COMUNE>${dati}</STAZIONE></CONTENITORE>`;
     const s = parseArpavIdroXml(xml);
     expect(s).toHaveLength(1);
@@ -138,8 +140,15 @@ describe("parseMeteoTrentinoObs", () => {
 describe("parseMetarStation (aviationweather JSON)", () => {
   it("parses the real aviationweather.gov shape", () => {
     const raw = {
-      icaoId: "LIPZ", temp: 29, dewp: 16, wdir: 130, wspd: 4,
-      visib: "6+", altim: 1014, cover: "CAVOK", fltCat: "VFR",
+      icaoId: "LIPZ",
+      temp: 29,
+      dewp: 16,
+      wdir: 130,
+      wspd: 4,
+      visib: "6+",
+      altim: 1014,
+      cover: "CAVOK",
+      fltCat: "VFR",
       rawOb: "METAR LIPZ 211250Z 13004KT CAVOK 29/16 Q1014 NOSIG",
     };
     const s = parseMetarStation(raw, 30);

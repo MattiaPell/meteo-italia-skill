@@ -31,7 +31,8 @@ export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const stations: ArpavIdroStation[] = [];
   const blocks = xml.match(/<STAZIONE>[\s\S]*?<\/STAZIONE>/g) ?? [];
   for (const b of blocks) {
-    const get = (tag: string) => b.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`))?.[1]?.trim() ?? "";
+    const get = (tag: string) =>
+      b.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`))?.[1]?.trim() ?? "";
     const datiMatches = [...b.matchAll(/<DATI ISTANTE="(\d{12})"><VM>([-\d.]+)<\/VM><\/DATI>/g)];
     if (!datiMatches.length) continue;
     const points = datiMatches.map((m) => ({
@@ -69,8 +70,12 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   const zoneRows = ((bol.data as any)?.data ?? [])
     .filter((r: any) => Number(r.giorno) <= 1)
     .map((r: any) => ({
-      zona: r.zona, giorno: r.giorno, scadenza: r.scadenza,
-      cielo: r.testo, precipitazioni: r.precipitazioni, attendibilita: r.attendibilita,
+      zona: r.zona,
+      giorno: r.giorno,
+      scadenza: r.scadenza,
+      cielo: r.testo,
+      precipitazioni: r.precipitazioni,
+      attendibilita: r.attendibilita,
     }));
   let idroVicino: any = null;
   if (idro.ok) {
@@ -81,7 +86,8 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
     idroVicino = stazioni;
   }
   return {
-    ok: bol.ok, agenzia: "ARPAV (Veneto)",
+    ok: bol.ok,
+    agenzia: "ARPAV (Veneto)",
     bollettino: { emissione: (bol.data as any)?.data?.[0]?.dataemissione ?? null, zone: zoneRows },
     idrometrieVicine: idroVicino,
   };
@@ -96,8 +102,19 @@ export function registerArpav(server: McpServer) {
       description:
         "Previsione ARPAV per le 15 zone del Veneto (stato del cielo, precipitazioni, temperature in quota, attendibilità) dal Centro Meteorologico regionale. Fonte ufficiale ARPAV REST (CC BY 4.0), aggiornata ~ogni giorno. Usa sempre per località in Veneto: è la previsione della rete regionale competente.",
       inputSchema: {
-        zona: z.string().optional().describe("Nome zona (es. 'Pianura polesana', 'Dolomiti Nord-Est', 'Costa'). Match parziale case-insensitive. Omesso = tutte le 15 zone."),
-        giorno: z.coerce.number().int().min(0).max(6).optional().describe("0=oggi, 1=domani... Omesso = tutti i giorni disponibili"),
+        zona: z
+          .string()
+          .optional()
+          .describe(
+            "Nome zona (es. 'Pianura polesana', 'Dolomiti Nord-Est', 'Costa'). Match parziale case-insensitive. Omesso = tutte le 15 zone.",
+          ),
+        giorno: z.coerce
+          .number()
+          .int()
+          .min(0)
+          .max(6)
+          .optional()
+          .describe("0=oggi, 1=domani... Omesso = tutti i giorni disponibili"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
@@ -134,7 +151,7 @@ export function registerArpav(server: McpServer) {
           count: compact.length,
         },
       });
-    }
+    },
   );
 
   // --- ARPAV livelli idrometrici (Veneto) --------------------------------
@@ -158,7 +175,7 @@ export function registerArpav(server: McpServer) {
       const r = await apiGet(
         "https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml",
         {},
-        { acceptText: true }
+        { acceptText: true },
       );
       if (!r.ok) return toToolResult(r);
       let stations = parseArpavIdroXml(String(r.data));
@@ -168,13 +185,14 @@ export function registerArpav(server: McpServer) {
       }
       if (nome) {
         const n = nome.toLowerCase();
-        stations = stations.filter(
-          (s) => s.nome.toLowerCase().includes(n) || s.comune.toLowerCase().includes(n)
-        );
+        stations = stations.filter((s) => s.nome.toLowerCase().includes(n) || s.comune.toLowerCase().includes(n));
       }
       if (latitude !== undefined && longitude !== undefined) {
         stations = stations
-          .map((s) => ({ ...s, distKm: Math.round(haversine({ lat: latitude, lon: longitude }, { lat: s.lat, lon: s.lon }) * 10) / 10 }))
+          .map((s) => ({
+            ...s,
+            distKm: Math.round(haversine({ lat: latitude, lon: longitude }, { lat: s.lat, lon: s.lon }) * 10) / 10,
+          }))
           .sort((a, b) => (a as any).distKm - (b as any).distKm);
       }
       const out = stations.slice(0, limit);
@@ -186,6 +204,6 @@ export function registerArpav(server: McpServer) {
           stazioni: out,
         },
       });
-    }
+    },
   );
 }

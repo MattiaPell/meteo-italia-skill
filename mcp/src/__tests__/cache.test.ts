@@ -17,7 +17,7 @@ describe("apiGet cache (E2)", () => {
     }) as unknown as typeof fetch;
 
     const before = getCacheStats();
-    const r1 = await apiGet("https://api.open-meteo.com/v1/forecast", { latitude: 1, longitude: 2 });
+    await apiGet("https://api.open-meteo.com/v1/forecast", { latitude: 1, longitude: 2 });
     const r2 = await apiGet("https://api.open-meteo.com/v1/forecast", { latitude: 1, longitude: 2 });
     await vi.runAllTimersAsync();
 

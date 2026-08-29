@@ -53,24 +53,42 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
     apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "200" }),
     apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
       $where: `data >= '${new Date(Date.now() - 7200 * 1000).toISOString().replace(/\.\d{3}Z$/, "")}'`,
-      $order: "data DESC", $limit: "50",
+      $order: "data DESC",
+      $limit: "50",
     }),
   ]);
-  const stazioni: any[] = stazioniR.status === "fulfilled" && stazioniR.value.ok ? (stazioniR.value.data as any[]) ?? [] : [];
+  const stazioni: any[] =
+    stazioniR.status === "fulfilled" && stazioniR.value.ok ? ((stazioniR.value.data as any[]) ?? []) : [];
   let bestObs: any = null;
   for (const s of stazioni) {
     const slat = parseFloat(s.lat) || 0;
     const slon = parseFloat(s.lng) || 0;
     if (!slat || !slon) continue;
     const d = haversine({ lat, lon }, { lat: slat, lon: slon });
-    if (!bestObs || d < bestObs.distKm) bestObs = { idsensore: s.idsensore, nome: s.nomestazione, provincia: s.provincia, tipologia: s.tipologia, quota: s.quota, lat: slat, lon: slon, distKm: Math.round(d * 10) / 10 };
+    if (!bestObs || d < bestObs.distKm)
+      bestObs = {
+        idsensore: s.idsensore,
+        nome: s.nomestazione,
+        provincia: s.provincia,
+        tipologia: s.tipologia,
+        quota: s.quota,
+        lat: slat,
+        lon: slon,
+        distKm: Math.round(d * 10) / 10,
+      };
   }
-  const osservazioni: any[] = obsR.status === "fulfilled" && obsR.value.ok ? ((obsR.value.data as any[]) ?? []).filter((o: any) => o.valore !== "-999") : [];
+  const osservazioni: any[] =
+    obsR.status === "fulfilled" && obsR.value.ok
+      ? ((obsR.value.data as any[]) ?? []).filter((o: any) => o.valore !== "-999")
+      : [];
   return {
-    ok: true, agenzia: "ARPA Lombardia (dati.lombardia.it)",
+    ok: true,
+    agenzia: "ARPA Lombardia (dati.lombardia.it)",
     stazioneVicina: bestObs,
     osservazioniRecenti: osservazioni.slice(0, 10).map((o: any) => ({
-      data: o.data, valore: o.valore, stato: o.stato,
+      data: o.data,
+      valore: o.valore,
+      stato: o.stato,
     })),
   };
 }
@@ -84,8 +102,14 @@ export function registerArpaLombardia(server: McpServer) {
       description:
         "Elenco delle stazioni idro-nivo-meteorologiche di ARPA Lombardia con coordinate, quota, provincia e tipologia sensori. Fonte: dati.lombardia.it (CC BY 4.0).",
       inputSchema: {
-        provincia: z.string().optional().describe("Sigla provincia (BG, BS, CO, CR, LC, LO, MI, MN, PV, SO, VA). Omesso = tutte."),
-        tipologia: z.string().optional().describe("Tipo sensore: Temperatura, Precipitazione, Vento, Umidita, etc. Omesso = tutti."),
+        provincia: z
+          .string()
+          .optional()
+          .describe("Sigla provincia (BG, BS, CO, CR, LC, LO, MI, MN, PV, SO, VA). Omesso = tutte."),
+        tipologia: z
+          .string()
+          .optional()
+          .describe("Tipo sensore: Temperatura, Precipitazione, Vento, Umidita, etc. Omesso = tutti."),
         limit: z.coerce.number().int().min(1).max(2000).optional().describe("Max risultati (default: 200)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
@@ -112,7 +136,7 @@ export function registerArpaLombardia(server: McpServer) {
           stazioni: stations,
         },
       });
-    }
+    },
   );
 
   // --- ARPA Lombardia osservazioni ----------------------------------------
@@ -124,8 +148,19 @@ export function registerArpaLombardia(server: McpServer) {
         "Ultime osservazioni orarie delle stazioni ARPA Lombardia (temperatura, precipitazione, vento, umidità, pressione, radiazione). I dati sono aggiornati in tempo reale dalla rete regionale. Filtra per provincia e tipo sensore.",
       inputSchema: {
         provincia: z.string().optional().describe("Sigla provincia (BG, BS, CO, CR, LC, LO, MI, MN, PV, SO, VA)."),
-        tipologia: z.string().optional().describe("Tipo sensore: Temperatura, Precipitazione, Vento, Livello Idrometrico, Umidita, etc. Omesso = tutte."),
-        minuti: z.coerce.number().int().min(10).max(1440).optional().describe("Intervallo in minuti per dati recenti (default: 120, max 1440 = 24h)"),
+        tipologia: z
+          .string()
+          .optional()
+          .describe(
+            "Tipo sensore: Temperatura, Precipitazione, Vento, Livello Idrometrico, Umidita, etc. Omesso = tutte.",
+          ),
+        minuti: z.coerce
+          .number()
+          .int()
+          .min(10)
+          .max(1440)
+          .optional()
+          .describe("Intervallo in minuti per dati recenti (default: 120, max 1440 = 24h)"),
         limit: z.coerce.number().int().min(1).max(1000).optional().describe("Max risultati (default: 100)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
@@ -142,17 +177,17 @@ export function registerArpaLombardia(server: McpServer) {
       const stations = ((stationR.data as any[]) ?? []).map(parseStation);
       if (!stations.length) {
         return toToolResult({
-          ok: false, url: stationR.url, status: 200, data: null,
-          error: provincia
-            ? `Nessuna stazione trovata in provincia ${provincia}`
-            : "Nessuna stazione trovata",
+          ok: false,
+          url: stationR.url,
+          status: 200,
+          data: null,
+          error: provincia ? `Nessuna stazione trovata in provincia ${provincia}` : "Nessuna stazione trovata",
           elapsedMs: Date.now() - 0,
         });
       }
 
       // Step 2: get recent readings for these sensor IDs
-      // Socrata SODA doesn't support JOIN — we batch by $where on IDs
-      const sensorIds = stations.map((s) => s.idsensore).filter(Boolean);
+      // Socrata SODA doesn't support JOIN — we batch by $where on date+ID
       // Efficient: use $where with date filter and IN clause
       const maxMinuti = minuti ?? 120; // default last 2h
       const fromDate = new Date(Date.now() - maxMinuti * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, "");
@@ -203,6 +238,6 @@ export function registerArpaLombardia(server: McpServer) {
           })),
         },
       });
-    }
+    },
   );
 }

@@ -14,8 +14,7 @@ import { apiGet, apiPostJson, toToolResult, ApiResult } from "./http.js";
 //   files/geojson/<STAMP>_tomorrow.json — livelli per zona (domani)
 // ---------------------------------------------------------------------------
 
-const GITHUB_API =
-  "https://api.github.com/repos/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica";
+const GITHUB_API = "https://api.github.com/repos/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica";
 const GITHUB_RAW =
   "https://raw.githubusercontent.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica/master/files";
 
@@ -56,13 +55,7 @@ export function alertLevelFromText(text: string): number {
 }
 
 function normalizeName(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/['’`]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 /** Parse the bulletin HTML description into { zona normalizzata → regione }. */
@@ -199,10 +192,7 @@ export function filterZones(zones: BulletinZone[], comune?: string, regione?: st
 }
 
 export function maxLevel(zones: BulletinZone[]): number {
-  return zones.reduce(
-    (m, z) => Math.max(m, z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico),
-    -1
-  );
+  return zones.reduce((m, z) => Math.max(m, z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico), -1);
 }
 
 // ---------------------------------------------------------------------------
@@ -215,11 +205,29 @@ export function maxLevel(zones: BulletinZone[]): number {
 // ---------------------------------------------------------------------------
 
 export const DPC_RADAR_PRODUCTS = [
-  "VMI", "SRI", "SRT1", "IR_108", "TEMP",
-  "CUM3", "CUM6", "CUM12", "CUM24",
-  "CAPPI_1", "CAPPI_2", "CAPPI_3", "CAPPI_4", "CAPPI_5",
-  "CAPPI_6", "CAPPI_7", "CAPPI_8", "CAPPI_9", "CAPPI_10",
-  "VIL", "ETM", "POH", "SITES",
+  "VMI",
+  "SRI",
+  "SRT1",
+  "IR_108",
+  "TEMP",
+  "CUM3",
+  "CUM6",
+  "CUM12",
+  "CUM24",
+  "CAPPI_1",
+  "CAPPI_2",
+  "CAPPI_3",
+  "CAPPI_4",
+  "CAPPI_5",
+  "CAPPI_6",
+  "CAPPI_7",
+  "CAPPI_8",
+  "CAPPI_9",
+  "CAPPI_10",
+  "VIL",
+  "ETM",
+  "POH",
+  "SITES",
 ] as const;
 
 const RADAR_BASE = "https://radar-api.protezionecivile.it";
@@ -236,10 +244,14 @@ export interface RadarLatest {
 }
 
 export async function fetchRadarLatest(product: string): Promise<RadarLatest> {
-  const r = await apiGet(`${RADAR_BASE}/findLastProductByType`, {
-    type: product,
-    origin: RADAR_ORIGIN,
-  }, { headers: { origin: RADAR_ORIGIN, referer: `${RADAR_ORIGIN}/` } });
+  const r = await apiGet(
+    `${RADAR_BASE}/findLastProductByType`,
+    {
+      type: product,
+      origin: RADAR_ORIGIN,
+    },
+    { headers: { origin: RADAR_ORIGIN, referer: `${RADAR_ORIGIN}/` } },
+  );
   if (!r.ok) {
     return { ok: false, product, time: null, timeIso: null, period: null, ageMinutes: null, error: r.error };
   }
@@ -260,7 +272,7 @@ export async function fetchRadarDownload(product: string, time: number): Promise
   return apiPostJson(
     `${RADAR_BASE}/downloadProduct?origin=${encodeURIComponent(RADAR_ORIGIN)}`,
     { productType: product, productDate: time },
-    { headers: { origin: RADAR_ORIGIN, referer: `${RADAR_ORIGIN}/` } }
+    { headers: { origin: RADAR_ORIGIN, referer: `${RADAR_ORIGIN}/` } },
   );
 }
 
@@ -274,7 +286,12 @@ export function registerDpc(server: McpServer) {
       description:
         "Livelli di allerta DPC per zona di allerta dal bollettino di criticità nazionale ufficiale (repo GitHub pcm-dpc, aggiornato ogni giorno ~14:30 + aggiornamenti). Filtra per comune (match esatto sulle 7904 anagrafiche) o regione. Restituisce livelli 0-3 per rischio idraulico/temporali/idrogeologico, oggi e domani. Sostituisce pc_allerte_wms (endpoint api.protezionecivile.gov.it defunto).",
       inputSchema: {
-        comune: z.string().optional().describe("Nome del comune esatto (es. 'Rovigo', 'Reggio Calabria'). Match sulla lista ufficiale dei comuni della zona di allerta."),
+        comune: z
+          .string()
+          .optional()
+          .describe(
+            "Nome del comune esatto (es. 'Rovigo', 'Reggio Calabria'). Match sulla lista ufficiale dei comuni della zona di allerta.",
+          ),
         regione: z.string().optional().describe("Filtra per regione (es. 'Veneto'). Ignorato se comune trovato."),
         day: z.enum(["today", "tomorrow", "both"]).default("both").describe("Giorno di validità del bollettino"),
       },
@@ -305,9 +322,7 @@ export function registerDpc(server: McpServer) {
       const todayZones = day !== "tomorrow" ? filterZones(b.today, comune, regione) : [];
       const tomorrowZones = day !== "today" ? filterZones(b.tomorrow, comune, regione) : [];
       const matched = comune
-        ? [...b.today, ...b.tomorrow].some((z) =>
-            z.comuni.some((x) => normalizeName(x) === normalizeName(comune))
-          )
+        ? [...b.today, ...b.tomorrow].some((z) => z.comuni.some((x) => normalizeName(x) === normalizeName(comune)))
         : true;
       const data = {
         fonte: "DPC Bollettino di Criticità (GitHub pcm-dpc, CC-BY)",
@@ -329,7 +344,7 @@ export function registerDpc(server: McpServer) {
         data,
         elapsedMs: Date.now() - start,
       });
-    }
+    },
   );
 
   server.registerTool(
@@ -340,7 +355,10 @@ export function registerDpc(server: McpServer) {
         "Ultimo prodotto disponibile dalla piattaforma Radar-DPC (REST API ufficiale, aggiornamento 5-60 min a seconda del prodotto). Con download=true restituisce anche la pre-signed URL S3 del GeoTIFF (scade in ~300s: scaricarla subito). Prodotti: VMI (riflettività max, 5min), SRI (pioggia al suolo mm/h, 5min), SRT1 (cumulata 1h), CUM3/6/12/24 (cumulate pluviometriche), IR_108 (nuvolosità sat), TEMP (mappa temperature oraria), VIL/ETM/POH (grandine), CAPPI_1..10, SITES (stato radar). Sostituisce dpc_radar_vmi (parsing risposta errato: il timestamp è in lastProducts[0].time).",
       inputSchema: {
         product: z.enum(DPC_RADAR_PRODUCTS).default("VMI").describe("Tipo di prodotto radar/sat/suolo"),
-        download: z.boolean().default(false).describe("Se true, richiede anche la URL di download del GeoTIFF (pre-signed, ~300s di validità)"),
+        download: z
+          .boolean()
+          .default(false)
+          .describe("Se true, richiede anche la URL di download del GeoTIFF (pre-signed, ~300s di validità)"),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
@@ -391,6 +409,6 @@ export function registerDpc(server: McpServer) {
         },
         elapsedMs: Date.now() - start,
       });
-    }
+    },
   );
 }

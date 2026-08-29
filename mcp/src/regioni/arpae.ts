@@ -78,7 +78,7 @@ export function formatGiorno(day: string, data: any): Record<string, unknown> {
 }
 
 // --- Adapter per brief.ts (Emilia-Romagna) -----------------------------------
-export async function runBriefArpa(lat: number, lon: number): Promise<any> {
+export async function runBriefArpa(_lat: number, _lon: number): Promise<any> {
   const list = await apiGet(`${BOLLETTINO_BASE}/?sort=-_id&max_results=1`, {});
   if (!list.ok) return { ok: false, agenzia: "ARPAE Emilia-Romagna", error: list.error };
   const items: any[] = (list.data as any)?._items ?? [];
@@ -88,7 +88,8 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   if (!full.ok) return { ok: false, agenzia: "ARPAE Emilia-Romagna", error: full.error };
   const raw = full.data as any;
   return {
-    ok: true, agenzia: "ARPAE Emilia-Romagna (dati.arpae.it)",
+    ok: true,
+    agenzia: "ARPAE Emilia-Romagna (dati.arpae.it)",
     bollettino: {
       emissione: items[0]?.emissione ?? null,
       oggi: formatGiorno("oggi", raw),
@@ -105,25 +106,32 @@ export function registerArpae(server: McpServer) {
       description:
         "Bollettino meteorologico regionale ARPAE Emilia-Romagna con previsioni fino a 4 giorni. Include testo regionale (cielo, temperatura, vento, mare), dati tabellari per fascia (costa, pianura, rilievi) e dettaglio provinciale (BO, FE, FC, MO, PC, PR, RA, RE, RN). Fonte: Arpae SIMC / dati.arpae.it.",
       inputSchema: {
-        giorno: z.enum(GIORNI).optional().describe("Giorno: oggi, domani, dopodomani, quartogiorno. Omesso = tutti i giorni."),
-        provincia: z.string().optional().describe("Sigla provincia (BO, FE, FC, MO, PC, PR, RA, RE, RN). Omesso = solo regionale."),
+        giorno: z
+          .enum(GIORNI)
+          .optional()
+          .describe("Giorno: oggi, domani, dopodomani, quartogiorno. Omesso = tutti i giorni."),
+        provincia: z
+          .string()
+          .optional()
+          .describe("Sigla provincia (BO, FE, FC, MO, PC, PR, RA, RE, RN). Omesso = solo regionale."),
       },
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ giorno, provincia }) => {
       // Ottieni l'ultimo bollettino
-      const list = await apiGet(
-        `${BOLLETTINO_BASE}/?sort=-_id&max_results=1`,
-        {}
-      );
+      const list = await apiGet(`${BOLLETTINO_BASE}/?sort=-_id&max_results=1`, {});
       if (!list.ok) return toToolResult(list);
 
       const items: any[] = (list.data as any)?._items ?? [];
       if (!items.length) {
         return toToolResult({
-          ok: false, url: list.url, status: 200, data: null,
-          error: "Nessun bollettino disponibile", elapsedMs: list.elapsedMs,
+          ok: false,
+          url: list.url,
+          status: 200,
+          data: null,
+          error: "Nessun bollettino disponibile",
+          elapsedMs: list.elapsedMs,
         });
       }
 
@@ -137,7 +145,10 @@ export function registerArpae(server: McpServer) {
       const provFilter = provincia?.toUpperCase();
       if (provFilter && !PROVINCE.includes(provFilter as Provincia)) {
         return toToolResult({
-          ok: false, url: full.url, status: 200, data: null,
+          ok: false,
+          url: full.url,
+          status: 200,
+          data: null,
           error: `Provincia non valida: ${provFilter}. Valide: ${PROVINCE.join(", ")}`,
           elapsedMs: full.elapsedMs,
         });
@@ -147,7 +158,7 @@ export function registerArpae(server: McpServer) {
       const previsioni: Record<string, unknown> = {};
 
       for (const g of giorni) {
-        let gd = formatGiorno(g, raw);
+        const gd = formatGiorno(g, raw);
         if (provFilter && gd) {
           // Filtra solo provincia richiesta e regionale
           const gObj = gd as Record<string, unknown>;
@@ -167,6 +178,6 @@ export function registerArpae(server: McpServer) {
           giorni_disponibili: giorni,
         },
       });
-    }
+    },
   );
 }
