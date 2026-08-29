@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult, openMeteoCommon, latLon, ApiResult } from "./http.js";
-import { normalizeModelId } from "./reference_tools.js";
+import { normalizeModelId } from "./models.js";
 
 /**
  * Compute a compact per-model summary from a raw Open-Meteo forecast/ensemble
@@ -11,7 +11,10 @@ import { normalizeModelId } from "./reference_tools.js";
  * The result is ~90% smaller than the raw payload and is what the skill's
  * report actually needs (daily extremes, totals, event-hour counts).
  */
-export function summarizeForecast(raw: any, models?: string[]): {
+export function summarizeForecast(
+  raw: any,
+  models?: string[],
+): {
   location: { latitude: number; longitude: number; elevation?: number; timezone: string };
   days: Array<{
     date: string;
@@ -28,27 +31,27 @@ export function summarizeForecast(raw: any, models?: string[]): {
         thunderstorm_hours: number;
       }
     >;
+    score: number;
+    flags: string[];
   }>;
 } {
   const daily = raw?.daily;
   const hourly = raw?.hourly;
   const dates: string[] = (daily?.time as string[]) ?? [];
 
-       // Open-Meteo appends `_<model>` to every variable when multiple models are
-       // requested. Model ids contain underscores (e.g. ecmwf_ifs025), so we match
+  // Open-Meteo appends `_<model>` to every variable when multiple models are
+  // requested. Model ids contain underscores (e.g. ecmwf_ifs025), so we match
   // the known model ids against the end of each key instead of naive splitting.
   const modelList = (models && models.length ? models : inferModels(daily, hourly)).map(normalizeModelId);
 
   const pickDaily = (model: string, base: string): number[] | undefined => {
     const arr =
-      (daily?.[`${base}_${model}`] as number[]) ??
-      (modelList.length === 1 ? (daily?.[base] as number[]) : undefined);
+      (daily?.[`${base}_${model}`] as number[]) ?? (modelList.length === 1 ? (daily?.[base] as number[]) : undefined);
     return Array.isArray(arr) ? arr : undefined;
   };
   const pickHourly = (model: string, base: string): number[] | undefined => {
     const arr =
-      (hourly?.[`${base}_${model}`] as number[]) ??
-      (modelList.length === 1 ? (hourly?.[base] as number[]) : undefined);
+      (hourly?.[`${base}_${model}`] as number[]) ?? (modelList.length === 1 ? (hourly?.[base] as number[]) : undefined);
     return Array.isArray(arr) ? arr : undefined;
   };
 
@@ -95,17 +98,31 @@ export function summarizeForecast(raw: any, models?: string[]): {
     const thun = Math.max(...vals.map((m) => m.thunderstorm_hours ?? 0));
     let score = 100;
     const flags: string[] = [];
-    if (psum != null && psum > 0) { score -= Math.min(40, psum * 4); if (psum >= 10) flags.push("pioggia_forte"); }
+    if (psum != null && psum > 0) {
+      score -= Math.min(40, psum * 4);
+      if (psum >= 10) flags.push("pioggia_forte");
+    }
     if (pprob != null && pprob > 50) score -= (pprob - 50) * 0.3;
-    if (gust != null && gust > 40) { score -= Math.min(25, (gust - 40) * 0.6); if (gust >= 70) flags.push("vento_forte"); }
-    if (thun > 0) { score -= Math.min(25, thun * 2); flags.push("temporale"); }
+    if (gust != null && gust > 40) {
+      score -= Math.min(25, (gust - 40) * 0.6);
+      if (gust >= 70) flags.push("vento_forte");
+    }
+    if (thun > 0) {
+      score -= Math.min(25, thun * 2);
+      flags.push("temporale");
+    }
     if (cape != null && cape > 800) flags.push("instabile");
-    if (tmax != null && tmax >= 34) { score -= (tmax - 34) * 2; flags.push("caldo_estremo"); }
-    if (tmin != null && tmin <= 0) { score -= Math.min(15, (0 - tmin) * 1.5); if (tmin <= -5) flags.push("gelo"); }
+    if (tmax != null && tmax >= 34) {
+      score -= (tmax - 34) * 2;
+      flags.push("caldo_estremo");
+    }
+    if (tmin != null && tmin <= 0) {
+      score -= Math.min(15, (0 - tmin) * 1.5);
+      if (tmin <= -5) flags.push("gelo");
+    }
     score = Math.max(0, Math.min(100, Math.round(score)));
     return { score, flags };
   };
-
 
   // Hourly event counts (per model, over the whole window).
   if (hourly?.time) {
@@ -225,8 +242,14 @@ export function registerSummaries(server: McpServer) {
       inputSchema: {
         ...latLon,
         ...openMeteoCommon,
-        models: z.string().optional().describe("Comma-separated model list, e.g. ecmwf_ifs025,icon_seamless,gfs_seamless"),
-        hourly: z.string().optional().describe("Comma-separated hourly variables (need weather_code + precipitation for event counts)"),
+        models: z
+          .string()
+          .optional()
+          .describe("Comma-separated model list, e.g. ecmwf_ifs025,icon_seamless,gfs_seamless"),
+        hourly: z
+          .string()
+          .optional()
+          .describe("Comma-separated hourly variables (need weather_code + precipitation for event counts)"),
         daily: z.string().optional().describe("Comma-separated daily variables"),
         current: z.string().optional().describe("Comma-separated current variables"),
       },
@@ -237,28 +260,45 @@ export function registerSummaries(server: McpServer) {
       const raw = await apiGet("https://api.open-meteo.com/v1/forecast", {
         latitude,
         longitude,
-        models: models ? models.split(",").map((x) => x.trim()).filter(Boolean) : undefined,
+        models: models
+          ? models
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : undefined,
         hourly: hourly
-          ? hourly.split(",").map((x) => x.trim()).filter(Boolean)
+          ? hourly
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
           : ["temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m"],
         daily: daily
-          ? daily.split(",").map((x) => x.trim()).filter(Boolean)
-          : [
-              "temperature_2m_max",
-              "temperature_2m_min",
-              "precipitation_sum",
-              "precipitation_probability_max",
-            ],
-        current: current ? current.split(",").map((x) => x.trim()).filter(Boolean) : undefined,
+          ? daily
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "precipitation_probability_max"],
+        current: current
+          ? current
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : undefined,
         timezone,
         past_days,
         forecast_days,
       });
       if (!raw.ok) return toToolResult(raw);
-      const modelList = models ? models.split(",").map((x) => x.trim()).filter(Boolean).map(normalizeModelId) : undefined;
+      const modelList = models
+        ? models
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean)
+            .map(normalizeModelId)
+        : undefined;
       const summary = summarizeForecast(raw.data, modelList);
       const result: ApiResult = { ...raw, data: summary };
       return toToolResult(result);
-    }
+    },
   );
 }
