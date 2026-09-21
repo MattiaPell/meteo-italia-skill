@@ -1,8 +1,31 @@
 import { describe, it, expect } from "vitest";
-import { alertLevelFromText, extractZoneRegionMap } from "../dpc.js";
+import { alertLevelFromText, extractZoneRegionMap, maxLevel } from "../dpc.js";
+import type { BulletinZone } from "../dpc.js";
 import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
+
+describe("maxLevel", () => {
+  it("returns -1 for an empty array", () => {
+    expect(maxLevel([])).toBe(-1);
+  });
+
+  it("returns the maximum level among the risks for a single zone", () => {
+    const zone = {
+      livelli: { idraulico: 1, temporali: 3, idrogeologico: 2 },
+    } as BulletinZone;
+    expect(maxLevel([zone])).toBe(3);
+  });
+
+  it("returns the overall maximum level for multiple zones", () => {
+    const zones = [
+      { livelli: { idraulico: 1, temporali: 0, idrogeologico: 1 } },
+      { livelli: { idraulico: 2, temporali: 2, idrogeologico: 0 } },
+      { livelli: { idraulico: 0, temporali: 1, idrogeologico: 3 } },
+    ] as BulletinZone[];
+    expect(maxLevel(zones)).toBe(3);
+  });
+});
 
 describe("alertLevelFromText", () => {
   it("maps official bulletin texts to 0-3", () => {
