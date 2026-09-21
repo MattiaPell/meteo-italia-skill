@@ -55,7 +55,13 @@ export function alertLevelFromText(text: string): number {
 }
 
 function normalizeName(s: string): string {
-  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`]/g, " ").replace(/\s+/g, " ").trim();
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['’`]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** Parse the bulletin HTML description into { zona normalizzata → regione }. */
@@ -63,15 +69,14 @@ export function extractZoneRegionMap(html: string): Map<string, string> {
   const map = new Map<string, string>();
   // Handle both <b> and <strong> tags (DPC format may change)
   const re = /<(?:b|strong)>([^<]{2,40})<\/(?:b|strong)>\s*:\s*([^<]+)/g;
-  let m: RegExpExecArray | null = re.exec(html);
-  while (m !== null) {
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) {
     const regione = m[1].trim();
     if (/CRITICA|RISCHIO|ALLERTA/i.test(regione)) continue;
     for (const zona of m[2].split(",")) {
       const z = zona.trim().replace(/\.$/, "");
       if (z) map.set(normalizeName(z), regione);
     }
-    m = re.exec(html);
   }
   return map;
 }
@@ -160,10 +165,14 @@ export async function fetchLatestBulletin(): Promise<BulletinResult> {
     today: [],
     tomorrow: [],
   };
-  for (const day of ["today", "tomorrow"] as const) {
-    const gj = await apiGet(`${GITHUB_RAW}/geojson/${stamp}_${day}.json`, {});
+  const days = ["today", "tomorrow"] as const;
+  const results = await Promise.all(
+    days.map((day) => apiGet(`${GITHUB_RAW}/geojson/${stamp}_${day}.json`, {}))
+  );
+  days.forEach((day, i) => {
+    const gj = results[i];
     if (gj.ok) out[day] = parseZoneGeojson(gj.data, regionByZone);
-  }
+  });
   if (!out.today.length && !out.tomorrow.length) {
     out.ok = false;
     out.error = `GeoJSON zone non disponibili per il bollettino ${stamp}`;

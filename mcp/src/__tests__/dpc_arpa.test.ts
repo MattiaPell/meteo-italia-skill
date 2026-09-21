@@ -4,12 +4,52 @@ import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
 
+describe("maxLevel", () => {
+  it("returns -1 for an empty array", () => {
+    expect(maxLevel([])).toBe(-1);
+  });
+
+  it("returns the maximum level among the risks for a single zone", () => {
+    const zone = {
+      livelli: { idraulico: 1, temporali: 3, idrogeologico: 2 },
+    } as BulletinZone;
+    expect(maxLevel([zone])).toBe(3);
+  });
+
+  it("returns the overall maximum level for multiple zones", () => {
+    const zones = [
+      { livelli: { idraulico: 1, temporali: 0, idrogeologico: 1 } },
+      { livelli: { idraulico: 2, temporali: 2, idrogeologico: 0 } },
+      { livelli: { idraulico: 0, temporali: 1, idrogeologico: 3 } },
+    ] as BulletinZone[];
+    expect(maxLevel(zones)).toBe(3);
+  });
+});
+
 describe("alertLevelFromText", () => {
   it("maps official bulletin texts to 0-3", () => {
     expect(alertLevelFromText("Assenza di fenomeni significativi prevedibili / NESSUNA ALLERTA")).toBe(0);
     expect(alertLevelFromText("Ordinaria criticità per rischio temporali / Allerta gialla")).toBe(1);
     expect(alertLevelFromText("Moderata criticità per rischio idrogeologico / Allerta arancione")).toBe(2);
     expect(alertLevelFromText("Elevata criticità per rischio idraulico / Allerta rossa")).toBe(3);
+  });
+
+  it("handles unknown or empty strings by returning 0", () => {
+    expect(alertLevelFromText("")).toBe(0);
+    expect(alertLevelFromText("unknown string here")).toBe(0);
+    expect(alertLevelFromText("12345")).toBe(0);
+  });
+
+  it("requires 'allerta' prefix to match", () => {
+    expect(alertLevelFromText("allerta rossa")).toBe(3);
+    expect(alertLevelFromText("allerta arancione")).toBe(2);
+    expect(alertLevelFromText("allerta gialla")).toBe(1);
+  });
+
+  it("handles whitespace and casing variations correctly", () => {
+    expect(alertLevelFromText("ALLERTA   ROSSA")).toBe(3);
+    expect(alertLevelFromText("AllErTa aRaNciOne")).toBe(2);
+    expect(alertLevelFromText("allerta\tgialla")).toBe(1);
   });
 });
 
@@ -85,6 +125,35 @@ describe("extractZoneRegionMap", () => {
     expect(map.get("costa romagnola")).toBe("Emilia Romagna");
     expect(map.get("orobie bergamasche")).toBe("Lombardia");
     expect(map.has("ordinaria criticita' per rischio temporali / allerta gialla:")).toBe(false);
+  });
+
+  it("handles <strong> tags and removes trailing dots", () => {
+    const html =
+      "<strong>Veneto</strong>: Alto Piave, Basso Piave.";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("alto piave")).toBe("Veneto");
+    expect(map.get("basso piave")).toBe("Veneto"); // Trailing dot should be removed
+  });
+
+  it("skips regions containing CRITICA, RISCHIO, or ALLERTA without causing infinite loops", () => {
+    const html =
+      "<b>ALLERTA ROSSA</b>: rischio diffuso<br/><b>Lazio</b>: Bacini Costieri Sud";
+    const map = extractZoneRegionMap(html);
+    expect(map.has("rischio diffuso")).toBe(false);
+    expect(map.get("bacini costieri sud")).toBe("Lazio");
+  });
+
+  it("handles empty zones correctly", () => {
+    const html = "<b>Campania</b>: Zona 1, , Zona 2.";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("zona 1")).toBe("Campania");
+    expect(map.get("zona 2")).toBe("Campania");
+    expect(map.size).toBe(2);
+  });
+
+  it("returns empty map if no matches are found", () => {
+    const map = extractZoneRegionMap("<p>No regions here</p>");
+    expect(map.size).toBe(0);
   });
 });
 
