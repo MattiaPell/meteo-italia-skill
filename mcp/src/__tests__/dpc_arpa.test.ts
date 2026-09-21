@@ -11,6 +11,24 @@ describe("alertLevelFromText", () => {
     expect(alertLevelFromText("Moderata criticità per rischio idrogeologico / Allerta arancione")).toBe(2);
     expect(alertLevelFromText("Elevata criticità per rischio idraulico / Allerta rossa")).toBe(3);
   });
+
+  it("handles unknown or empty strings by returning 0", () => {
+    expect(alertLevelFromText("")).toBe(0);
+    expect(alertLevelFromText("unknown string here")).toBe(0);
+    expect(alertLevelFromText("12345")).toBe(0);
+  });
+
+  it("requires 'allerta' prefix to match", () => {
+    expect(alertLevelFromText("allerta rossa")).toBe(3);
+    expect(alertLevelFromText("allerta arancione")).toBe(2);
+    expect(alertLevelFromText("allerta gialla")).toBe(1);
+  });
+
+  it("handles whitespace and casing variations correctly", () => {
+    expect(alertLevelFromText("ALLERTA   ROSSA")).toBe(3);
+    expect(alertLevelFromText("AllErTa aRaNciOne")).toBe(2);
+    expect(alertLevelFromText("allerta\tgialla")).toBe(1);
+  });
 });
 
 describe("extractZoneRegionMap", () => {
