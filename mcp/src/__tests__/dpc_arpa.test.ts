@@ -11,6 +11,24 @@ describe("alertLevelFromText", () => {
     expect(alertLevelFromText("Moderata criticità per rischio idrogeologico / Allerta arancione")).toBe(2);
     expect(alertLevelFromText("Elevata criticità per rischio idraulico / Allerta rossa")).toBe(3);
   });
+
+  it("handles unknown or empty strings by returning 0", () => {
+    expect(alertLevelFromText("")).toBe(0);
+    expect(alertLevelFromText("unknown string here")).toBe(0);
+    expect(alertLevelFromText("12345")).toBe(0);
+  });
+
+  it("requires 'allerta' prefix to match", () => {
+    expect(alertLevelFromText("allerta rossa")).toBe(3);
+    expect(alertLevelFromText("allerta arancione")).toBe(2);
+    expect(alertLevelFromText("allerta gialla")).toBe(1);
+  });
+
+  it("handles whitespace and casing variations correctly", () => {
+    expect(alertLevelFromText("ALLERTA   ROSSA")).toBe(3);
+    expect(alertLevelFromText("AllErTa aRaNciOne")).toBe(2);
+    expect(alertLevelFromText("allerta\tgialla")).toBe(1);
+  });
 });
 
 describe("extractZoneRegionMap", () => {
@@ -21,6 +39,35 @@ describe("extractZoneRegionMap", () => {
     expect(map.get("costa romagnola")).toBe("Emilia Romagna");
     expect(map.get("orobie bergamasche")).toBe("Lombardia");
     expect(map.has("ordinaria criticita' per rischio temporali / allerta gialla:")).toBe(false);
+  });
+
+  it("handles <strong> tags and removes trailing dots", () => {
+    const html =
+      "<strong>Veneto</strong>: Alto Piave, Basso Piave.";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("alto piave")).toBe("Veneto");
+    expect(map.get("basso piave")).toBe("Veneto"); // Trailing dot should be removed
+  });
+
+  it("skips regions containing CRITICA, RISCHIO, or ALLERTA without causing infinite loops", () => {
+    const html =
+      "<b>ALLERTA ROSSA</b>: rischio diffuso<br/><b>Lazio</b>: Bacini Costieri Sud";
+    const map = extractZoneRegionMap(html);
+    expect(map.has("rischio diffuso")).toBe(false);
+    expect(map.get("bacini costieri sud")).toBe("Lazio");
+  });
+
+  it("handles empty zones correctly", () => {
+    const html = "<b>Campania</b>: Zona 1, , Zona 2.";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("zona 1")).toBe("Campania");
+    expect(map.get("zona 2")).toBe("Campania");
+    expect(map.size).toBe(2);
+  });
+
+  it("returns empty map if no matches are found", () => {
+    const map = extractZoneRegionMap("<p>No regions here</p>");
+    expect(map.size).toBe(0);
   });
 });
 
