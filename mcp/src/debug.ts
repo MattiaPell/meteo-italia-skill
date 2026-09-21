@@ -416,9 +416,21 @@ document.getElementById('run').onclick = async ()=>{
     const data = await res.json();
     const ms = Math.round(performance.now()-t0);
     urlEl.textContent = data.url || '';
-    meta.innerHTML = '<span class="'+(data.ok?'status-ok':'status-err')+'">'+(data.ok?'OK':'ERRORE')+'</span> HTTP '+(data.status??'-')+' · '+ms+'ms';
+    meta.textContent = '';
+    const span = document.createElement('span');
+    span.className = data.ok ? 'status-ok' : 'status-err';
+    span.textContent = data.ok ? 'OK' : 'ERRORE';
+    meta.appendChild(span);
+    meta.appendChild(document.createTextNode(' HTTP ' + (data.status ?? '-') + ' · ' + ms + 'ms'));
     out.textContent = JSON.stringify(data.data, null, 2);
-  } catch(e){ meta.innerHTML='<span class="status-err">ERRORE</span>'; out.textContent=String(e); }
+  } catch(e){
+    meta.textContent = '';
+    const span = document.createElement('span');
+    span.className = 'status-err';
+    span.textContent = 'ERRORE';
+    meta.appendChild(span);
+    out.textContent=String(e);
+  }
 };
 </script>
 </body>
