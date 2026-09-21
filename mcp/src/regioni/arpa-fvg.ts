@@ -19,6 +19,10 @@ export interface FvgStation {
   sensori: string[];
 }
 
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
 /** Parse WFS response per lista stazioni. */
 export function parseWfsStazioni(xml: string): FvgStation[] {
   const out: FvgStation[] = [];

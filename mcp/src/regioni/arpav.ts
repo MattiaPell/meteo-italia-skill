@@ -27,6 +27,10 @@ export interface ArpavIdroStation {
   ultimoRilievo: string | null;
 }
 
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
 /** Parse the ARPAV Ultime48ore.xml hydrometric file (ISO-8859-1). */
 export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const stations: ArpavIdroStation[] = [];

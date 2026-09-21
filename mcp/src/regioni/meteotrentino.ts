@@ -18,6 +18,10 @@ export interface MeteoTrentinoStation {
   lon: number;
 }
 
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
 /** Parse the meteotrentino listaStazioni XML (active stations only). */
 export function parseMeteoTrentinoStations(xml: string): MeteoTrentinoStation[] {
   const out: MeteoTrentinoStation[] = [];
