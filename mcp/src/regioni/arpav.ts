@@ -2,6 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
 import { haversine } from "../geo.js";
+import { escapeRegExp } from "../utils.js";
 
 // ---------------------------------------------------------------------------
 // ARPAV (Veneto) — previsioni per 15 zone + livelli idrometrici
@@ -32,7 +33,11 @@ export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const blocks = xml.match(/<STAZIONE>[\s\S]*?<\/STAZIONE>/g) ?? [];
   for (const b of blocks) {
     const get = (tag: string) =>
-      b.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`))?.[1]?.trim() ?? "";
+      b
+        .match(
+          new RegExp(`<${escapeRegExp(tag)}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${escapeRegExp(tag)}>`),
+        )?.[1]
+        ?.trim() ?? "";
     const datiMatches = [...b.matchAll(/<DATI ISTANTE="(\d{12})"><VM>([-\d.]+)<\/VM><\/DATI>/g)];
     if (!datiMatches.length) continue;
     const points = datiMatches.map((m) => ({
