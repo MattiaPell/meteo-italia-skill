@@ -160,10 +160,14 @@ export async function fetchLatestBulletin(): Promise<BulletinResult> {
     today: [],
     tomorrow: [],
   };
-  for (const day of ["today", "tomorrow"] as const) {
-    const gj = await apiGet(`${GITHUB_RAW}/geojson/${stamp}_${day}.json`, {});
+  const days = ["today", "tomorrow"] as const;
+  const results = await Promise.all(
+    days.map((day) => apiGet(`${GITHUB_RAW}/geojson/${stamp}_${day}.json`, {}))
+  );
+  days.forEach((day, i) => {
+    const gj = results[i];
     if (gj.ok) out[day] = parseZoneGeojson(gj.data, regionByZone);
-  }
+  });
   if (!out.today.length && !out.tomorrow.length) {
     out.ok = false;
     out.error = `GeoJSON zone non disponibili per il bollettino ${stamp}`;
