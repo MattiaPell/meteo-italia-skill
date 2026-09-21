@@ -18,12 +18,18 @@ export interface FvgStation {
   sensori: string[];
 }
 
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
 /** Parse WFS response per lista stazioni. */
 export function parseWfsStazioni(xml: string): FvgStation[] {
   const out: FvgStation[] = [];
   const members = xml.match(/<wfs:member>[\s\S]*?<\/wfs:member>/g) ?? [];
   for (const m of members) {
-    const get = (tag: string) => m.match(new RegExp(`<MONIT_AMB:${tag}>([^<]*)</MONIT_AMB:${tag}>`))?.[1]?.trim() ?? "";
+    const get = (tag: string) =>
+      m.match(new RegExp(`<MONIT_AMB:${escapeRegExp(tag)}>([^<]*)</MONIT_AMB:${escapeRegExp(tag)}>`))?.[1]?.trim() ??
+      "";
     const attiva = get("ATTIVA") === "S";
     const sospesa = get("SOSPENSIONE_OSSERVAZIONE") === "S";
     if (!attiva || sospesa) continue;
@@ -59,11 +65,11 @@ export function parseWfsStazioni(xml: string): FvgStation[] {
 /** Parse stazione XML (ultimi dati). */
 export function parseStazioneXml(xml: string): Record<string, unknown> | null {
   const get = (tag: string) => {
-    const m = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
+    const m = xml.match(new RegExp(`<${escapeRegExp(tag)}[^>]*>([^<]*)</${escapeRegExp(tag)}>`));
     return m ? m[1].trim() : null;
   };
   const getAttr = (tag: string, attr: string) => {
-    const m = xml.match(new RegExp(`<${tag}[^>]*\\s${attr}="([^"]*)"`));
+    const m = xml.match(new RegExp(`<${escapeRegExp(tag)}[^>]*\\s${escapeRegExp(attr)}="([^"]*)"`));
     return m ? m[1].trim() : null;
   };
 
@@ -96,7 +102,7 @@ export function parseStazioneXml(xml: string): Record<string, unknown> | null {
 /** Parse previsioni XML. */
 export function parsePrevisioniXml(xml: string): Record<string, unknown> {
   const get = (tag: string) => {
-    const m = xml.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`));
+    const m = xml.match(new RegExp(`<${escapeRegExp(tag)}>([\\s\\S]*?)</${escapeRegExp(tag)}>`));
     return m ? m[1].trim() : null;
   };
 
@@ -119,7 +125,8 @@ export function parsePrevisioniXml(xml: string): Record<string, unknown> {
       const zNome = zb.match(/nome="([^"]*)"/)?.[1];
       const zDesc = zb.match(/descrizione="([^"]*)"/)?.[1];
 
-      const getTag = (tag: string) => zb.match(new RegExp(`<${tag}(?:[^>]*>|>)([^<]*)</${tag}>`))?.[1]?.trim() ?? null;
+      const getTag = (tag: string) =>
+        zb.match(new RegExp(`<${escapeRegExp(tag)}(?:[^>]*>|>)([^<]*)</${escapeRegExp(tag)}>`))?.[1]?.trim() ?? null;
 
       zone.push({
         id: zId,
