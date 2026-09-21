@@ -22,6 +22,35 @@ describe("extractZoneRegionMap", () => {
     expect(map.get("orobie bergamasche")).toBe("Lombardia");
     expect(map.has("ordinaria criticita' per rischio temporali / allerta gialla:")).toBe(false);
   });
+
+  it("handles <strong> tags and removes trailing dots", () => {
+    const html =
+      "<strong>Veneto</strong>: Alto Piave, Basso Piave.";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("alto piave")).toBe("Veneto");
+    expect(map.get("basso piave")).toBe("Veneto"); // Trailing dot should be removed
+  });
+
+  it("skips regions containing CRITICA, RISCHIO, or ALLERTA without causing infinite loops", () => {
+    const html =
+      "<b>ALLERTA ROSSA</b>: rischio diffuso<br/><b>Lazio</b>: Bacini Costieri Sud";
+    const map = extractZoneRegionMap(html);
+    expect(map.has("rischio diffuso")).toBe(false);
+    expect(map.get("bacini costieri sud")).toBe("Lazio");
+  });
+
+  it("handles empty zones correctly", () => {
+    const html = "<b>Campania</b>: Zona 1, , Zona 2.";
+    const map = extractZoneRegionMap(html);
+    expect(map.get("zona 1")).toBe("Campania");
+    expect(map.get("zona 2")).toBe("Campania");
+    expect(map.size).toBe(2);
+  });
+
+  it("returns empty map if no matches are found", () => {
+    const map = extractZoneRegionMap("<p>No regions here</p>");
+    expect(map.size).toBe(0);
+  });
 });
 
 describe("parseArpavIdroXml", () => {
