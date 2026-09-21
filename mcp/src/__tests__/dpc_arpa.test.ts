@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { alertLevelFromText, extractZoneRegionMap, maxLevel } from "../dpc.js";
-import type { BulletinZone } from "../dpc.js";
+import { alertLevelFromText, extractZoneRegionMap, filterZones, type BulletinZone } from "../dpc.js";
 import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
@@ -51,6 +50,70 @@ describe("alertLevelFromText", () => {
     expect(alertLevelFromText("ALLERTA   ROSSA")).toBe(3);
     expect(alertLevelFromText("AllErTa aRaNciOne")).toBe(2);
     expect(alertLevelFromText("allerta\tgialla")).toBe(1);
+  });
+});
+
+describe("filterZones", () => {
+  const dummyZone = (zona: string, regione: string | null, comuni: string[]): BulletinZone => ({
+    zona,
+    regione,
+    comuni,
+    livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 },
+    testi: { idraulico: "", temporali: "", idrogeologico: "" },
+    mappa: "",
+  });
+
+  const zones = [
+    dummyZone("Z1", "Lombardia", ["Milano", "Monza"]),
+    dummyZone("Z2", "Emilia Romagna", ["Bologna", "Parma"]),
+    dummyZone("Z3", "Veneto", ["Venezia", "Padova"]),
+    dummyZone("Z4", null, ["Roma"]),
+  ];
+
+  it("returns all zones if no filters are provided", () => {
+    expect(filterZones(zones)).toEqual(zones);
+  });
+
+  it("filters by comune (case-insensitive full word match)", () => {
+    const res = filterZones(zones, "milano");
+    expect(res).toHaveLength(1);
+    expect(res[0].zona).toBe("Z1");
+
+    const resNoMatch = filterZones(zones, "firenze");
+    expect(resNoMatch).toHaveLength(0);
+  });
+
+  it("filters by regione (case-insensitive substring match)", () => {
+    const res = filterZones(zones, undefined, "lombardia");
+    expect(res).toHaveLength(1);
+    expect(res[0].zona).toBe("Z1");
+
+    const resSub = filterZones(zones, undefined, "lombard");
+    expect(resSub).toHaveLength(1);
+    expect(resSub[0].zona).toBe("Z1");
+  });
+
+  it("handles null regions correctly when filtering by regione", () => {
+    const res = filterZones(zones, undefined, "lazio");
+    expect(res).toHaveLength(0);
+  });
+
+  it("filters by both comune and regione correctly (matched)", () => {
+    const res1 = filterZones(zones, "milano", "lombardia");
+    expect(res1).toHaveLength(1);
+    expect(res1[0].zona).toBe("Z1");
+  });
+
+  it("filters by both comune and regione correctly (unmatched combinations)", () => {
+    const res2 = filterZones(zones, "milano", "emilia");
+    expect(res2).toHaveLength(0);
+
+    const res3 = filterZones(zones, "bologna", "lombardia");
+    expect(res3).toHaveLength(0);
+  });
+
+  it("handles empty zone list gracefully", () => {
+    expect(filterZones([], "milano", "lombardia")).toEqual([]);
   });
 });
 
