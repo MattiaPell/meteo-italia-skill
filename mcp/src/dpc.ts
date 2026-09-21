@@ -55,7 +55,13 @@ export function alertLevelFromText(text: string): number {
 }
 
 function normalizeName(s: string): string {
-  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`]/g, " ").replace(/\s+/g, " ").trim();
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['’`]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** Parse the bulletin HTML description into { zona normalizzata → regione }. */
