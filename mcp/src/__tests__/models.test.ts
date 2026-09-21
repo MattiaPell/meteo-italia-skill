@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeModelId, round1 } from "../models";
+import { normalizeModelId, round1 } from "../models.js";
 
 describe("models", () => {
   describe("round1", () => {
