@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { alertLevelFromText, extractZoneRegionMap, filterZones, type BulletinZone } from "../dpc.js";
+import { alertLevelFromText, extractZoneRegionMap, filterZones, maxLevel, type BulletinZone } from "../dpc.js";
 import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
