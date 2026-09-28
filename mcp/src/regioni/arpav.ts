@@ -32,12 +32,7 @@ export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const stations: ArpavIdroStation[] = [];
   const blocks = xml.match(/<STAZIONE>[\s\S]*?<\/STAZIONE>/g) ?? [];
   for (const b of blocks) {
-    const get = (tag: string) =>
-      b
-        .match(
-          new RegExp(`<${escapeRegExp(tag)}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${escapeRegExp(tag)}>`),
-        )?.[1]
-        ?.trim() ?? "";
+    const get = (tag: string) => b.match(getTagRegex(tag))?.[1]?.trim() ?? "";
     const datiMatches = [...b.matchAll(/<DATI ISTANTE="(\d{12})"><VM>([-\d.]+)<\/VM><\/DATI>/g)];
     if (!datiMatches.length) continue;
     const points = datiMatches.map((m) => ({
