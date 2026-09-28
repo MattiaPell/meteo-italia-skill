@@ -70,11 +70,11 @@ export function parseWfsStazioni(xml: string): FvgStation[] {
 /** Parse stazione XML (ultimi dati). */
 export function parseStazioneXml(xml: string): Record<string, unknown> | null {
   const get = (tag: string) => {
-    const m = xml.match(new RegExp(`<${escapeRegExp(tag)}[^>]*>([^<]*)</${escapeRegExp(tag)}>`));
+    const m = xml.match(getCachedRegExp("staz", tag, (t) => `<${t}[^>]*>([^<]*)</${t}>`));
     return m ? m[1].trim() : null;
   };
   const getAttr = (tag: string, attr: string) => {
-    const m = xml.match(new RegExp(`<${escapeRegExp(tag)}[^>]*\\s${escapeRegExp(attr)}="([^"]*)"`));
+    const m = xml.match(getCachedRegExp(`staz_attr_${attr}`, tag, (t) => `<${t}[^>]*\\s${escapeRegExp(attr)}="([^"]*)"`));
     return m ? m[1].trim() : null;
   };
 
