@@ -69,6 +69,19 @@ export function parseRawMetar(raw: string, _nwpTempC?: number): any {
   };
 }
 
+/** Extract and map stations from aviationweather.gov payload */
+export function extractAviationWeatherStations(payload: any, nwpTempC?: number): any[] {
+  const list = Array.isArray(payload) ? payload : (payload?.data ?? payload?.features ?? [payload]);
+  return list.filter(Boolean).map((s: any) => {
+    const rawText = s.rawOb ?? s.raw_text;
+    const hasJsonFields = s.temp != null || s.temp_c != null;
+    if (rawText && !hasJsonFields) {
+      return parseMetarStation(parseRawMetar(rawText, nwpTempC), nwpTempC);
+    }
+    return parseMetarStation(s, nwpTempC);
+  });
+}
+
 export function registerItalianSources(server: McpServer) {
   // --- CheckWX METAR/TAF (Step K, primary) -----------------------------
   server.registerTool(
@@ -123,15 +136,7 @@ export function registerItalianSources(server: McpServer) {
         });
       }
       const payload = fallback.data as any;
-      const list = Array.isArray(payload) ? payload : (payload?.data ?? payload?.features ?? [payload]);
-      const stations = list.filter(Boolean).map((s: any) => {
-        const rawText = s.rawOb ?? s.raw_text;
-        const hasJsonFields = s.temp != null || s.temp_c != null;
-        if (rawText && !hasJsonFields) {
-          return parseMetarStation(parseRawMetar(rawText, nwpTempC), nwpTempC);
-        }
-        return parseMetarStation(s, nwpTempC);
-      });
+      const stations = extractAviationWeatherStations(payload, nwpTempC);
       return toToolResult({ ...fallback, data: { stations, raw: fallback.data, source: "aviationweather_fallback" } });
     },
   );
@@ -159,15 +164,7 @@ export function registerItalianSources(server: McpServer) {
       if (!r.ok) return toToolResult(r);
       // aviationweather returns either an array or {data: [...]} / {features: [...]}
       const payload = r.data as any;
-      const list = Array.isArray(payload) ? payload : (payload?.data ?? payload?.features ?? [payload]);
-      const stations = list.filter(Boolean).map((s: any) => {
-        const rawText = s.rawOb ?? s.raw_text;
-        const hasJsonFields = s.temp != null || s.temp_c != null;
-        if (rawText && !hasJsonFields) {
-          return parseMetarStation(parseRawMetar(rawText, nwpTempC), nwpTempC);
-        }
-        return parseMetarStation(s, nwpTempC);
-      });
+      const stations = extractAviationWeatherStations(payload, nwpTempC);
       return toToolResult({ ...r, data: { stations, raw: r.data } });
     },
   );
