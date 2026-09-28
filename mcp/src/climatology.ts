@@ -29,14 +29,16 @@ export function registerClimatology(server: McpServer) {
       let results: any[] = [];
 
       const keys = Object.keys(climatologyData);
-      const filteredKeys = region ? keys.filter((k) => k.toLowerCase().includes(region.toLowerCase())) : keys;
+      const searchRegion = region ? region.toLowerCase() : undefined;
+      const filteredKeys = searchRegion ? keys.filter((k) => k.toLowerCase().includes(searchRegion)) : keys;
 
+      const searchCityName = cityName ? cityName.toLowerCase() : undefined;
       for (const regKey of filteredKeys) {
         const cities = climatologyData[regKey] ?? [];
         for (const city of cities) {
           let matchesName = true;
-          if (cityName) {
-            matchesName = city.name.toLowerCase().includes(cityName.toLowerCase());
+          if (searchCityName) {
+            matchesName = city.name.toLowerCase().includes(searchCityName);
           }
           if (matchesName) {
             if (latitude !== undefined && longitude !== undefined) {
