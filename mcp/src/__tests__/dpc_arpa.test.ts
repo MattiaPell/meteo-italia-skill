@@ -58,6 +58,7 @@ describe("filterZones", () => {
     zona,
     regione,
     comuni,
+    normalizedComuni: new Set(comuni.map((c) => c.toLowerCase())), // Simplified normalizeName for tests
     livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 },
     testi: { idraulico: "", temporali: "", idrogeologico: "" },
     mappa: "",
