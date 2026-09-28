@@ -67,6 +67,17 @@ export function parseWfsStazioni(xml: string): FvgStation[] {
   return out;
 }
 
+const xmlRegexCache = new Map<string, RegExp>();
+function getCachedRegExp(prefix: string, tag: string, factory: (t: string) => string): RegExp {
+  const key = `${prefix}_${tag}`;
+  let re = xmlRegexCache.get(key);
+  if (!re) {
+    re = new RegExp(factory(escapeRegExp(tag)));
+    xmlRegexCache.set(key, re);
+  }
+  return re;
+}
+
 /** Parse stazione XML (ultimi dati). */
 export function parseStazioneXml(xml: string): Record<string, unknown> | null {
   const get = (tag: string) => {
