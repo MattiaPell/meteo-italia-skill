@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
-import { escapeRegExp } from "../utils.js";
 
 // ---------------------------------------------------------------------------
 // ARPA FVG / OSMER — previsioni + dati stazioni (XML)
