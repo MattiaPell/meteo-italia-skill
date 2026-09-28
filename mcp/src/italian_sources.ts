@@ -235,7 +235,7 @@ export function registerItalianSources(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ sensor_id }) => {
-      const path = sensor_id ? `${sensor_id}.json` : "index.json";
+      const path = sensor_id ? `${encodeURIComponent(sensor_id)}.json` : "index.json";
       const r = await apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
       return toToolResult(r);
     },

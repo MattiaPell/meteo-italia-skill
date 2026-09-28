@@ -3,6 +3,17 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
 import { escapeRegExp } from "../utils.js";
 
+const regexCache = new Map<string, RegExp>();
+function getCachedRegExp(prefix: string, tag: string, buildFn: (escapedTag: string) => string): RegExp {
+  const key = `${prefix}_${tag}`;
+  let re = regexCache.get(key);
+  if (!re) {
+    re = new RegExp(buildFn(escapeRegExp(tag)));
+    regexCache.set(key, re);
+  }
+  return re;
+}
+
 // ---------------------------------------------------------------------------
 // ARPA FVG / OSMER — previsioni + dati stazioni (XML)
 // http://dev.meteo.fvg.it/xml/previsioni/PW{YYYYMMDD}.xml
@@ -74,7 +85,9 @@ export function parseStazioneXml(xml: string): Record<string, unknown> | null {
     return m ? m[1].trim() : null;
   };
   const getAttr = (tag: string, attr: string) => {
-    const m = xml.match(getCachedRegExp(`staz_attr_${attr}`, tag, (t) => `<${t}[^>]*\\s${escapeRegExp(attr)}="([^"]*)"`));
+    const m = xml.match(
+      getCachedRegExp(`staz_attr_${attr}`, tag, (t) => `<${t}[^>]*\\s${escapeRegExp(attr)}="([^"]*)"`),
+    );
     return m ? m[1].trim() : null;
   };
 
