@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { maxLevel, alertLevelFromText, extractZoneRegionMap, filterZones, type BulletinZone } from "../dpc.js";
+import { alertLevelFromText, extractZoneRegionMap, filterZones, maxLevel, type BulletinZone } from "../dpc.js";
 import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
@@ -58,6 +58,7 @@ describe("filterZones", () => {
     zona,
     regione,
     comuni,
+    normalizedComuni: new Set(comuni.map((c) => c.toLowerCase())), // Simplified normalizeName for tests
     livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 },
     testi: { idraulico: "", temporali: "", idrogeologico: "" },
     mappa: "",

@@ -22,6 +22,7 @@ export interface BulletinZone {
   zona: string;
   regione: string | null;
   comuni: string[];
+  normalizedComuni: Set<string>;
   livelli: {
     idraulico: number;
     temporali: number;
@@ -91,10 +92,12 @@ function parseZoneGeojson(fc: any, regionByZone: Map<string, string>): BulletinZ
     const tIdr = String(p["Per rischio idraulico"] ?? "");
     const tTemp = String(p["Per rischio temporali"] ?? "");
     const tGeo = String(p["Per rischio idrogeologico"] ?? "");
+    const comuniArray = Array.isArray(p["Comuni"]) ? p["Comuni"].map(String) : [];
     zones.push({
       zona,
       regione: regionByZone.get(normalizeName(zona)) ?? null,
-      comuni: Array.isArray(p["Comuni"]) ? p["Comuni"].map(String) : [],
+      comuni: comuniArray,
+      normalizedComuni: new Set(comuniArray.map(normalizeName)),
       livelli: {
         idraulico: alertLevelFromText(tIdr),
         temporali: alertLevelFromText(tTemp),
@@ -193,7 +196,7 @@ export function filterZones(zones: BulletinZone[], comune?: string, regione?: st
   }
   if (comune) {
     const c = normalizeName(comune);
-    out = out.filter((z) => z.comuni.some((x) => normalizeName(x) === c));
+    out = out.filter((z) => z.normalizedComuni.has(c));
   }
   return out;
 }
@@ -329,7 +332,7 @@ export function registerDpc(server: McpServer) {
       const todayZones = day !== "tomorrow" ? filterZones(b.today, comune, regione) : [];
       const tomorrowZones = day !== "today" ? filterZones(b.tomorrow, comune, regione) : [];
       const matched = comune
-        ? [...b.today, ...b.tomorrow].some((z) => z.comuni.some((x) => normalizeName(x) === normalizeName(comune)))
+        ? [...b.today, ...b.tomorrow].some((z) => z.normalizedComuni.has(normalizeName(comune)))
         : true;
       const data = {
         fonte: "DPC Bollettino di Criticità (GitHub pcm-dpc, CC-BY)",

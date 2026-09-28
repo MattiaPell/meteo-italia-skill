@@ -2,7 +2,6 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
 import { haversine } from "../geo.js";
-import { escapeRegExp } from "../utils.js";
 
 // ---------------------------------------------------------------------------
 // Meteotrentino (P.A. Trento)
@@ -18,22 +17,29 @@ export interface MeteoTrentinoStation {
   lon: number;
 }
 
+const RE_STATION_FINE = /<fine>([\s\S]*?)<\/fine>/;
+const RE_STATION_LAT = /<latitudine>([\s\S]*?)<\/latitudine>/;
+const RE_STATION_LON = /<longitudine>([\s\S]*?)<\/longitudine>/;
+const RE_STATION_CODICE = /<codice>([\s\S]*?)<\/codice>/;
+const RE_STATION_NOMEBREVE = /<nomebreve>([\s\S]*?)<\/nomebreve>/;
+const RE_STATION_NOME = /<nome>([\s\S]*?)<\/nome>/;
+const RE_STATION_QUOTA = /<quota>([\s\S]*?)<\/quota>/;
+
 /** Parse the meteotrentino listaStazioni XML (active stations only). */
 export function parseMeteoTrentinoStations(xml: string): MeteoTrentinoStation[] {
   const out: MeteoTrentinoStation[] = [];
   const blocks = xml.match(/<anagrafica>[\s\S]*?<\/anagrafica>/g) ?? [];
   for (const b of blocks) {
-    const get = (tag: string) =>
-      b.match(new RegExp(`<${escapeRegExp(tag)}>([\\s\\S]*?)</${escapeRegExp(tag)}>`))?.[1]?.trim() ?? "";
-    const fine = get("fine");
-    if (fine) continue;
-    const lat = parseFloat(get("latitudine"));
-    const lon = parseFloat(get("longitudine"));
+    if (b.match(RE_STATION_FINE)?.[1]?.trim()) continue;
+
+    const lat = parseFloat(b.match(RE_STATION_LAT)?.[1]?.trim() ?? "");
+    const lon = parseFloat(b.match(RE_STATION_LON)?.[1]?.trim() ?? "");
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+
     out.push({
-      codice: get("codice"),
-      nome: get("nomebreve") || get("nome"),
-      quota: parseFloat(get("quota")) || null,
+      codice: b.match(RE_STATION_CODICE)?.[1]?.trim() ?? "",
+      nome: (b.match(RE_STATION_NOMEBREVE)?.[1]?.trim() || b.match(RE_STATION_NOME)?.[1]?.trim()) ?? "",
+      quota: parseFloat(b.match(RE_STATION_QUOTA)?.[1]?.trim() ?? "") || null,
       lat,
       lon,
     });
@@ -50,12 +56,16 @@ export interface MeteoTrentinoObs {
   precipSumMm: number | null;
 }
 
+const RE_OBS_TMIN = /<tmin>([-\d.]+)<\/tmin>/;
+const RE_OBS_TMAX = /<tmax>([-\d.]+)<\/tmax>/;
+const RE_OBS_RAIN = /<rain>([-\d.]+)<\/rain>/;
+
 /** Parse ultimiDatiStazione XML (dati dalla mezzanotte del giorno precedente). */
 export function parseMeteoTrentinoObs(xml: string): MeteoTrentinoObs {
-  const num = (tag: string) => {
-    const m = xml.match(new RegExp(`<${escapeRegExp(tag)}>([-\\d.]+)</${escapeRegExp(tag)}>`));
+  const getNum = (m: RegExpMatchArray | null) => {
     return m ? parseFloat(m[1]) : null;
   };
+
   const temps = [
     ...xml.matchAll(/<temperatura_aria[^>]*>\s*<data>([^<]+)<\/data>\s*<temperatura>([-\d.]+)<\/temperatura>/g),
   ];
@@ -63,9 +73,9 @@ export function parseMeteoTrentinoObs(xml: string): MeteoTrentinoObs {
   const rains = [...xml.matchAll(/<precipitazione[^>]*>\s*<data>[^<]+<\/data>\s*<pioggia>([-\d.]+)<\/pioggia>/g)];
   const precipSum = rains.length ? Math.round(rains.reduce((a, m) => a + parseFloat(m[1]), 0) * 10) / 10 : null;
   return {
-    tmin: num("tmin"),
-    tmax: num("tmax"),
-    rainMm: num("rain"),
+    tmin: getNum(xml.match(RE_OBS_TMIN)),
+    tmax: getNum(xml.match(RE_OBS_TMAX)),
+    rainMm: getNum(xml.match(RE_OBS_RAIN)),
     lastTempC: lastTemp ? parseFloat(lastTemp[2]) : null,
     lastTempAt: lastTemp ? lastTemp[1] : null,
     precipSumMm: precipSum,

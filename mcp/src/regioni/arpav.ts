@@ -27,16 +27,6 @@ export interface ArpavIdroStation {
   ultimoRilievo: string | null;
 }
 
-const tagRegexCache = new Map<string, RegExp>();
-function getTagRegex(tag: string): RegExp {
-  let regex = tagRegexCache.get(tag);
-  if (!regex) {
-    regex = new RegExp(`<${escapeRegExp(tag)}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${escapeRegExp(tag)}>`);
-    tagRegexCache.set(tag, regex);
-  }
-  return regex;
-}
-
 /** Parse the ARPAV Ultime48ore.xml hydrometric file (ISO-8859-1). */
 export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const stations: ArpavIdroStation[] = [];
