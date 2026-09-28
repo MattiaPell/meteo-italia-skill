@@ -119,6 +119,7 @@ const ZONA_VENETO = (comuni: string[], temporali = 1) => ({
   zona: "Veneto pianura",
   regione: "Veneto",
   comuni,
+  normalizedComuni: new Set(comuni.map((c) => c.toLowerCase())),
   livelli: { idraulico: 0, temporali, idrogeologico: 0 },
   testi: { idraulico: "", temporali: temporali ? "Allerta gialla" : "Nessuna allerta", idrogeologico: "" },
   mappa: "",

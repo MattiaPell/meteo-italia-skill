@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { alertLevelFromText, extractZoneRegionMap, filterZones, type BulletinZone } from "../dpc.js";
+import { alertLevelFromText, extractZoneRegionMap, filterZones, maxLevel, type BulletinZone } from "../dpc.js";
 import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
@@ -58,6 +58,7 @@ describe("filterZones", () => {
     zona,
     regione,
     comuni,
+    normalizedComuni: new Set(comuni.map((c) => c.toLowerCase())), // Simplified normalizeName for tests
     livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 },
     testi: { idraulico: "", temporali: "", idrogeologico: "" },
     mappa: "",
@@ -128,16 +129,14 @@ describe("extractZoneRegionMap", () => {
   });
 
   it("handles <strong> tags and removes trailing dots", () => {
-    const html =
-      "<strong>Veneto</strong>: Alto Piave, Basso Piave.";
+    const html = "<strong>Veneto</strong>: Alto Piave, Basso Piave.";
     const map = extractZoneRegionMap(html);
     expect(map.get("alto piave")).toBe("Veneto");
     expect(map.get("basso piave")).toBe("Veneto"); // Trailing dot should be removed
   });
 
   it("skips regions containing CRITICA, RISCHIO, or ALLERTA without causing infinite loops", () => {
-    const html =
-      "<b>ALLERTA ROSSA</b>: rischio diffuso<br/><b>Lazio</b>: Bacini Costieri Sud";
+    const html = "<b>ALLERTA ROSSA</b>: rischio diffuso<br/><b>Lazio</b>: Bacini Costieri Sud";
     const map = extractZoneRegionMap(html);
     expect(map.has("rischio diffuso")).toBe(false);
     expect(map.get("bacini costieri sud")).toBe("Lazio");
