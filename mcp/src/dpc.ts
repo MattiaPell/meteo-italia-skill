@@ -166,9 +166,7 @@ export async function fetchLatestBulletin(): Promise<BulletinResult> {
     tomorrow: [],
   };
   const days = ["today", "tomorrow"] as const;
-  const results = await Promise.all(
-    days.map((day) => apiGet(`${GITHUB_RAW}/geojson/${stamp}_${day}.json`, {}))
-  );
+  const results = await Promise.all(days.map((day) => apiGet(`${GITHUB_RAW}/geojson/${stamp}_${day}.json`, {})));
   days.forEach((day, i) => {
     const gj = results[i];
     if (gj.ok) out[day] = parseZoneGeojson(gj.data, regionByZone);
