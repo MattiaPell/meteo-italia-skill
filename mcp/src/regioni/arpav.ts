@@ -27,17 +27,22 @@ export interface ArpavIdroStation {
   ultimoRilievo: string | null;
 }
 
+const regexCache = new Map<string, RegExp>();
+function getTagRegex(tag: string): RegExp {
+  let re = regexCache.get(tag);
+  if (!re) {
+    re = new RegExp(`<${escapeRegExp(tag)}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${escapeRegExp(tag)}>`);
+    regexCache.set(tag, re);
+  }
+  return re;
+}
+
 /** Parse the ARPAV Ultime48ore.xml hydrometric file (ISO-8859-1). */
 export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const stations: ArpavIdroStation[] = [];
   const blocks = xml.match(/<STAZIONE>[\s\S]*?<\/STAZIONE>/g) ?? [];
   for (const b of blocks) {
-    const get = (tag: string) =>
-      b
-        .match(
-          new RegExp(`<${escapeRegExp(tag)}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${escapeRegExp(tag)}>`),
-        )?.[1]
-        ?.trim() ?? "";
+    const get = (tag: string) => b.match(getTagRegex(tag))?.[1]?.trim() ?? "";
     const datiMatches = [...b.matchAll(/<DATI ISTANTE="(\d{12})"><VM>([-\d.]+)<\/VM><\/DATI>/g)];
     if (!datiMatches.length) continue;
     const points = datiMatches.map((m) => ({
