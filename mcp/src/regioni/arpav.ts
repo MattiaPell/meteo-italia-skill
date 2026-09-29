@@ -2,7 +2,6 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
 import { haversine } from "../geo.js";
-import { escapeRegExp } from "../utils.js";
 
 // ---------------------------------------------------------------------------
 // ARPAV (Veneto) — previsioni per 15 zone + livelli idrometrici
