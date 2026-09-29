@@ -269,12 +269,17 @@ function processEnsembleResult(ensembleR: PromiseSettledResult<any>) {
   return ensemble;
 }
 
-function computeDivergences(nwp: any, metar: any, allerte: any, ensemble: any) {
+function getNwpDivergences(nwp: any): string[] {
   const divergenze: string[] = [];
   const day1 = nwp?.giorni?.[0];
   if (day1?.tmaxSpread != null && day1.tmaxSpread > 3) {
     divergenze.push(`Modelli NWP divergono su T max oggi: spread ${day1.tmaxSpread}°C (>3°C)`);
   }
+  return divergenze;
+}
+
+function getMetarDivergences(metar: any): string[] {
+  const divergenze: string[] = [];
   if (metar?.stazioni?.length) {
     for (const st of metar.stazioni) {
       const scarto = st?.decodedVsNwp?.tempScarto;
@@ -286,6 +291,12 @@ function computeDivergences(nwp: any, metar: any, allerte: any, ensemble: any) {
       }
     }
   }
+  return divergenze;
+}
+
+function getAllerteDivergences(allerte: any, nwp: any): string[] {
+  const divergenze: string[] = [];
+  const day1 = nwp?.giorni?.[0];
   if (
     allerte?.allertaMaxOggi != null &&
     allerte.allertaMaxOggi >= 1 &&
@@ -296,10 +307,24 @@ function computeDivergences(nwp: any, metar: any, allerte: any, ensemble: any) {
       `Allerta PC ≥ gialla ma precipitazione NWP max ${day1.precipMaxMm}mm: verificare con radar/nowcasting`,
     );
   }
+  return divergenze;
+}
+
+function getEnsembleDivergences(ensemble: any): string[] {
+  const divergenze: string[] = [];
   if (ensemble?.tempSpreadMaxC != null && ensemble.tempSpreadMaxC > 4) {
     divergenze.push(`Spread ensemble T elevato: ${ensemble.tempSpreadMaxC}°C`);
   }
   return divergenze;
+}
+
+function computeDivergences(nwp: any, metar: any, allerte: any, ensemble: any) {
+  return [
+    ...getNwpDivergences(nwp),
+    ...getMetarDivergences(metar),
+    ...getAllerteDivergences(allerte, nwp),
+    ...getEnsembleDivergences(ensemble),
+  ];
 }
 
 async function resolveLocation(
