@@ -46,35 +46,42 @@ const stripCData = (str: string) => {
   return str.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
 };
 
+export function parseArpavIdroStation(b: string): ArpavIdroStation | null {
+  const get = (tag: string) => stripCData(b.match(getTagRegex(tag))?.[1]?.trim() ?? "");
+  const datiMatches = [...b.matchAll(/<DATI ISTANTE="(\d{12})"><VM>([-\d.]+)<\/VM><\/DATI>/g)];
+  if (!datiMatches.length) return null;
+  const points = datiMatches.map((m) => ({
+    t: m[1],
+    v: parseFloat(m[2]),
+  }));
+  const last = points[points.length - 1];
+  const ref6h = points.length > 36 ? points[points.length - 37] : points[0];
+  const delta = ref6h != null ? last.v - ref6h.v : null;
+  const fmt = (t: string) =>
+    `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}T${t.slice(8, 10)}:${t.slice(10, 12)}:00`;
+  return {
+    id: get("IDSTAZ"),
+    nome: get("NOME"),
+    lat: parseFloat(get("Y")) || 0,
+    lon: parseFloat(get("X")) || 0,
+    quota: parseFloat(get("QUOTA")) || null,
+    provincia: get("PROVINCIA"),
+    comune: get("COMUNE"),
+    livelloM: last.v,
+    livello6hFaM: ref6h?.v ?? null,
+    trend: delta == null ? null : Math.abs(delta) < 0.01 ? "stabile" : delta > 0 ? "salita" : "discesa",
+    ultimoRilievo: fmt(last.t),
+  };
+}
+
 export function parseArpavIdroXml(xml: string): ArpavIdroStation[] {
   const stations: ArpavIdroStation[] = [];
   const blocks = xml.match(/<STAZIONE>[\s\S]*?<\/STAZIONE>/g) ?? [];
   for (const b of blocks) {
-    const get = (tag: string) => stripCData(b.match(getTagRegex(tag))?.[1]?.trim() ?? "");
-    const datiMatches = [...b.matchAll(/<DATI ISTANTE="(\d{12})"><VM>([-\d.]+)<\/VM><\/DATI>/g)];
-    if (!datiMatches.length) continue;
-    const points = datiMatches.map((m) => ({
-      t: m[1],
-      v: parseFloat(m[2]),
-    }));
-    const last = points[points.length - 1];
-    const ref6h = points.length > 36 ? points[points.length - 37] : points[0];
-    const delta = ref6h != null ? last.v - ref6h.v : null;
-    const fmt = (t: string) =>
-      `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}T${t.slice(8, 10)}:${t.slice(10, 12)}:00`;
-    stations.push({
-      id: get("IDSTAZ"),
-      nome: get("NOME"),
-      lat: parseFloat(get("Y")) || 0,
-      lon: parseFloat(get("X")) || 0,
-      quota: parseFloat(get("QUOTA")) || null,
-      provincia: get("PROVINCIA"),
-      comune: get("COMUNE"),
-      livelloM: last.v,
-      livello6hFaM: ref6h?.v ?? null,
-      trend: delta == null ? null : Math.abs(delta) < 0.01 ? "stabile" : delta > 0 ? "salita" : "discesa",
-      ultimoRilievo: fmt(last.t),
-    });
+    const station = parseArpavIdroStation(b);
+    if (station) {
+      stations.push(station);
+    }
   }
   return stations;
 }
