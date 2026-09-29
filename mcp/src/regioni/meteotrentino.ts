@@ -8,7 +8,7 @@ const xmlParser = new XMLParser({
   isArray: (name, jpath) => {
     if (name === "anagrafica") return true;
     if (name === "temperatura_aria") return true;
-    if (name === "precipitazione" && jpath.match(/\.precipitazioni?\.precipitazione$/)) return true;
+    if (name === "precipitazione" && String(jpath).match(/\.precipitazioni?\.precipitazione$/)) return true;
     return false;
   },
 });
