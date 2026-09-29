@@ -4,6 +4,7 @@ import { apiGet, toToolResult } from "../http.js";
 import { escapeRegExp } from "../utils.js";
 
 const regexCache = new Map<string, RegExp>();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getCachedRegExp(prefix: string, tag: string, buildFn: (escapedTag: string) => string): RegExp {
   const key = `${prefix}_${tag}`;
   let re = regexCache.get(key);

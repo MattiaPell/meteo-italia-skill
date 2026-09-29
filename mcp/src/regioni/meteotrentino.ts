@@ -1,8 +1,17 @@
+import { XMLParser } from "fast-xml-parser";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
 import { haversine } from "../geo.js";
 
+const xmlParser = new XMLParser({
+  isArray: (name, jpath) => {
+    if (name === "anagrafica") return true;
+    if (name === "temperatura_aria") return true;
+    if (name === "precipitazione" && String(jpath).match(/\.precipitazioni?\.precipitazione$/)) return true;
+    return false;
+  },
+});
 // ---------------------------------------------------------------------------
 // Meteotrentino (P.A. Trento)
 // http://dati.meteotrentino.it/service.asmx/*
@@ -17,32 +26,38 @@ export interface MeteoTrentinoStation {
   lon: number;
 }
 
-const RE_STATION_FINE = /<fine>([\s\S]*?)<\/fine>/;
-const RE_STATION_LAT = /<latitudine>([\s\S]*?)<\/latitudine>/;
-const RE_STATION_LON = /<longitudine>([\s\S]*?)<\/longitudine>/;
-const RE_STATION_CODICE = /<codice>([\s\S]*?)<\/codice>/;
-const RE_STATION_NOMEBREVE = /<nomebreve>([\s\S]*?)<\/nomebreve>/;
-const RE_STATION_NOME = /<nome>([\s\S]*?)<\/nome>/;
-const RE_STATION_QUOTA = /<quota>([\s\S]*?)<\/quota>/;
-
 /** Parse the meteotrentino listaStazioni XML (active stations only). */
 export function parseMeteoTrentinoStations(xml: string): MeteoTrentinoStation[] {
   const out: MeteoTrentinoStation[] = [];
-  const blocks = xml.match(/<anagrafica>[\s\S]*?<\/anagrafica>/g) ?? [];
-  for (const b of blocks) {
-    if (b.match(RE_STATION_FINE)?.[1]?.trim()) continue;
+  try {
+    const parsed = xmlParser.parse(xml);
+    const findNode = (obj: any, key: string): any => {
+      if (!obj || typeof obj !== "object") return null;
+      if (key in obj) return obj[key];
+      for (const k in obj) {
+        const res = findNode(obj[k], key);
+        if (res) return res;
+      }
+      return null;
+    };
+    const anagrafiche = findNode(parsed, "anagrafica") || parsed?.ArrayOfAnagrafica?.anagrafica || [];
+    for (const b of anagrafiche) {
+      if (b.fine && String(b.fine).trim() !== "") continue;
 
-    const lat = parseFloat(b.match(RE_STATION_LAT)?.[1]?.trim() ?? "");
-    const lon = parseFloat(b.match(RE_STATION_LON)?.[1]?.trim() ?? "");
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      const lat = parseFloat(b.latitudine);
+      const lon = parseFloat(b.longitudine);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
 
-    out.push({
-      codice: b.match(RE_STATION_CODICE)?.[1]?.trim() ?? "",
-      nome: (b.match(RE_STATION_NOMEBREVE)?.[1]?.trim() || b.match(RE_STATION_NOME)?.[1]?.trim()) ?? "",
-      quota: parseFloat(b.match(RE_STATION_QUOTA)?.[1]?.trim() ?? "") || null,
-      lat,
-      lon,
-    });
+      out.push({
+        codice: String(b.codice || "").trim(),
+        nome: String(b.nomebreve || b.nome || "").trim(),
+        quota: b.quota != null ? parseFloat(b.quota) : null,
+        lat,
+        lon,
+      });
+    }
+  } catch (e) {
+    console.error("Failed to parse MeteoTrentino stations XML", e);
   }
   return out;
 }
@@ -56,30 +71,58 @@ export interface MeteoTrentinoObs {
   precipSumMm: number | null;
 }
 
-const RE_OBS_TMIN = /<tmin>([-\d.]+)<\/tmin>/;
-const RE_OBS_TMAX = /<tmax>([-\d.]+)<\/tmax>/;
-const RE_OBS_RAIN = /<rain>([-\d.]+)<\/rain>/;
-
 /** Parse ultimiDatiStazione XML (dati dalla mezzanotte del giorno precedente). */
 export function parseMeteoTrentinoObs(xml: string): MeteoTrentinoObs {
-  const getNum = (m: RegExpMatchArray | null) => {
-    return m ? parseFloat(m[1]) : null;
-  };
+  try {
+    const parsed = xmlParser.parse(xml);
+    const findNode = (obj: any, key: string): any => {
+      if (!obj || typeof obj !== "object") return null;
+      if (key in obj) return obj[key];
+      for (const k in obj) {
+        const res = findNode(obj[k], key);
+        if (res) return res;
+      }
+      return null;
+    };
+    const dati = findNode(parsed, "datiOggi") || parsed?.datiOggi || {};
 
-  const temps = [
-    ...xml.matchAll(/<temperatura_aria[^>]*>\s*<data>([^<]+)<\/data>\s*<temperatura>([-\d.]+)<\/temperatura>/g),
-  ];
-  const lastTemp = temps.at(-1);
-  const rains = [...xml.matchAll(/<precipitazione[^>]*>\s*<data>[^<]+<\/data>\s*<pioggia>([-\d.]+)<\/pioggia>/g)];
-  const precipSum = rains.length ? Math.round(rains.reduce((a, m) => a + parseFloat(m[1]), 0) * 10) / 10 : null;
-  return {
-    tmin: getNum(xml.match(RE_OBS_TMIN)),
-    tmax: getNum(xml.match(RE_OBS_TMAX)),
-    rainMm: getNum(xml.match(RE_OBS_RAIN)),
-    lastTempC: lastTemp ? parseFloat(lastTemp[2]) : null,
-    lastTempAt: lastTemp ? lastTemp[1] : null,
-    precipSumMm: precipSum,
-  };
+    const tmin = dati.tmin != null ? parseFloat(dati.tmin) : null;
+    const tmax = dati.tmax != null ? parseFloat(dati.tmax) : null;
+    const rainMm = dati.rain != null ? parseFloat(dati.rain) : null;
+
+    let lastTempC = null;
+    let lastTempAt = null;
+    if (dati.temperature?.temperatura_aria?.length > 0) {
+      const temps = dati.temperature.temperatura_aria;
+      const last = temps[temps.length - 1];
+      if (last) {
+        lastTempC = parseFloat(last.temperatura);
+        lastTempAt = last.data;
+      }
+    }
+
+    let precipSumMm = null;
+    if (
+      (dati.precipitazione?.precipitazione && dati.precipitazione.precipitazione.length > 0) ||
+      (dati.precipitazioni?.precipitazione && dati.precipitazioni.precipitazione.length > 0)
+    ) {
+      const rains = dati.precipitazione?.precipitazione || dati.precipitazioni?.precipitazione;
+      const sum = rains.reduce((a: number, p: any) => a + parseFloat(p.pioggia || 0), 0);
+      precipSumMm = Math.round(sum * 10) / 10;
+    }
+
+    return {
+      tmin: !Number.isNaN(tmin) ? tmin : null,
+      tmax: !Number.isNaN(tmax) ? tmax : null,
+      rainMm: !Number.isNaN(rainMm) ? rainMm : null,
+      lastTempC: lastTempC != null && !Number.isNaN(lastTempC) ? lastTempC : null,
+      lastTempAt: lastTempAt || null,
+      precipSumMm: precipSumMm != null && !Number.isNaN(precipSumMm) ? precipSumMm : null,
+    };
+  } catch (e) {
+    console.error("Failed to parse MeteoTrentino obs XML", e);
+    return { tmin: null, tmax: null, rainMm: null, lastTempC: null, lastTempAt: null, precipSumMm: null };
+  }
 }
 
 // --- Adapter per brief.ts (Trentino) ----------------------------------------
