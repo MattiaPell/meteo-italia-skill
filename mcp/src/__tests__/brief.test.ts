@@ -346,6 +346,14 @@ describe("runBrief — errori di input e robustezza", () => {
     expect(r.data).toBeUndefined();
   });
 
+  it("runBrief catch block → se l'errore è MeteoError restituisce ok:false e error formattato", async () => {
+    mocks.apiGet.mockRejectedValueOnce(new MeteoError("UPSTREAM_429", "Rate limit exceeded"));
+    const r = await runBrief({ nome: "Roma", days: 1 });
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe("[UPSTREAM_429] Rate limit exceeded");
+    expect(r.elapsedMs).toEqual(expect.any(Number));
+  });
+
   it("località non trovata in Italia → ok:false con nome riportato", async () => {
     mocks.apiGet.mockImplementation((url: string) => {
       if (url.includes("geocoding-api.open-meteo.com")) {
