@@ -300,7 +300,7 @@ export function startDebugServer(port: number) {
 
   app.get("/", (_req, res) => res.send(htmlPage()));
 
-  const server = app.listen(port, () => {
+  const server = app.listen(port, "127.0.0.1", () => {
     console.error(`[meteo-italia-mcp] debug page on http://localhost:${port}`);
   });
   server.on("error", (err) => {
