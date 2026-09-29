@@ -25,6 +25,26 @@ const csv = (s: string) =>
     .map((x) => x.trim())
     .filter(Boolean);
 
+async function fetchOpenMeteo(url: string, args: Record<string, any>) {
+  const params: Record<string, any> = { ...args };
+  if (params.models && typeof params.models === "string") params.models = csv(params.models).map(normalizeModelId);
+  if (params.hourly && typeof params.hourly === "string") params.hourly = csv(params.hourly);
+  if (params.daily && typeof params.daily === "string") params.daily = csv(params.daily);
+  if (params.current && typeof params.current === "string") params.current = csv(params.current);
+  if (params.seasonal && typeof params.seasonal === "string") params.seasonal = csv(params.seasonal);
+  if (params.ensemble === true) params.ensemble = "true";
+
+  // Clean up undefined values from args explicitly since they were passed directly
+  for (const key of Object.keys(params)) {
+    if (params[key] === undefined) {
+      delete params[key];
+    }
+  }
+
+  const r = await apiGet(url, params);
+  return toToolResult(r);
+}
+
 export function registerOpenMeteo(server: McpServer) {
   // --- Geocoding ---------------------------------------------------------
   server.registerTool(
@@ -257,16 +277,15 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, start_date, end_date, daily, hourly, timezone }) => {
-      const r = await apiGet("https://archive-api.open-meteo.com/v1/archive", {
+      return fetchOpenMeteo("https://archive-api.open-meteo.com/v1/archive", {
         latitude,
         longitude,
         start_date,
         end_date,
-        daily: daily ? csv(daily) : undefined,
-        hourly: hourly ? csv(hourly) : undefined,
+        daily,
+        hourly,
         timezone,
       });
-      return toToolResult(r);
     },
   );
 
@@ -287,16 +306,15 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, hourly, daily, timezone, past_days, forecast_days }) => {
-      const r = await apiGet("https://marine-api.open-meteo.com/v1/marine", {
+      return fetchOpenMeteo("https://marine-api.open-meteo.com/v1/marine", {
         latitude,
         longitude,
-        hourly: hourly ? csv(hourly) : undefined,
-        daily: daily ? csv(daily) : undefined,
+        hourly,
+        daily,
         timezone,
         past_days,
         forecast_days,
       });
-      return toToolResult(r);
     },
   );
 
@@ -318,17 +336,16 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, hourly, current, domains, timezone, past_days, forecast_days }) => {
-      const r = await apiGet("https://air-quality-api.open-meteo.com/v1/air-quality", {
+      return fetchOpenMeteo("https://air-quality-api.open-meteo.com/v1/air-quality", {
         latitude,
         longitude,
-        hourly: hourly ? csv(hourly) : undefined,
-        current: current ? csv(current) : undefined,
+        hourly,
+        current,
         domains,
         timezone,
         past_days,
         forecast_days,
       });
-      return toToolResult(r);
     },
   );
 
@@ -350,17 +367,16 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, models, hourly, daily, timezone, past_days, forecast_days }) => {
-      const r = await apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
+      return fetchOpenMeteo("https://ensemble-api.open-meteo.com/v1/ensemble", {
         latitude,
         longitude,
-        models: models ? csv(models).map(normalizeModelId) : undefined,
-        hourly: hourly ? csv(hourly) : undefined,
-        daily: daily ? csv(daily) : undefined,
+        models,
+        hourly,
+        daily,
         timezone,
         past_days,
         forecast_days,
       });
-      return toToolResult(r);
     },
   );
 
@@ -392,17 +408,16 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, daily, model, ensemble, timezone, past_days, forecast_days }) => {
-      const r = await apiGet("https://flood-api.open-meteo.com/v1/flood", {
+      return fetchOpenMeteo("https://flood-api.open-meteo.com/v1/flood", {
         latitude,
         longitude,
-        daily: daily ? csv(daily) : undefined,
+        daily,
         model: model ?? undefined,
-        ensemble: ensemble ? "true" : undefined,
+        ensemble,
         timezone,
         past_days,
         forecast_days,
       });
-      return toToolResult(r);
     },
   );
 
@@ -432,19 +447,16 @@ export function registerOpenMeteo(server: McpServer) {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async ({ latitude, longitude, seasonal, models, temporal_resolution, timezone, past_days, forecast_days }) => {
-      const params: Record<string, any> = {
+      return fetchOpenMeteo("https://seasonal-api.open-meteo.com/v1/seasonal", {
         latitude,
         longitude,
-        timezone,
+        seasonal,
+        models,
         temporal_resolution,
-      };
-      if (seasonal) params.seasonal = csv(seasonal);
-      if (models) params.models = csv(models).map(normalizeModelId);
-      if (past_days != null) params.past_days = past_days;
-      if (forecast_days != null) params.forecast_days = forecast_days;
-
-      const r = await apiGet("https://seasonal-api.open-meteo.com/v1/seasonal", params);
-      return toToolResult(r);
+        timezone,
+        past_days,
+        forecast_days,
+      });
     },
   );
 }
