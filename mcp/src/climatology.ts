@@ -5,6 +5,82 @@ import { getDistance } from "./geo.js";
 import { climatologyData } from "./climatology_data.js";
 
 // --- 1. CLIMATOLOGY TOOL ----------------------------------------------------
+
+export interface ClimatologyArgs {
+  latitude?: number;
+  longitude?: number;
+  cityName?: string;
+  region?: string;
+  month?: number;
+}
+
+export async function handleClimatology({ latitude, longitude, cityName, region, month }: ClimatologyArgs) {
+  const start = Date.now();
+  let matchedCity: any = null;
+  let minDistance = Infinity;
+  let results: any[] = [];
+
+  const keys = Object.keys(climatologyData);
+  const searchRegion = region ? region.toLowerCase() : undefined;
+  const filteredKeys = searchRegion ? keys.filter((k) => k.toLowerCase().includes(searchRegion)) : keys;
+
+  const searchCityName = cityName ? cityName.toLowerCase() : undefined;
+  for (const regKey of filteredKeys) {
+    const cities = climatologyData[regKey] ?? [];
+    for (const city of cities) {
+      let matchesName = true;
+      if (searchCityName) {
+        matchesName = city.name.toLowerCase().includes(searchCityName);
+      }
+      if (matchesName) {
+        if (latitude !== undefined && longitude !== undefined) {
+          const d = getDistance(latitude, longitude, city.lat, city.lon);
+          if (d < minDistance) {
+            minDistance = d;
+            matchedCity = { ...city, region: regKey, distanceKm: Math.round(d * 10) / 10 };
+          }
+        } else {
+          results.push({ ...city, region: regKey });
+        }
+      }
+    }
+  }
+
+  if (latitude !== undefined && longitude !== undefined && matchedCity) {
+    results = [matchedCity];
+  }
+
+  const formattedResults = results.map((city) => {
+    let monthsFiltered = city.months;
+    if (month !== undefined) {
+      const monthIndex = month - 1;
+      monthsFiltered = city.months[monthIndex] ? [city.months[monthIndex]] : [];
+    }
+    return {
+      name: city.name,
+      region: city.region,
+      latitude: city.lat,
+      longitude: city.lon,
+      elevation: city.elevation,
+      distanceKm: city.distanceKm ?? null,
+      climatology: monthsFiltered,
+    };
+  });
+
+  const res: ApiResult = {
+    ok: true,
+    url: "mcp://climatology",
+    status: 200,
+    data: {
+      count: formattedResults.length,
+      stations: formattedResults,
+      info: "ERA5 1991-2020 Normals. Use these baselines to evaluate temperature anomalies and precipitation sums.",
+    },
+    elapsedMs: Date.now() - start,
+  };
+  return toToolResult(res);
+}
+
 export function registerClimatology(server: McpServer) {
   server.registerTool(
     "meteo_climatology",
@@ -22,71 +98,6 @@ export function registerClimatology(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
     },
-    async ({ latitude, longitude, cityName, region, month }) => {
-      const start = Date.now();
-      let matchedCity: any = null;
-      let minDistance = Infinity;
-      let results: any[] = [];
-
-      const keys = Object.keys(climatologyData);
-      const searchRegion = region ? region.toLowerCase() : undefined;
-      const filteredKeys = searchRegion ? keys.filter((k) => k.toLowerCase().includes(searchRegion)) : keys;
-
-      const searchCityName = cityName ? cityName.toLowerCase() : undefined;
-      for (const regKey of filteredKeys) {
-        const cities = climatologyData[regKey] ?? [];
-        for (const city of cities) {
-          let matchesName = true;
-          if (searchCityName) {
-            matchesName = city.name.toLowerCase().includes(searchCityName);
-          }
-          if (matchesName) {
-            if (latitude !== undefined && longitude !== undefined) {
-              const d = getDistance(latitude, longitude, city.lat, city.lon);
-              if (d < minDistance) {
-                minDistance = d;
-                matchedCity = { ...city, region: regKey, distanceKm: Math.round(d * 10) / 10 };
-              }
-            } else {
-              results.push({ ...city, region: regKey });
-            }
-          }
-        }
-      }
-
-      if (latitude !== undefined && longitude !== undefined && matchedCity) {
-        results = [matchedCity];
-      }
-
-      const formattedResults = results.map((city) => {
-        let monthsFiltered = city.months;
-        if (month !== undefined) {
-          const monthIndex = month - 1;
-          monthsFiltered = city.months[monthIndex] ? [city.months[monthIndex]] : [];
-        }
-        return {
-          name: city.name,
-          region: city.region,
-          latitude: city.lat,
-          longitude: city.lon,
-          elevation: city.elevation,
-          distanceKm: city.distanceKm ?? null,
-          climatology: monthsFiltered,
-        };
-      });
-
-      const res: ApiResult = {
-        ok: true,
-        url: "mcp://climatology",
-        status: 200,
-        data: {
-          count: formattedResults.length,
-          stations: formattedResults,
-          info: "ERA5 1991-2020 Normals. Use these baselines to evaluate temperature anomalies and precipitation sums.",
-        },
-        elapsedMs: Date.now() - start,
-      };
-      return toToolResult(res);
-    },
+    handleClimatology,
   );
 }

@@ -1,3 +1,4 @@
+import { escapeRegExp } from "../utils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiGet, toToolResult } from "../http.js";
