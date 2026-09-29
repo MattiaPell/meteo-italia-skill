@@ -100,6 +100,72 @@ type RetriableOpts = {
   noCache?: boolean;
 };
 
+function getHost(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return "unknown";
+  }
+}
+
+function getCachedResponse(url: string, host: string, opts: RetriableOpts): ApiResult | undefined {
+  if (opts.method === "POST" || opts.noCache) return undefined;
+
+  const hit = cache.get(cacheKey(url));
+  if (hit && hit.expires > Date.now()) {
+    cacheHits += 1;
+    if (!(host in metrics)) {
+      metrics[host] = { hits: 0, misses: 0, errors: 0, latenciesMs: [] };
+    }
+    metrics[host].hits += 1;
+    return { ...hit.result, cached: true };
+  }
+  cacheMisses += 1;
+  return undefined;
+}
+
+function buildFetchOptions(opts: RetriableOpts, signal: AbortSignal): RequestInit {
+  return {
+    method: opts.method ?? "GET",
+    headers: {
+      "User-Agent": "meteo-italia-mcp/1.0",
+      Accept: opts.acceptText ? "text/plain, */*" : "application/json, */*",
+      ...(opts.method === "POST" ? { "Content-Type": "application/json" } : {}),
+      ...(opts.headers ?? {}),
+    },
+    body: opts.body,
+    signal,
+  };
+}
+
+function parsePayload(text: string, acceptText?: boolean): unknown {
+  if (acceptText) return text;
+  try {
+    return text.length ? JSON.parse(text) : null;
+  } catch {
+    return text;
+  }
+}
+
+function calculateBackoff(res: Response | undefined, attempt: number): number {
+  if (res?.status === 429) {
+    const retryAfter = Number(res.headers.get("retry-after"));
+    if (Number.isFinite(retryAfter) && retryAfter > 0) {
+      return retryAfter * 1000;
+    }
+  }
+  return HTTP_BACKOFF_BASE_MS * 2 ** attempt;
+}
+
+function formatNetworkError(err: unknown, url: string): MeteoError {
+  const isAbort = err instanceof Error && err.name === "AbortError";
+  const code = isAbort ? "TIMEOUT" : "NETWORK";
+  const message = isAbort
+    ? `Request to ${url} timed out after ${HTTP_TIMEOUT_MS}ms`
+    : `Network error contacting ${url}: ${err instanceof Error ? err.message : String(err)}`;
+  return new MeteoError(code, message, err);
+}
+
 /**
  * Core request primitive with timeout + bounded exponential-backoff retry.
  * On timeout/5xx/429 it retries up to HTTP_MAX_RETRIES; after exhaustion it
@@ -109,26 +175,10 @@ type RetriableOpts = {
  * served from an in-memory TTL cache (E2) to avoid duplicate upstream calls.
  */
 async function requestWithRetry(url: string, opts: RetriableOpts): Promise<ApiResult> {
-  const host = (() => {
-    try {
-      return new URL(url).host;
-    } catch {
-      return "unknown";
-    }
-  })();
+  const host = getHost(url);
 
-  if (opts.method !== "POST" && !opts.noCache) {
-    const hit = cache.get(cacheKey(url));
-    if (hit && hit.expires > Date.now()) {
-      cacheHits += 1;
-      if (!(host in metrics)) {
-        metrics[host] = { hits: 0, misses: 0, errors: 0, latenciesMs: [] };
-      }
-      metrics[host].hits += 1;
-      return { ...hit.result, cached: true };
-    }
-    cacheMisses += 1;
-  }
+  const cached = getCachedResponse(url, host, opts);
+  if (cached) return cached;
 
   const start = Date.now();
   let lastErr: unknown;
@@ -137,31 +187,14 @@ async function requestWithRetry(url: string, opts: RetriableOpts): Promise<ApiRe
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), HTTP_TIMEOUT_MS);
     try {
-      const res = await fetch(url, {
-        method: opts.method ?? "GET",
-        headers: {
-          "User-Agent": "meteo-italia-mcp/1.0",
-          Accept: opts.acceptText ? "text/plain, */*" : "application/json, */*",
-          ...(opts.method === "POST" ? { "Content-Type": "application/json" } : {}),
-          ...(opts.headers ?? {}),
-        },
-        body: opts.body,
-        signal: controller.signal,
-      });
+      const res = await fetch(url, buildFetchOptions(opts, controller.signal));
       clearTimeout(timer);
 
       const text = await res.text();
       const elapsedMs = Date.now() - start;
 
       if (res.ok) {
-        let data: unknown = text;
-        if (!opts.acceptText) {
-          try {
-            data = text.length ? JSON.parse(text) : null;
-          } catch {
-            data = text;
-          }
-        }
+        const data = parsePayload(text, opts.acceptText);
         const result: ApiResult = { ok: true, url, status: res.status, data, elapsedMs };
         recordMetrics(host, true, elapsedMs);
         if (opts.method !== "POST" && !opts.noCache) {
@@ -173,12 +206,10 @@ async function requestWithRetry(url: string, opts: RetriableOpts): Promise<ApiRe
       // 429 or 5xx → retriable; 4xx (except 429) → terminal.
       const retriable = res.status === 429 || res.status >= 500;
       if (retriable && attempt < HTTP_MAX_RETRIES) {
-        const retryAfter = Number(res.headers.get("retry-after"));
-        const backoff =
-          Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : HTTP_BACKOFF_BASE_MS * 2 ** attempt;
-        await new Promise((r) => setTimeout(r, backoff));
+        await new Promise((r) => setTimeout(r, calculateBackoff(res, attempt)));
         continue;
       }
+
       recordMetrics(host, false, elapsedMs);
       return {
         ok: false,
@@ -191,19 +222,15 @@ async function requestWithRetry(url: string, opts: RetriableOpts): Promise<ApiRe
     } catch (err) {
       clearTimeout(timer);
       lastErr = err;
-      const isAbort = err instanceof Error && err.name === "AbortError";
+
       if (attempt < HTTP_MAX_RETRIES) {
-        const backoff = HTTP_BACKOFF_BASE_MS * 2 ** attempt;
-        await new Promise((r) => setTimeout(r, backoff));
+        await new Promise((r) => setTimeout(r, calculateBackoff(undefined, attempt)));
         continue;
       }
+
       const elapsedMs = Date.now() - start;
       recordMetrics(host, false, elapsedMs);
-      const code = isAbort ? "TIMEOUT" : "NETWORK";
-      const message = isAbort
-        ? `Request to ${url} timed out after ${HTTP_TIMEOUT_MS}ms`
-        : `Network error contacting ${url}: ${err instanceof Error ? err.message : String(err)}`;
-      throw new MeteoError(code, message, err);
+      throw formatNetworkError(err, url);
     }
   }
 
