@@ -55,7 +55,7 @@ export function alertLevelFromText(text: string): number {
   return 0;
 }
 
-function normalizeName(s: string): string {
+export function normalizeName(s: string): string {
   return s
     .toLowerCase()
     .normalize("NFD")
