@@ -226,6 +226,130 @@ export async function runBriefArpa(_lat: number, _lon: number): Promise<any> {
   };
 }
 
+export async function handleArpaFvgPrevisioni({
+  data,
+  lingua,
+}: {
+  data?: string;
+  lingua?: "it" | "en" | "de" | "sl" | "fur";
+}) {
+  // Se data non fornita, prova il bollettino di oggi
+  const dateStr = data ?? new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const lang = lingua ?? "it";
+  const suffix = lang === "it" ? "" : `-${lang}`;
+
+  const url = `http://dev.meteo.fvg.it/xml/previsioni/PW${dateStr}${suffix}.xml`;
+  const r = await apiGet(url, {}, { acceptText: true, noCache: true });
+  if (!r.ok) {
+    // Fallback: prova giorno prima
+    const fallback = new Date();
+    fallback.setDate(fallback.getDate() - 1);
+    const fbStr = fallback.toISOString().slice(0, 10).replace(/-/g, "");
+    const fbUrl = `http://dev.meteo.fvg.it/xml/previsioni/PW${fbStr}${suffix}.xml`;
+    const fb = await apiGet(fbUrl, {}, { acceptText: true, noCache: true });
+    if (!fb.ok) return toToolResult(fb);
+    return toToolResult({
+      ...fb,
+      data: {
+        fonte: "OSMER ARPA FVG",
+        note: "Bollettino di ieri (quello di oggi non ancora disponibile)",
+        ...parsePrevisioniXml(String(fb.data)),
+      },
+    });
+  }
+
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "OSMER ARPA FVG",
+      ...parsePrevisioniXml(String(r.data)),
+    },
+  });
+}
+
+export async function handleArpaFvgStazione({
+  codice,
+  latitude,
+  longitude,
+}: {
+  codice?: string;
+  latitude?: number;
+  longitude?: number;
+}) {
+  const stationCode = codice?.toUpperCase();
+
+  // Se no codice, lista stazioni WFS e trova più vicina
+  if (!stationCode) {
+    if (latitude === undefined || longitude === undefined) {
+      return toToolResult({
+        ok: false,
+        url: "",
+        status: 400,
+        data: null,
+        error: "Passa codice stazione oppure latitude+longitude",
+        elapsedMs: 0,
+      });
+    }
+
+    // Recupera la lista delle stazioni dal WFS
+    const wfsUrl =
+      "https://serviziogc.regione.fvg.it/geoserver/MONIT_AMB/wfs?service=wfs&version=2.0.0&request=GetFeature&typeName=MONIT_AMB:STAZIONI_METEOROLOGICHE";
+    const wfs = await apiGet(wfsUrl, {}, { acceptText: true, noCache: true });
+    if (!wfs.ok) return toToolResult(wfs);
+
+    const stations = parseWfsStazioni(String(wfs.data));
+    if (!stations.length) {
+      return toToolResult({
+        ok: false,
+        url: wfsUrl,
+        status: 200,
+        data: null,
+        error: "Nessuna stazione attiva trovata",
+        elapsedMs: wfs.elapsedMs,
+      });
+    }
+
+    // WFS non fornisce lat/lon in WGS84 semplice, usiamo fallback
+    // Restituiamo lista stazioni invece
+    return toToolResult({
+      ...wfs,
+      data: {
+        fonte: "OSMER ARPA FVG — anagrafica stazioni (WFS)",
+        messaggio: "Passa un codice stazione per i dati. Esempi: G201 (Adegliacco), C551",
+        stazioni: stations.slice(0, 30).map((s) => ({
+          codice: s.codice,
+          nome: s.nome,
+          sensori: s.sensori,
+        })),
+      },
+    });
+  }
+
+  const url = `http://dev.meteo.fvg.it/xml/stazioni/${stationCode}.xml`;
+  const r = await apiGet(url, {}, { acceptText: true, noCache: true });
+  if (!r.ok) return toToolResult(r);
+
+  const parsed = parseStazioneXml(String(r.data));
+  if (!parsed) {
+    return toToolResult({
+      ok: false,
+      url,
+      status: 200,
+      data: null,
+      error: `Formato dati non riconosciuto per stazione ${stationCode}`,
+      elapsedMs: r.elapsedMs,
+    });
+  }
+
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "OSMER ARPA FVG (dati non validati, real-time)",
+      ...parsed,
+    },
+  });
+}
+
 export function registerArpaFvg(server: McpServer) {
   // --- Previsioni FVG ----------------------------------------------------
   server.registerTool(
@@ -247,40 +371,7 @@ export function registerArpaFvg(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ data, lingua }) => {
-      // Se data non fornita, prova il bollettino di oggi
-      const dateStr = data ?? new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      const lang = lingua ?? "it";
-      const suffix = lang === "it" ? "" : `-${lang}`;
-
-      const url = `http://dev.meteo.fvg.it/xml/previsioni/PW${dateStr}${suffix}.xml`;
-      const r = await apiGet(url, {}, { acceptText: true, noCache: true });
-      if (!r.ok) {
-        // Fallback: prova giorno prima
-        const fallback = new Date();
-        fallback.setDate(fallback.getDate() - 1);
-        const fbStr = fallback.toISOString().slice(0, 10).replace(/-/g, "");
-        const fbUrl = `http://dev.meteo.fvg.it/xml/previsioni/PW${fbStr}${suffix}.xml`;
-        const fb = await apiGet(fbUrl, {}, { acceptText: true, noCache: true });
-        if (!fb.ok) return toToolResult(fb);
-        return toToolResult({
-          ...fb,
-          data: {
-            fonte: "OSMER ARPA FVG",
-            note: "Bollettino di ieri (quello di oggi non ancora disponibile)",
-            ...parsePrevisioniXml(String(fb.data)),
-          },
-        });
-      }
-
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "OSMER ARPA FVG",
-          ...parsePrevisioniXml(String(r.data)),
-        },
-      });
-    },
+    handleArpaFvgPrevisioni,
   );
 
   // --- Dati stazione FVG -------------------------------------------------
@@ -298,79 +389,6 @@ export function registerArpaFvg(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ codice, latitude, longitude }) => {
-      const stationCode = codice?.toUpperCase();
-
-      // Se no codice, lista stazioni WFS e trova più vicina
-      if (!stationCode) {
-        if (latitude === undefined || longitude === undefined) {
-          return toToolResult({
-            ok: false,
-            url: "",
-            status: 400,
-            data: null,
-            error: "Passa codice stazione oppure latitude+longitude",
-            elapsedMs: 0,
-          });
-        }
-
-        // Recupera la lista delle stazioni dal WFS
-        const wfsUrl =
-          "https://serviziogc.regione.fvg.it/geoserver/MONIT_AMB/wfs?service=wfs&version=2.0.0&request=GetFeature&typeName=MONIT_AMB:STAZIONI_METEOROLOGICHE";
-        const wfs = await apiGet(wfsUrl, {}, { acceptText: true, noCache: true });
-        if (!wfs.ok) return toToolResult(wfs);
-
-        const stations = parseWfsStazioni(String(wfs.data));
-        if (!stations.length) {
-          return toToolResult({
-            ok: false,
-            url: wfsUrl,
-            status: 200,
-            data: null,
-            error: "Nessuna stazione attiva trovata",
-            elapsedMs: wfs.elapsedMs,
-          });
-        }
-
-        // WFS non fornisce lat/lon in WGS84 semplice, usiamo fallback
-        // Restituiamo lista stazioni invece
-        return toToolResult({
-          ...wfs,
-          data: {
-            fonte: "OSMER ARPA FVG — anagrafica stazioni (WFS)",
-            messaggio: "Passa un codice stazione per i dati. Esempi: G201 (Adegliacco), C551",
-            stazioni: stations.slice(0, 30).map((s) => ({
-              codice: s.codice,
-              nome: s.nome,
-              sensori: s.sensori,
-            })),
-          },
-        });
-      }
-
-      const url = `http://dev.meteo.fvg.it/xml/stazioni/${stationCode}.xml`;
-      const r = await apiGet(url, {}, { acceptText: true, noCache: true });
-      if (!r.ok) return toToolResult(r);
-
-      const parsed = parseStazioneXml(String(r.data));
-      if (!parsed) {
-        return toToolResult({
-          ok: false,
-          url,
-          status: 200,
-          data: null,
-          error: `Formato dati non riconosciuto per stazione ${stationCode}`,
-          elapsedMs: r.elapsedMs,
-        });
-      }
-
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "OSMER ARPA FVG (dati non validati, real-time)",
-          ...parsed,
-        },
-      });
-    },
+    handleArpaFvgStazione,
   );
 }
