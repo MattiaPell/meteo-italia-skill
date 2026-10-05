@@ -82,6 +82,143 @@ export function extractAviationWeatherStations(payload: any, nwpTempC?: number):
   });
 }
 
+export async function handleCheckwxMetarTaf({
+  icao,
+  type,
+  nwpTempC,
+}: {
+  icao: string;
+  type: "metar" | "taf";
+  nwpTempC?: number;
+}) {
+  const codes = icao
+    .split(",")
+    .map((x) => x.trim().toUpperCase())
+    .join(",");
+
+  // Try CheckWX first if key is available
+  if (CHECKWX_API_KEY) {
+    const r = await apiGet(
+      `https://api.checkwx.com/v2/${type}/${codes}/decoded`,
+      {},
+      {
+        headers: { "X-API-KEY": CHECKWX_API_KEY },
+      },
+    );
+    if (r.ok) {
+      const arr = Array.isArray((r.data as any)?.data) ? (r.data as any).data : [(r.data as any)?.data];
+      const stations = arr.filter(Boolean).map((s: any) => parseMetarStation(s, nwpTempC));
+      return toToolResult({ ...r, data: { stations, raw: r.data, source: "checkwx" } });
+    }
+  }
+
+  // Fallback to aviationweather.gov (no auth)
+  const fallback = await apiGet("https://aviationweather.gov/api/data/metar", {
+    ids: codes,
+    format: "json",
+  });
+  if (!fallback.ok) {
+    return toToolResult({
+      ok: false,
+      url: "https://api.checkwx.com + https://aviationweather.gov",
+      status: 0,
+      data: null,
+      error: "Entrambe le fonti METAR non disponibili (CheckWX + AviationWeather)",
+      elapsedMs: fallback.elapsedMs,
+    });
+  }
+  const payload = fallback.data as any;
+  const stations = extractAviationWeatherStations(payload, nwpTempC);
+  return toToolResult({ ...fallback, data: { stations, raw: fallback.data, source: "aviationweather_fallback" } });
+}
+
+export async function handleAviationweatherMetar({
+  ids,
+  format,
+  nwpTempC,
+}: {
+  ids: string;
+  format: string;
+  nwpTempC?: number;
+}) {
+  const r = await apiGet("https://aviationweather.gov/api/data/metar", {
+    ids,
+    format,
+  });
+  if (!r.ok) return toToolResult(r);
+  // aviationweather returns either an array or {data: [...]} / {features: [...]}
+  const payload = r.data as any;
+  const stations = extractAviationWeatherStations(payload, nwpTempC);
+  return toToolResult({ ...r, data: { stations, raw: r.data } });
+}
+
+export async function handleDmiLightning({
+  bbox,
+  limit,
+  observed_after,
+  lat,
+  lon,
+}: {
+  bbox: string;
+  limit: number;
+  observed_after?: string;
+  lat?: number;
+  lon?: number;
+}) {
+  const r = await apiGet("https://opendataapi.dmi.dk/v2/lightningdata/collections/observation/items", {
+    bbox,
+    limit,
+    observed: observed_after,
+  });
+  if (!r.ok) return toToolResult(r);
+  const fc = (r.data as any)?.features ?? [];
+  const strikes = fc.map((f: any) => {
+    const [lonS, latS] = f.geometry?.coordinates ?? [];
+    const observed = f.properties?.observed ?? null;
+    const hour = observed ? new Date(observed).getUTCHours() : null;
+    let distKm: number | null = null;
+    if (lat != null && lon != null && latS != null && lonS != null) {
+      const d = haversine({ lat, lon }, { lat: latS, lon: lonS });
+      distKm = Math.round(d * 10) / 10;
+    }
+    return { lat: latS, lon: lonS, observed, hour, distKm };
+  });
+  const byHour: Record<number, number> = {};
+  for (const s of strikes) if (s.hour != null) byHour[s.hour] = (byHour[s.hour] ?? 0) + 1;
+  const nearest =
+    lat != null
+      ? (strikes.filter((s: any) => s.distKm != null).sort((a: any, b: any) => a.distKm - b.distKm)[0] ?? null)
+      : null;
+  return toToolResult({
+    ...r,
+    data: { count: strikes.length, byHour, nearestKm: nearest?.distKm ?? null, strikes, raw: r.data },
+  });
+}
+
+export async function handleFloodsItMonitoring({ sensor_id }: { sensor_id?: string }) {
+  const path = sensor_id ? `${encodeURIComponent(sensor_id)}.json` : "index.json";
+  const r = await apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
+  return toToolResult(r);
+}
+
+export async function handleEumetsatSatelliteInfo({ channel }: { channel?: string }) {
+  const info = {
+    note: "EUMETSAT Data Store richiede CONSUMER_KEY/CONSUMER_SECRET (api.eumetsat.int). Dati grezzi in NetCDF/HRIT; immagini processate in PNG/JPG.",
+    collection_id: "EO:EUM:DAT:MSG:HRSEVIRI",
+    portal: "https://eoportal.eumetsat.int/",
+    api_key_page: "https://api.eumetsat.int/api-key/",
+    requested_channel: channel ?? null,
+    hint: "Per debug visivo usa le immagini processate HRSEVIRI; il fetch binario va fatto fuori dal MCP.",
+  };
+  return toToolResult({
+    ok: true,
+    url: "https://api.eumetsat.int/",
+    status: 200,
+    data: info,
+    elapsedMs: 0,
+  });
+}
+
 export function registerItalianSources(server: McpServer) {
   // --- CheckWX METAR/TAF (Step K, primary) -----------------------------
   server.registerTool(
@@ -98,47 +235,7 @@ export function registerItalianSources(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ icao, type, nwpTempC }) => {
-      const codes = icao
-        .split(",")
-        .map((x) => x.trim().toUpperCase())
-        .join(",");
-
-      // Try CheckWX first if key is available
-      if (CHECKWX_API_KEY) {
-        const r = await apiGet(
-          `https://api.checkwx.com/v2/${type}/${codes}/decoded`,
-          {},
-          {
-            headers: { "X-API-KEY": CHECKWX_API_KEY },
-          },
-        );
-        if (r.ok) {
-          const arr = Array.isArray((r.data as any)?.data) ? (r.data as any).data : [(r.data as any)?.data];
-          const stations = arr.filter(Boolean).map((s: any) => parseMetarStation(s, nwpTempC));
-          return toToolResult({ ...r, data: { stations, raw: r.data, source: "checkwx" } });
-        }
-      }
-
-      // Fallback to aviationweather.gov (no auth)
-      const fallback = await apiGet("https://aviationweather.gov/api/data/metar", {
-        ids: codes,
-        format: "json",
-      });
-      if (!fallback.ok) {
-        return toToolResult({
-          ok: false,
-          url: "https://api.checkwx.com + https://aviationweather.gov",
-          status: 0,
-          data: null,
-          error: "Entrambe le fonti METAR non disponibili (CheckWX + AviationWeather)",
-          elapsedMs: fallback.elapsedMs,
-        });
-      }
-      const payload = fallback.data as any;
-      const stations = extractAviationWeatherStations(payload, nwpTempC);
-      return toToolResult({ ...fallback, data: { stations, raw: fallback.data, source: "aviationweather_fallback" } });
-    },
+    handleCheckwxMetarTaf,
   );
 
   // --- aviationweather.gov METAR (Step K, fallback) --------------------
@@ -156,17 +253,7 @@ export function registerItalianSources(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ ids, format, nwpTempC }) => {
-      const r = await apiGet("https://aviationweather.gov/api/data/metar", {
-        ids,
-        format,
-      });
-      if (!r.ok) return toToolResult(r);
-      // aviationweather returns either an array or {data: [...]} / {features: [...]}
-      const payload = r.data as any;
-      const stations = extractAviationWeatherStations(payload, nwpTempC);
-      return toToolResult({ ...r, data: { stations, raw: r.data } });
-    },
+    handleAviationweatherMetar,
   );
 
   // --- DMI Lightning (Step L) ------------------------------------------
@@ -186,36 +273,7 @@ export function registerItalianSources(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ bbox, limit, observed_after, lat, lon }) => {
-      const r = await apiGet("https://opendataapi.dmi.dk/v2/lightningdata/collections/observation/items", {
-        bbox,
-        limit,
-        observed: observed_after,
-      });
-      if (!r.ok) return toToolResult(r);
-      const fc = (r.data as any)?.features ?? [];
-      const strikes = fc.map((f: any) => {
-        const [lonS, latS] = f.geometry?.coordinates ?? [];
-        const observed = f.properties?.observed ?? null;
-        const hour = observed ? new Date(observed).getUTCHours() : null;
-        let distKm: number | null = null;
-        if (lat != null && lon != null && latS != null && lonS != null) {
-          const d = haversine({ lat, lon }, { lat: latS, lon: lonS });
-          distKm = Math.round(d * 10) / 10;
-        }
-        return { lat: latS, lon: lonS, observed, hour, distKm };
-      });
-      const byHour: Record<number, number> = {};
-      for (const s of strikes) if (s.hour != null) byHour[s.hour] = (byHour[s.hour] ?? 0) + 1;
-      const nearest =
-        lat != null
-          ? (strikes.filter((s: any) => s.distKm != null).sort((a: any, b: any) => a.distKm - b.distKm)[0] ?? null)
-          : null;
-      return toToolResult({
-        ...r,
-        data: { count: strikes.length, byHour, nearestKm: nearest?.distKm ?? null, strikes, raw: r.data },
-      });
-    },
+    handleDmiLightning,
   );
 
   // --- floods.it hydrology (Step M, TIER A) ----------------------------
@@ -231,11 +289,7 @@ export function registerItalianSources(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ sensor_id }) => {
-      const path = sensor_id ? `${encodeURIComponent(sensor_id)}.json` : "index.json";
-      const r = await apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
-      return toToolResult(r);
-    },
+    handleFloodsItMonitoring,
   );
 
   // --- EUMETSAT satellite (Step N) -------------------------------------
@@ -251,22 +305,6 @@ export function registerItalianSources(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ channel }) => {
-      const info = {
-        note: "EUMETSAT Data Store richiede CONSUMER_KEY/CONSUMER_SECRET (api.eumetsat.int). Dati grezzi in NetCDF/HRIT; immagini processate in PNG/JPG.",
-        collection_id: "EO:EUM:DAT:MSG:HRSEVIRI",
-        portal: "https://eoportal.eumetsat.int/",
-        api_key_page: "https://api.eumetsat.int/api-key/",
-        requested_channel: channel ?? null,
-        hint: "Per debug visivo usa le immagini processate HRSEVIRI; il fetch binario va fatto fuori dal MCP.",
-      };
-      return toToolResult({
-        ok: true,
-        url: "https://api.eumetsat.int/",
-        status: 200,
-        data: info,
-        elapsedMs: 0,
-      });
-    },
+    handleEumetsatSatelliteInfo,
   );
 }
