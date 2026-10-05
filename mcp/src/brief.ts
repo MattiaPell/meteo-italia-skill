@@ -232,11 +232,12 @@ function processMetarResult(
   if (metarR.status === "fulfilled" && metarR.value.ok) {
     const payload = metarR.value.data as any;
     const list = Array.isArray(payload) ? payload : (payload?.data ?? []);
+    const icaoMap = new Map(icaoList.map((i) => [i.icao, i.distKm]));
     metar = {
       status: "ok",
       stazioni: list.filter(Boolean).map((s: any) => {
         const parsed = parseMetarStation(s, nwpCurrentTemp ?? undefined);
-        const dist = icaoList.find((i) => i.icao === parsed.icao)?.distKm ?? null;
+        const dist = icaoMap.get(parsed.icao) ?? null;
         return { ...parsed, distKm: dist };
       }),
     };
