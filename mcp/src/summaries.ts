@@ -130,10 +130,16 @@ export function summarizeForecast(
     const n = times.length;
     // Pre-build time→dayIndex map to avoid O(n*m) findIndex per hour.
     const timeToDayIdx = new Map<string, number>();
+    const dateToIdx = new Map<string, number>();
     for (let di = 0; di < dates.length; di++) {
-      const d = dates[di];
-      for (const t of times) {
-        if (t?.startsWith(d)) timeToDayIdx.set(t, di);
+      dateToIdx.set(dates[di], di);
+    }
+    for (const t of times) {
+      if (!t) continue;
+      const d = t.slice(0, 10);
+      const idx = dateToIdx.get(d);
+      if (idx !== undefined) {
+        timeToDayIdx.set(t, idx);
       }
     }
     for (const s of modelList) {
