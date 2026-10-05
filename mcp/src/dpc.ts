@@ -55,7 +55,7 @@ export function alertLevelFromText(text: string): number {
   return 0;
 }
 
-function normalizeName(s: string): string {
+export function normalizeName(s: string): string {
   return s
     .toLowerCase()
     .normalize("NFD")
@@ -288,7 +288,15 @@ export async function fetchRadarDownload(product: string, time: number): Promise
 
 // ---------------------------------------------------------------------------
 
-export async function handlePcAllerte({ comune, regione, day }: { comune?: string; regione?: string; day: "today" | "tomorrow" | "both" }) {
+export async function handlePcAllerte({
+  comune,
+  regione,
+  day,
+}: {
+  comune?: string;
+  regione?: string;
+  day: "today" | "tomorrow" | "both";
+}) {
   const start = Date.now();
   const b = await fetchLatestBulletin();
   if (!b.ok) {
@@ -404,7 +412,7 @@ export function registerDpc(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    handlePcAllerte
+    handlePcAllerte,
   );
 
   server.registerTool(
@@ -423,6 +431,6 @@ export function registerDpc(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    handleDpcRadar
+    handleDpcRadar,
   );
 }

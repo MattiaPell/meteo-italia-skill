@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { alertLevelFromText, extractZoneRegionMap, filterZones, maxLevel, type BulletinZone } from "../dpc.js";
+import {
+  alertLevelFromText,
+  extractZoneRegionMap,
+  filterZones,
+  maxLevel,
+  normalizeName,
+  type BulletinZone,
+} from "../dpc.js";
 import { parseArpavIdroXml } from "../regioni/arpav.js";
 import { parseMeteoTrentinoStations, parseMeteoTrentinoObs } from "../regioni/meteotrentino.js";
 import { parseMetarStation } from "../italian_sources.js";
@@ -23,6 +30,22 @@ describe("maxLevel", () => {
       { livelli: { idraulico: 0, temporali: 1, idrogeologico: 3 } },
     ] as BulletinZone[];
     expect(maxLevel(zones)).toBe(3);
+  });
+
+  it("returns 0 if all alert levels are 0", () => {
+    const zones = [
+      { livello: 0, livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 } },
+      { livello: 0, livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 } },
+    ] as any as BulletinZone[];
+    expect(maxLevel(zones)).toBe(0);
+  });
+
+  it("returns the correct level if all alert levels are the same", () => {
+    const zones = [
+      { livello: 2, livelli: { idraulico: 2, temporali: 2, idrogeologico: 2 } },
+      { livello: 2, livelli: { idraulico: 2, temporali: 2, idrogeologico: 2 } },
+    ] as any as BulletinZone[];
+    expect(maxLevel(zones)).toBe(2);
   });
 });
 
@@ -58,7 +81,7 @@ describe("filterZones", () => {
     zona,
     regione,
     comuni,
-    normalizedComuni: new Set(comuni.map((c) => c.toLowerCase())), // Simplified normalizeName for tests
+    normalizedComuni: new Set(comuni.map((c) => normalizeName(c))),
     livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 },
     testi: { idraulico: "", temporali: "", idrogeologico: "" },
     mappa: "",
@@ -115,6 +138,53 @@ describe("filterZones", () => {
 
   it("handles empty zone list gracefully", () => {
     expect(filterZones([], "milano", "lombardia")).toEqual([]);
+  });
+
+  it("handles hyphens in region names correctly", () => {
+    const hyphenZones = [
+      dummyZone("Z5", "Friuli Venezia Giulia", ["Trieste"]),
+      dummyZone("Z6", "Trentino-Alto Adige", ["Trento"]),
+    ];
+    // filter with hyphen, zone without hyphen
+    expect(filterZones(hyphenZones, undefined, "Friuli-Venezia Giulia")).toHaveLength(1);
+    expect(filterZones(hyphenZones, undefined, "Friuli-Venezia Giulia")[0].zona).toBe("Z5");
+
+    // filter without hyphen, zone with hyphen
+    expect(filterZones(hyphenZones, undefined, "Trentino Alto Adige")).toHaveLength(1);
+    expect(filterZones(hyphenZones, undefined, "Trentino Alto Adige")[0].zona).toBe("Z6");
+  });
+
+  it("handles bidirectional includes for region names correctly", () => {
+    const bidiZones = [
+      dummyZone("Z7", "Trentino Alto Adige/Südtirol", ["Bolzano"]),
+      dummyZone("Z8", "Südtirol", ["Merano"]),
+    ];
+    // filter is substring of zone region
+    expect(filterZones(bidiZones, undefined, "Südtirol")).toHaveLength(2);
+
+    // zone region is substring of filter
+    expect(filterZones(bidiZones, undefined, "Trentino Alto Adige/Südtirol")).toHaveLength(2);
+  });
+
+  it("handles accents and apostrophes in comune names correctly", () => {
+    const accentZones = [
+      dummyZone("Z9", "Emilia", ["Forlì"]),
+      dummyZone("Z10", "Abruzzo", ["L'Aquila"]),
+      dummyZone("Z11", "Trentino", ["Città"]),
+    ];
+    // testing accents
+    expect(filterZones(accentZones, "forli")).toHaveLength(1);
+    expect(filterZones(accentZones, "forli")[0].zona).toBe("Z9");
+    expect(filterZones(accentZones, "Forlì")).toHaveLength(1);
+
+    // testing apostrophes
+    expect(filterZones(accentZones, "l aquila")).toHaveLength(1);
+    expect(filterZones(accentZones, "l aquila")[0].zona).toBe("Z10");
+    expect(filterZones(accentZones, "l'aquila")).toHaveLength(1);
+
+    // testing both
+    expect(filterZones(accentZones, "citta")).toHaveLength(1);
+    expect(filterZones(accentZones, "città")).toHaveLength(1);
   });
 });
 
