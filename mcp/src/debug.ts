@@ -21,6 +21,230 @@ function list(v: string | undefined): string[] | undefined {
   return parts.length ? parts : undefined;
 }
 
+const DEBUG_SERVICES: Record<string, (q: Record<string, string>) => Promise<unknown>> = {
+  geocoding: (q) =>
+    apiGet("https://geocoding-api.open-meteo.com/v1/search", {
+      name: q.name,
+      count: q.count ?? 10,
+      language: q.language ?? "it",
+      format: "json",
+    }),
+  forecast: (q) =>
+    apiGet("https://api.open-meteo.com/v1/forecast", {
+      latitude: q.latitude,
+      longitude: q.longitude,
+      models: list(q.models),
+      hourly: list(q.hourly),
+      daily: list(q.daily),
+      timezone: q.timezone ?? "Europe/Rome",
+      past_days: q.past_days,
+      forecast_days: q.forecast_days,
+    }),
+  archive: (q) =>
+    apiGet("https://archive-api.open-meteo.com/v1/archive", {
+      latitude: q.latitude,
+      longitude: q.longitude,
+      start_date: q.start_date,
+      end_date: q.end_date,
+      daily: list(q.daily),
+      timezone: q.timezone ?? "Europe/Rome",
+    }),
+  marine: (q) =>
+    apiGet("https://marine-api.open-meteo.com/v1/marine", {
+      latitude: q.latitude,
+      longitude: q.longitude,
+      hourly: list(q.hourly),
+      daily: list(q.daily),
+      timezone: q.timezone ?? "Europe/Rome",
+    }),
+  air_quality: (q) =>
+    apiGet("https://air-quality-api.open-meteo.com/v1/air-quality", {
+      latitude: q.latitude,
+      longitude: q.longitude,
+      hourly: list(q.hourly),
+      current: list(q.current),
+      domains: q.domains ?? "cams_europe",
+      timezone: q.timezone ?? "Europe/Rome",
+    }),
+  ensemble: (q) =>
+    apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
+      latitude: q.latitude,
+      longitude: q.longitude,
+      models: list(q.models),
+      hourly: list(q.hourly),
+      daily: list(q.daily),
+      timezone: q.timezone ?? "Europe/Rome",
+    }),
+  forecast_summary: async (q) => {
+    const raw = await apiGet("https://api.open-meteo.com/v1/forecast", {
+      latitude: q.latitude,
+      longitude: q.longitude,
+      models: list(q.models),
+      hourly: list(q.hourly) ?? ["temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m"],
+      daily: list(q.daily) ?? [
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "precipitation_sum",
+        "precipitation_probability_max",
+      ],
+      timezone: q.timezone ?? "Europe/Rome",
+    });
+    if (!raw.ok) return raw;
+    const modelList = list(q.models);
+    const summary = summarizeForecast(raw.data, modelList);
+    const bytesRaw = JSON.stringify(raw.data).length;
+    const bytesSum = JSON.stringify(summary).length;
+    return {
+      ...raw,
+      data: summary,
+      compression: `${bytesRaw} -> ${bytesSum} bytes (${Math.round((1 - bytesSum / bytesRaw) * 100)}% smaller)`,
+    };
+  },
+  pc_allerte: async () => {
+    const b = await fetchLatestBulletin();
+    return {
+      ok: b.ok,
+      url: "github.com/pcm-dpc bollettino",
+      status: b.ok ? 200 : 0,
+      data: {
+        nome: b.nome,
+        emissione: b.emissione,
+        zoneOggi: b.today.slice(0, 5),
+        zoneDomani: b.tomorrow.slice(0, 5),
+        totaleZoneOggi: b.today.length,
+      },
+      error: b.error,
+      elapsedMs: 0,
+    };
+  },
+  dpc_radar: async (q) => {
+    const product = q.productType ?? "VMI";
+    const latest = await fetchRadarLatest(product);
+    if (!latest.ok || q.download !== "true" || latest.time == null) {
+      return {
+        ok: latest.ok,
+        url: "radar-api.protezionecivile.it",
+        status: latest.ok ? 200 : 0,
+        data: latest,
+        error: latest.error,
+        elapsedMs: 0,
+      };
+    }
+    const dl = await fetchRadarDownload(product, latest.time);
+    return {
+      ok: dl.ok,
+      url: dl.url,
+      status: dl.status,
+      data: { latest, download: dl.data },
+      error: dl.error,
+      elapsedMs: dl.elapsedMs,
+    };
+  },
+  checkwx: (q) => {
+    if (!CHECKWX_API_KEY)
+      return Promise.resolve({
+        ok: false,
+        url: "https://api.checkwx.com",
+        status: 0,
+        data: null,
+        error: "CHECKWX_API_KEY non impostata",
+        elapsedMs: 0,
+      });
+    const codes = (q.icao ?? "")
+      .split(",")
+      .map((x) => x.trim().toUpperCase())
+      .join(",");
+    return apiGet(
+      `https://api.checkwx.com/v2/${q.type ?? "metar"}/${codes}/decoded`,
+      {},
+      {
+        headers: { "X-API-KEY": CHECKWX_API_KEY },
+      },
+    );
+  },
+  aviationweather: (q) =>
+    apiGet("https://aviationweather.gov/api/data/metar", { ids: q.ids, format: q.format ?? "json" }),
+  dmi_lightning: (q) =>
+    apiGet("https://opendataapi.dmi.dk/v2/lightningdata/collections/observation/items", {
+      bbox: q.bbox,
+      limit: q.limit ?? 1000,
+      observed: q.observed_after,
+    }),
+  floods_it: (q) => {
+    const path = q.sensor_id ? `${q.sensor_id}.json` : "index.json";
+    return apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
+  },
+  arpav_bollettino: () => apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
+  arpav_idro: () =>
+    apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
+  meteotrentino: (q) =>
+    apiGet(
+      `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${q.codice ?? "T0383"}`,
+      {},
+      { acceptText: true },
+    ),
+  meteo_brief: async (q) => {
+    const r = await runBrief({
+      nome: q.nome || undefined,
+      latitude: q.latitude ? Number(q.latitude) : undefined,
+      longitude: q.longitude ? Number(q.longitude) : undefined,
+      regione: q.regione || undefined,
+      days: q.days ? Number(q.days) : undefined,
+      models: q.models || undefined,
+    });
+    return {
+      ok: r.ok,
+      url: "mcp://meteo_brief",
+      status: r.ok ? 200 : 0,
+      data: r.data ?? null,
+      error: r.error,
+      elapsedMs: r.elapsedMs,
+    };
+  },
+  eumetsat: () =>
+    Promise.resolve({
+      ok: true,
+      url: "https://api.eumetsat.int/",
+      status: 200,
+      data: {
+        note: "EUMETSAT richiede API key; dati binari. Vedi collection EO:EUM:DAT:MSG:HRSEVIRI.",
+        portal: "https://eoportal.eumetsat.int/",
+      },
+      elapsedMs: 0,
+    }),
+  arpae_bollettino: () => apiGet("https://apps.arpae.it/REST/meteo_bollettini/", {}),
+  arpafvg_previsioni: (q) => {
+    const date = q.date ?? new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    return apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${date}.xml`, {}, { acceptText: true });
+  },
+  arpafvg_stazione: (q) =>
+    apiGet(`http://dev.meteo.fvg.it/xml/stazioni/${q.codice ?? "UDI"}.xml`, {}, { acceptText: true }),
+  arpa_marche_stazioni: () => apiGet("https://apimeteo.regione.marche.it/Stazioni", {}),
+  arpa_marche_stazione: (q) => apiGet(`https://apimeteo.regione.marche.it/Stazione/${q.codice ?? ""}`, {}),
+  arpa_lombardia_stazioni: () => apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "10" }),
+  arpa_lombardia_osservazioni: () =>
+    apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
+      $limit: "10",
+      $order: "data_osservazione DESC",
+    }),
+  arpa_piemonte_stazioni: () =>
+    apiGet("https://utility.arpa.piemonte.it/meteoidro/stazione_meteorologica/", { format: "json" }),
+  open_meteo_flood: (q) =>
+    apiGet("https://flood-api.open-meteo.com/v1/flood", {
+      latitude: q.latitude ?? "45.44",
+      longitude: q.longitude ?? "12.34",
+      daily: q.daily ?? "river_discharge",
+      timezone: "Europe/Rome",
+    }),
+  open_meteo_seasonal: (q) =>
+    apiGet("https://seasonal-api.open-meteo.com/v1/seasonal", {
+      latitude: q.latitude ?? "41.9",
+      longitude: q.longitude ?? "12.5",
+      daily: q.daily ?? "temperature_2m_max",
+      timezone: "Europe/Rome",
+    }),
+};
+
 /**
  * Local HTTP proxy + debug UI. The browser calls /api/debug which performs the
  * upstream request server-side (avoids CORS and reuses the shared client).
@@ -35,231 +259,7 @@ export function startDebugServer(port: number) {
     console.error(`[meteo-italia-mcp] debug public/ dir not found at ${publicDir}; serving API only`);
   }
 
-  const services: Record<string, (q: Record<string, string>) => Promise<unknown>> = {
-    geocoding: (q) =>
-      apiGet("https://geocoding-api.open-meteo.com/v1/search", {
-        name: q.name,
-        count: q.count ?? 10,
-        language: q.language ?? "it",
-        format: "json",
-      }),
-    forecast: (q) =>
-      apiGet("https://api.open-meteo.com/v1/forecast", {
-        latitude: q.latitude,
-        longitude: q.longitude,
-        models: list(q.models),
-        hourly: list(q.hourly),
-        daily: list(q.daily),
-        timezone: q.timezone ?? "Europe/Rome",
-        past_days: q.past_days,
-        forecast_days: q.forecast_days,
-      }),
-    archive: (q) =>
-      apiGet("https://archive-api.open-meteo.com/v1/archive", {
-        latitude: q.latitude,
-        longitude: q.longitude,
-        start_date: q.start_date,
-        end_date: q.end_date,
-        daily: list(q.daily),
-        timezone: q.timezone ?? "Europe/Rome",
-      }),
-    marine: (q) =>
-      apiGet("https://marine-api.open-meteo.com/v1/marine", {
-        latitude: q.latitude,
-        longitude: q.longitude,
-        hourly: list(q.hourly),
-        daily: list(q.daily),
-        timezone: q.timezone ?? "Europe/Rome",
-      }),
-    air_quality: (q) =>
-      apiGet("https://air-quality-api.open-meteo.com/v1/air-quality", {
-        latitude: q.latitude,
-        longitude: q.longitude,
-        hourly: list(q.hourly),
-        current: list(q.current),
-        domains: q.domains ?? "cams_europe",
-        timezone: q.timezone ?? "Europe/Rome",
-      }),
-    ensemble: (q) =>
-      apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
-        latitude: q.latitude,
-        longitude: q.longitude,
-        models: list(q.models),
-        hourly: list(q.hourly),
-        daily: list(q.daily),
-        timezone: q.timezone ?? "Europe/Rome",
-      }),
-    forecast_summary: async (q) => {
-      const raw = await apiGet("https://api.open-meteo.com/v1/forecast", {
-        latitude: q.latitude,
-        longitude: q.longitude,
-        models: list(q.models),
-        hourly: list(q.hourly) ?? ["temperature_2m", "precipitation", "weather_code", "cape", "wind_gusts_10m"],
-        daily: list(q.daily) ?? [
-          "temperature_2m_max",
-          "temperature_2m_min",
-          "precipitation_sum",
-          "precipitation_probability_max",
-        ],
-        timezone: q.timezone ?? "Europe/Rome",
-      });
-      if (!raw.ok) return raw;
-      const modelList = list(q.models);
-      const summary = summarizeForecast(raw.data, modelList);
-      const bytesRaw = JSON.stringify(raw.data).length;
-      const bytesSum = JSON.stringify(summary).length;
-      return {
-        ...raw,
-        data: summary,
-        compression: `${bytesRaw} -> ${bytesSum} bytes (${Math.round((1 - bytesSum / bytesRaw) * 100)}% smaller)`,
-      };
-    },
-    pc_allerte: async () => {
-      const b = await fetchLatestBulletin();
-      return {
-        ok: b.ok,
-        url: "github.com/pcm-dpc bollettino",
-        status: b.ok ? 200 : 0,
-        data: {
-          nome: b.nome,
-          emissione: b.emissione,
-          zoneOggi: b.today.slice(0, 5),
-          zoneDomani: b.tomorrow.slice(0, 5),
-          totaleZoneOggi: b.today.length,
-        },
-        error: b.error,
-        elapsedMs: 0,
-      };
-    },
-    dpc_radar: async (q) => {
-      const product = q.productType ?? "VMI";
-      const latest = await fetchRadarLatest(product);
-      if (!latest.ok || q.download !== "true" || latest.time == null) {
-        return {
-          ok: latest.ok,
-          url: "radar-api.protezionecivile.it",
-          status: latest.ok ? 200 : 0,
-          data: latest,
-          error: latest.error,
-          elapsedMs: 0,
-        };
-      }
-      const dl = await fetchRadarDownload(product, latest.time);
-      return {
-        ok: dl.ok,
-        url: dl.url,
-        status: dl.status,
-        data: { latest, download: dl.data },
-        error: dl.error,
-        elapsedMs: dl.elapsedMs,
-      };
-    },
-    checkwx: (q) => {
-      if (!CHECKWX_API_KEY)
-        return Promise.resolve({
-          ok: false,
-          url: "https://api.checkwx.com",
-          status: 0,
-          data: null,
-          error: "CHECKWX_API_KEY non impostata",
-          elapsedMs: 0,
-        });
-      const codes = (q.icao ?? "")
-        .split(",")
-        .map((x) => x.trim().toUpperCase())
-        .join(",");
-      return apiGet(
-        `https://api.checkwx.com/v2/${q.type ?? "metar"}/${codes}/decoded`,
-        {},
-        {
-          headers: { "X-API-KEY": CHECKWX_API_KEY },
-        },
-      );
-    },
-    aviationweather: (q) =>
-      apiGet("https://aviationweather.gov/api/data/metar", { ids: q.ids, format: q.format ?? "json" }),
-    dmi_lightning: (q) =>
-      apiGet("https://opendataapi.dmi.dk/v2/lightningdata/collections/observation/items", {
-        bbox: q.bbox,
-        limit: q.limit ?? 1000,
-        observed: q.observed_after,
-      }),
-    floods_it: (q) => {
-      const path = q.sensor_id ? `${q.sensor_id}.json` : "index.json";
-      return apiGet(`https://www.floods.it/api/v1/monitoring/${path}`, {});
-    },
-    arpav_bollettino: () => apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {}),
-    arpav_idro: () =>
-      apiGet("https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml", {}, { acceptText: true }),
-    meteotrentino: (q) =>
-      apiGet(
-        `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${q.codice ?? "T0383"}`,
-        {},
-        { acceptText: true },
-      ),
-    meteo_brief: async (q) => {
-      const r = await runBrief({
-        nome: q.nome || undefined,
-        latitude: q.latitude ? Number(q.latitude) : undefined,
-        longitude: q.longitude ? Number(q.longitude) : undefined,
-        regione: q.regione || undefined,
-        days: q.days ? Number(q.days) : undefined,
-        models: q.models || undefined,
-      });
-      return {
-        ok: r.ok,
-        url: "mcp://meteo_brief",
-        status: r.ok ? 200 : 0,
-        data: r.data ?? null,
-        error: r.error,
-        elapsedMs: r.elapsedMs,
-      };
-    },
-    eumetsat: () =>
-      Promise.resolve({
-        ok: true,
-        url: "https://api.eumetsat.int/",
-        status: 200,
-        data: {
-          note: "EUMETSAT richiede API key; dati binari. Vedi collection EO:EUM:DAT:MSG:HRSEVIRI.",
-          portal: "https://eoportal.eumetsat.int/",
-        },
-        elapsedMs: 0,
-      }),
-    arpae_bollettino: () => apiGet("https://apps.arpae.it/REST/meteo_bollettini/", {}),
-    arpafvg_previsioni: (q) => {
-      const date = q.date ?? new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      return apiGet(`http://dev.meteo.fvg.it/xml/previsioni/PW${date}.xml`, {}, { acceptText: true });
-    },
-    arpafvg_stazione: (q) =>
-      apiGet(`http://dev.meteo.fvg.it/xml/stazioni/${q.codice ?? "UDI"}.xml`, {}, { acceptText: true }),
-    arpa_marche_stazioni: () => apiGet("https://apimeteo.regione.marche.it/Stazioni", {}),
-    arpa_marche_stazione: (q) => apiGet(`https://apimeteo.regione.marche.it/Stazione/${q.codice ?? ""}`, {}),
-    arpa_lombardia_stazioni: () => apiGet("https://www.dati.lombardia.it/resource/nf78-nj6b.json", { $limit: "10" }),
-    arpa_lombardia_osservazioni: () =>
-      apiGet("https://www.dati.lombardia.it/resource/647i-nhxk.json", {
-        $limit: "10",
-        $order: "data_osservazione DESC",
-      }),
-    arpa_piemonte_stazioni: () =>
-      apiGet("https://utility.arpa.piemonte.it/meteoidro/stazione_meteorologica/", { format: "json" }),
-    open_meteo_flood: (q) =>
-      apiGet("https://flood-api.open-meteo.com/v1/flood", {
-        latitude: q.latitude ?? "45.44",
-        longitude: q.longitude ?? "12.34",
-        daily: q.daily ?? "river_discharge",
-        timezone: "Europe/Rome",
-      }),
-    open_meteo_seasonal: (q) =>
-      apiGet("https://seasonal-api.open-meteo.com/v1/seasonal", {
-        latitude: q.latitude ?? "41.9",
-        longitude: q.longitude ?? "12.5",
-        daily: q.daily ?? "temperature_2m_max",
-        timezone: "Europe/Rome",
-      }),
-  };
-
-  app.get("/api/services", (_req, res) => res.json(Object.keys(services)));
+  app.get("/api/services", (_req, res) => res.json(Object.keys(DEBUG_SERVICES)));
 
   app.get("/api/metrics", (_req, res) => {
     const pct = (arr: number[], p: number) => {
@@ -285,7 +285,7 @@ export function startDebugServer(port: number) {
 
   app.post("/api/debug", async (req, res) => {
     const { service, params } = req.body as { service: string; params?: Record<string, string> };
-    const fn = services[service];
+    const fn = DEBUG_SERVICES[service];
     if (!fn) {
       res.status(400).json({ error: `unknown service: ${service}` });
       return;
