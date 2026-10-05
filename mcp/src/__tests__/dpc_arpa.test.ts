@@ -24,6 +24,22 @@ describe("maxLevel", () => {
     ] as BulletinZone[];
     expect(maxLevel(zones)).toBe(3);
   });
+
+  it("returns 0 if all alert levels are 0", () => {
+    const zones = [
+      { livello: 0, livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 } },
+      { livello: 0, livelli: { idraulico: 0, temporali: 0, idrogeologico: 0 } },
+    ] as any as BulletinZone[];
+    expect(maxLevel(zones)).toBe(0);
+  });
+
+  it("returns the correct level if all alert levels are the same", () => {
+    const zones = [
+      { livello: 2, livelli: { idraulico: 2, temporali: 2, idrogeologico: 2 } },
+      { livello: 2, livelli: { idraulico: 2, temporali: 2, idrogeologico: 2 } },
+    ] as any as BulletinZone[];
+    expect(maxLevel(zones)).toBe(2);
+  });
 });
 
 describe("alertLevelFromText", () => {
