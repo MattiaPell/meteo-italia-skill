@@ -118,6 +118,88 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   };
 }
 
+interface ArpavBollettinoArgs {
+  zona?: string;
+  giorno?: number;
+}
+
+async function handleArpavBollettino({ zona, giorno }: ArpavBollettinoArgs) {
+  const r = await apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {});
+  if (!r.ok) return toToolResult(r);
+  const rows: any[] = (r.data as any)?.data ?? [];
+  const norm = (s: string) => s.toLowerCase();
+  const filtered = rows.filter((row) => {
+    if (giorno !== undefined && Number(row.giorno) !== giorno) return false;
+    if (zona && !norm(String(row.zona ?? "")).includes(norm(zona))) return false;
+    return true;
+  });
+  const compact = filtered.map((row) => ({
+    zona: row.zona,
+    giorno: row.giorno,
+    scadenza: row.scadenza,
+    cielo: row.testo,
+    precipitazioni: row.precipitazioni,
+    temperatura: row.temperatura,
+    t1500m: row["temperatura 1500m"],
+    t2000m: row["temperatura 2000m"],
+    t3000m: row["temperatura 3000m"],
+    attendibilita: row.attendibilita,
+    avvisi: row.avvisi ?? row.segnalazioni ?? null,
+  }));
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "ARPAV Centro Meteorologico (CC BY 4.0)",
+      emissione: rows[0]?.dataemissione ?? null,
+      zone: compact,
+      count: compact.length,
+    },
+  });
+}
+
+interface ArpavIdroArgs {
+  provincia?: string;
+  nome?: string;
+  latitude?: number;
+  longitude?: number;
+  limit: number;
+}
+
+async function handleArpavIdro({ provincia, nome, latitude, longitude, limit }: ArpavIdroArgs) {
+  const r = await apiGet(
+    "https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml",
+    {},
+    { acceptText: true },
+  );
+  if (!r.ok) return toToolResult(r);
+  let stations = parseArpavIdroXml(String(r.data));
+  if (provincia) {
+    const p = provincia.toUpperCase();
+    stations = stations.filter((s) => s.provincia === p);
+  }
+  if (nome) {
+    const n = nome.toLowerCase();
+    stations = stations.filter((s) => s.nome.toLowerCase().includes(n) || s.comune.toLowerCase().includes(n));
+  }
+  if (latitude !== undefined && longitude !== undefined) {
+    stations = stations
+      .map((s) => ({
+        ...s,
+        distKm: Math.round(haversine({ lat: latitude, lon: longitude }, { lat: s.lat, lon: s.lon }) * 10) / 10,
+      }))
+      .sort((a, b) => (a as any).distKm - (b as any).distKm);
+  }
+  const out = stations.slice(0, limit);
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "ARPAV rete idrometrica (open data, non validato)",
+      stazioniTotali: stations.length,
+      stazioni: out,
+    },
+  });
+}
+
 export function registerArpav(server: McpServer) {
   // --- ARPAV bollettino meteo per zone (Veneto) --------------------------
   server.registerTool(
@@ -144,39 +226,7 @@ export function registerArpav(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ zona, giorno }) => {
-      const r = await apiGet("https://api.arpa.veneto.it/REST/v1/bollettini_meteo_simboli_en", {});
-      if (!r.ok) return toToolResult(r);
-      const rows: any[] = (r.data as any)?.data ?? [];
-      const norm = (s: string) => s.toLowerCase();
-      const filtered = rows.filter((row) => {
-        if (giorno !== undefined && Number(row.giorno) !== giorno) return false;
-        if (zona && !norm(String(row.zona ?? "")).includes(norm(zona))) return false;
-        return true;
-      });
-      const compact = filtered.map((row) => ({
-        zona: row.zona,
-        giorno: row.giorno,
-        scadenza: row.scadenza,
-        cielo: row.testo,
-        precipitazioni: row.precipitazioni,
-        temperatura: row.temperatura,
-        t1500m: row["temperatura 1500m"],
-        t2000m: row["temperatura 2000m"],
-        t3000m: row["temperatura 3000m"],
-        attendibilita: row.attendibilita,
-        avvisi: row.avvisi ?? row.segnalazioni ?? null,
-      }));
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "ARPAV Centro Meteorologico (CC BY 4.0)",
-          emissione: rows[0]?.dataemissione ?? null,
-          zone: compact,
-          count: compact.length,
-        },
-      });
-    },
+    handleArpavBollettino,
   );
 
   // --- ARPAV livelli idrometrici (Veneto) --------------------------------
@@ -196,39 +246,6 @@ export function registerArpav(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ provincia, nome, latitude, longitude, limit }) => {
-      const r = await apiGet(
-        "https://www.arpa.veneto.it/api/risorse/data-meteo/xml/Ultime48ore.xml",
-        {},
-        { acceptText: true },
-      );
-      if (!r.ok) return toToolResult(r);
-      let stations = parseArpavIdroXml(String(r.data));
-      if (provincia) {
-        const p = provincia.toUpperCase();
-        stations = stations.filter((s) => s.provincia === p);
-      }
-      if (nome) {
-        const n = nome.toLowerCase();
-        stations = stations.filter((s) => s.nome.toLowerCase().includes(n) || s.comune.toLowerCase().includes(n));
-      }
-      if (latitude !== undefined && longitude !== undefined) {
-        stations = stations
-          .map((s) => ({
-            ...s,
-            distKm: Math.round(haversine({ lat: latitude, lon: longitude }, { lat: s.lat, lon: s.lon }) * 10) / 10,
-          }))
-          .sort((a, b) => (a as any).distKm - (b as any).distKm);
-      }
-      const out = stations.slice(0, limit);
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "ARPAV rete idrometrica (open data, non validato)",
-          stazioniTotali: stations.length,
-          stazioni: out,
-        },
-      });
-    },
+    handleArpavIdro,
   );
 }
