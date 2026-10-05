@@ -288,6 +288,102 @@ export async function fetchRadarDownload(product: string, time: number): Promise
 
 // ---------------------------------------------------------------------------
 
+export async function handlePcAllerte({ comune, regione, day }: { comune?: string; regione?: string; day: "today" | "tomorrow" | "both" }) {
+  const start = Date.now();
+  const b = await fetchLatestBulletin();
+  if (!b.ok) {
+    return toToolResult({
+      ok: false,
+      url: GITHUB_RAW,
+      status: 0,
+      data: null,
+      error: `${b.error} — consulta https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/`,
+      elapsedMs: Date.now() - start,
+    });
+  }
+  const pick = (zones: BulletinZone[]) =>
+    zones.map((z) => ({
+      zona: z.zona,
+      regione: z.regione,
+      livelli: z.livelli,
+      allertaMax: Math.max(z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico),
+      comuniMatch: comune ? z.comuni.length : undefined,
+    }));
+  const todayZones = day !== "tomorrow" ? filterZones(b.today, comune, regione) : [];
+  const tomorrowZones = day !== "today" ? filterZones(b.tomorrow, comune, regione) : [];
+  const matched = comune
+    ? [...b.today, ...b.tomorrow].some((z) => z.normalizedComuni.has(normalizeName(comune)))
+    : true;
+  const data = {
+    fonte: "DPC Bollettino di Criticità (GitHub pcm-dpc, CC-BY)",
+    bollettino: { nome: b.nome, emissione: b.emissione, stamp: b.stamp },
+    filtro: { comune: comune ?? null, regione: regione ?? null, comuneTrovato: comune ? matched : null },
+    allertaMaxOggi: todayZones.length ? maxLevel(todayZones) : null,
+    allertaMaxDomani: tomorrowZones.length ? maxLevel(tomorrowZones) : null,
+    zoneOggi: pick(todayZones),
+    zoneDomani: pick(tomorrowZones),
+    nota:
+      comune && !matched
+        ? `Comune '${comune}' non trovato in nessuna zona di allerta: verifica il nome esatto (es. 'Reggio di Calabria').`
+        : "Livelli: 0=verde/nessuna, 1=gialla, 2=arancione, 3=rossa. Per il rischio temporali il rosso non è previsto.",
+  };
+  return toToolResult({
+    ok: true,
+    url: `${GITHUB_RAW}/${b.stamp}.json`,
+    status: 200,
+    data,
+    elapsedMs: Date.now() - start,
+  });
+}
+
+export async function handleDpcRadar({ product, download }: { product: string; download: boolean }) {
+  const start = Date.now();
+  const latest = await fetchRadarLatest(product);
+  if (!latest.ok) {
+    return toToolResult({
+      ok: false,
+      url: `${RADAR_BASE}/findLastProductByType`,
+      status: 0,
+      data: null,
+      error: latest.error ?? `Prodotto ${product} non disponibile`,
+      elapsedMs: Date.now() - start,
+    });
+  }
+  let downloadData: unknown = null;
+  if (download && latest.time != null) {
+    const dl = await fetchRadarDownload(product, latest.time);
+    if (dl.ok) {
+      const d = dl.data as any;
+      downloadData = {
+        url: d?.url ?? null,
+        key: d?.key ?? null,
+        expiresSeconds: d?.expiresSeconds ?? 300,
+        formato: "GeoTIFF",
+        avviso: "URL pre-signed S3: valida circa 5 minuti dalla richiesta. Scaricare subito.",
+      };
+    } else {
+      downloadData = { error: dl.error ?? "download fallito" };
+    }
+  }
+  return toToolResult({
+    ok: true,
+    url: `${RADAR_BASE}/findLastProductByType?type=${product}`,
+    status: 200,
+    data: {
+      fonte: "Radar-DPC, Dipartimento Protezione Civile (CC-BY-SA)",
+      product,
+      time: latest.time,
+      timeIso: latest.timeIso,
+      period: latest.period,
+      ageMinutes: latest.ageMinutes,
+      stale: latest.ageMinutes != null && latest.ageMinutes > 30,
+      download: downloadData,
+      portale: "https://radar.protezionecivile.it",
+    },
+    elapsedMs: Date.now() - start,
+  });
+}
+
 export function registerDpc(server: McpServer) {
   server.registerTool(
     "pc_allerte",
@@ -308,53 +404,7 @@ export function registerDpc(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ comune, regione, day }) => {
-      const start = Date.now();
-      const b = await fetchLatestBulletin();
-      if (!b.ok) {
-        return toToolResult({
-          ok: false,
-          url: GITHUB_RAW,
-          status: 0,
-          data: null,
-          error: `${b.error} — consulta https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/`,
-          elapsedMs: Date.now() - start,
-        });
-      }
-      const pick = (zones: BulletinZone[]) =>
-        zones.map((z) => ({
-          zona: z.zona,
-          regione: z.regione,
-          livelli: z.livelli,
-          allertaMax: Math.max(z.livelli.idraulico, z.livelli.temporali, z.livelli.idrogeologico),
-          comuniMatch: comune ? z.comuni.length : undefined,
-        }));
-      const todayZones = day !== "tomorrow" ? filterZones(b.today, comune, regione) : [];
-      const tomorrowZones = day !== "today" ? filterZones(b.tomorrow, comune, regione) : [];
-      const matched = comune
-        ? [...b.today, ...b.tomorrow].some((z) => z.normalizedComuni.has(normalizeName(comune)))
-        : true;
-      const data = {
-        fonte: "DPC Bollettino di Criticità (GitHub pcm-dpc, CC-BY)",
-        bollettino: { nome: b.nome, emissione: b.emissione, stamp: b.stamp },
-        filtro: { comune: comune ?? null, regione: regione ?? null, comuneTrovato: comune ? matched : null },
-        allertaMaxOggi: todayZones.length ? maxLevel(todayZones) : null,
-        allertaMaxDomani: tomorrowZones.length ? maxLevel(tomorrowZones) : null,
-        zoneOggi: pick(todayZones),
-        zoneDomani: pick(tomorrowZones),
-        nota:
-          comune && !matched
-            ? `Comune '${comune}' non trovato in nessuna zona di allerta: verifica il nome esatto (es. 'Reggio di Calabria').`
-            : "Livelli: 0=verde/nessuna, 1=gialla, 2=arancione, 3=rossa. Per il rischio temporali il rosso non è previsto.",
-      };
-      return toToolResult({
-        ok: true,
-        url: `${GITHUB_RAW}/${b.stamp}.json`,
-        status: 200,
-        data,
-        elapsedMs: Date.now() - start,
-      });
-    },
+    handlePcAllerte
   );
 
   server.registerTool(
@@ -373,52 +423,6 @@ export function registerDpc(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ product, download }) => {
-      const start = Date.now();
-      const latest = await fetchRadarLatest(product);
-      if (!latest.ok) {
-        return toToolResult({
-          ok: false,
-          url: `${RADAR_BASE}/findLastProductByType`,
-          status: 0,
-          data: null,
-          error: latest.error ?? `Prodotto ${product} non disponibile`,
-          elapsedMs: Date.now() - start,
-        });
-      }
-      let downloadData: unknown = null;
-      if (download && latest.time != null) {
-        const dl = await fetchRadarDownload(product, latest.time);
-        if (dl.ok) {
-          const d = dl.data as any;
-          downloadData = {
-            url: d?.url ?? null,
-            key: d?.key ?? null,
-            expiresSeconds: d?.expiresSeconds ?? 300,
-            formato: "GeoTIFF",
-            avviso: "URL pre-signed S3: valida circa 5 minuti dalla richiesta. Scaricare subito.",
-          };
-        } else {
-          downloadData = { error: dl.error ?? "download fallito" };
-        }
-      }
-      return toToolResult({
-        ok: true,
-        url: `${RADAR_BASE}/findLastProductByType?type=${product}`,
-        status: 200,
-        data: {
-          fonte: "Radar-DPC, Dipartimento Protezione Civile (CC-BY-SA)",
-          product,
-          time: latest.time,
-          timeIso: latest.timeIso,
-          period: latest.period,
-          ageMinutes: latest.ageMinutes,
-          stale: latest.ageMinutes != null && latest.ageMinutes > 30,
-          download: downloadData,
-          portale: "https://radar.protezionecivile.it",
-        },
-        elapsedMs: Date.now() - start,
-      });
-    },
+    handleDpcRadar
   );
 }
