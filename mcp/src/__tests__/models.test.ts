@@ -42,5 +42,29 @@ describe("models", () => {
     it("leaves already normalized IDs unchanged", () => {
       expect(normalizeModelId("icon_eu")).toBe("icon_eu");
     });
+
+    it("maps aliases 'icon' and 'icon_d2' to canonical 'icon_d2'", () => {
+      expect(normalizeModelId("icon")).toBe("icon_d2");
+      expect(normalizeModelId("ICON")).toBe("icon_d2");
+      expect(normalizeModelId("icon-d2")).toBe("icon_d2");
+      expect(normalizeModelId("  icon_d2  ")).toBe("icon_d2");
+    });
+
+    it("handles empty strings", () => {
+      expect(normalizeModelId("")).toBe("");
+    });
+
+    it("handles strings with only whitespace", () => {
+      expect(normalizeModelId("   ")).toBe("");
+      expect(normalizeModelId("\t\n")).toBe("");
+    });
+
+    it("handles mixed case strings without dashes or underscores", () => {
+      expect(normalizeModelId("Arome")).toBe("arome");
+    });
+
+    it("handles strings with mixed dashes and underscores", () => {
+      expect(normalizeModelId("icon-eu_eps")).toBe("icon_eu_eps");
+    });
   });
 });
