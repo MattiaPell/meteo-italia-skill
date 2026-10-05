@@ -111,6 +111,66 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   };
 }
 
+export async function handleArpaMarcheStazioni({ provincia, attive }: { provincia?: string; attive?: boolean }) {
+  const attiveParam = attive !== false; // default true
+  const r = await apiGet(`${API_BASE}/Stazioni`, { attive: attiveParam });
+  if (!r.ok) return toToolResult(r);
+
+  const stations = parseStationList(r.data as any);
+  const filtered = provincia ? stations.filter((s) => s.provincia.toUpperCase() === provincia.toUpperCase()) : stations;
+
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "AMAP Agrometeo — Regione Marche (CC BY)",
+      totale: filtered.length,
+      stazioni: filtered,
+    },
+  });
+}
+
+export async function handleArpaMarcheStazione({ codice }: { codice: string }) {
+  const r = await apiGet(`${API_BASE}/Stazione/${codice}`, {});
+  if (!r.ok) return toToolResult(r);
+
+  const raw = r.data as any;
+  const base: ArpaMarcheStation = {
+    codice: raw.codice ?? codice,
+    nome: raw.nome ?? "",
+    comune: raw.comune ?? "",
+    provincia: raw.provincia ?? "",
+    latitudine: raw.latitudine ?? dmsToDecimal(raw.latString ?? ""),
+    longitudine: raw.longitudine ?? dmsToDecimal(raw.longString ?? ""),
+    altitudine: parseFloat(raw.altitudine) || 0,
+    attiva: (raw.statoCodice ?? "") === "ATTIVA",
+    proprietario: raw.proprietario ?? "",
+    ultimoAggiornamento: raw.fine ?? null,
+    sensori: [],
+  };
+  const detail = parseStationDetail(raw, base);
+
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "AMAP Agrometeo — Regione Marche (CC BY)",
+      stazione: detail,
+    },
+  });
+}
+
+export async function handleArpaMarcheGrandezze() {
+  const r = await apiGet(`${API_BASE}/Grandezze`, {});
+  if (!r.ok) return toToolResult(r);
+
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "AMAP Agrometeo — Regione Marche (CC BY)",
+      grandezze: (r.data as any)?.lista ?? [],
+    },
+  });
+}
+
 export function registerArpaMarche(server: McpServer) {
   // --- ARPA Marche elenco stazioni ----------------------------------------
   server.registerTool(
@@ -129,25 +189,7 @@ export function registerArpaMarche(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ provincia, attive }) => {
-      const attiveParam = attive !== false; // default true
-      const r = await apiGet(`${API_BASE}/Stazioni`, { attive: attiveParam });
-      if (!r.ok) return toToolResult(r);
-
-      const stations = parseStationList(r.data as any);
-      const filtered = provincia
-        ? stations.filter((s) => s.provincia.toUpperCase() === provincia.toUpperCase())
-        : stations;
-
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "AMAP Agrometeo — Regione Marche (CC BY)",
-          totale: filtered.length,
-          stazioni: filtered,
-        },
-      });
-    },
+    handleArpaMarcheStazioni,
   );
 
   // --- ARPA Marche dettaglio stazione -------------------------------------
@@ -163,34 +205,7 @@ export function registerArpaMarche(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ codice }) => {
-      const r = await apiGet(`${API_BASE}/Stazione/${codice}`, {});
-      if (!r.ok) return toToolResult(r);
-
-      const raw = r.data as any;
-      const base: ArpaMarcheStation = {
-        codice: raw.codice ?? codice,
-        nome: raw.nome ?? "",
-        comune: raw.comune ?? "",
-        provincia: raw.provincia ?? "",
-        latitudine: raw.latitudine ?? dmsToDecimal(raw.latString ?? ""),
-        longitudine: raw.longitudine ?? dmsToDecimal(raw.longString ?? ""),
-        altitudine: parseFloat(raw.altitudine) || 0,
-        attiva: (raw.statoCodice ?? "") === "ATTIVA",
-        proprietario: raw.proprietario ?? "",
-        ultimoAggiornamento: raw.fine ?? null,
-        sensori: [],
-      };
-      const detail = parseStationDetail(raw, base);
-
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "AMAP Agrometeo — Regione Marche (CC BY)",
-          stazione: detail,
-        },
-      });
-    },
+    handleArpaMarcheStazione,
   );
 
   // --- ARPA Marche grandezze disponibili ----------------------------------
@@ -204,17 +219,6 @@ export function registerArpaMarche(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async () => {
-      const r = await apiGet(`${API_BASE}/Grandezze`, {});
-      if (!r.ok) return toToolResult(r);
-
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "AMAP Agrometeo — Regione Marche (CC BY)",
-          grandezze: (r.data as any)?.lista ?? [],
-        },
-      });
-    },
+    handleArpaMarcheGrandezze,
   );
 }
