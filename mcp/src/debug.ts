@@ -251,6 +251,21 @@ const DEBUG_SERVICES: Record<string, (q: Record<string, string>) => Promise<unkn
  */
 export function startDebugServer(port: number) {
   const app = express();
+
+  // Prevent DNS rebinding attacks by ensuring the Host header is localhost
+  app.use((req, res, next) => {
+    const isLocalIp = req.ip === "127.0.0.1" || req.ip === "::ffff:127.0.0.1" || req.ip === "::1";
+    if (!isLocalIp) {
+      res.status(403).json({ error: "Forbidden: Not local IP" });
+      return;
+    }
+    if (req.hostname !== "localhost" && req.hostname !== "127.0.0.1" && req.hostname !== "[::1]") {
+      res.status(403).json({ error: "Forbidden: invalid host" });
+      return;
+    }
+    next();
+  });
+
   app.use(express.json());
   if (existsSync(publicDir)) {
     app.use(express.static(publicDir));
