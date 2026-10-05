@@ -78,9 +78,16 @@ export function registerVerification(server: McpServer) {
         const errors = { tmax: [] as number[], tmin: [] as number[], precip: [] as number[] };
         const dailyComparison: any[] = [];
 
+        const fDatesIndex = new Map<string, number>();
+        for (let i = 0; i < fDates.length; i++) {
+          if (!fDatesIndex.has(fDates[i])) {
+            fDatesIndex.set(fDates[i], i);
+          }
+        }
+
         for (let i = 0; i < era5Dates.length; i++) {
-          const fi = fDates.indexOf(era5Dates[i]);
-          if (fi < 0) continue;
+          const fi = fDatesIndex.get(era5Dates[i]);
+          if (fi === undefined) continue;
           const eTmax = era5Tmax[i],
             eTmin = era5Tmin[i],
             eP = era5Precip[i];
