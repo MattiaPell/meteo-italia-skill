@@ -93,6 +93,121 @@ export async function runBriefArpa(lat: number, lon: number): Promise<any> {
   };
 }
 
+export async function handleArpaLombardiaStazioni({
+  provincia,
+  tipologia,
+  limit,
+}: {
+  provincia?: string;
+  tipologia?: string;
+  limit?: number;
+}) {
+  const params: Record<string, string> = {};
+  if (provincia) params.provincia = provincia.toUpperCase();
+  if (tipologia) params.tipologia = tipologia;
+  if (limit) params.$limit = String(limit);
+  else params.$limit = "200";
+
+  const r = await apiGet(STAZIONI_URL, params);
+  if (!r.ok) return toToolResult(r);
+
+  const rows = (r.data as any[]) ?? [];
+  const stations = rows.map(parseStation);
+
+  return toToolResult({
+    ...r,
+    data: {
+      fonte: "ARPA Lombardia — CC BY 4.0",
+      totale: stations.length,
+      stazioni: stations,
+    },
+  });
+}
+
+export async function handleArpaLombardiaOsservazioni({
+  provincia,
+  tipologia,
+  minuti,
+  limit,
+}: {
+  provincia?: string;
+  tipologia?: string;
+  minuti?: number;
+  limit?: number;
+}) {
+  // Step 1: find sensor IDs matching provincia/tipologia
+  const stationParams: Record<string, string> = { $limit: "200" };
+  if (provincia) stationParams.provincia = provincia.toUpperCase();
+  if (tipologia) stationParams.tipologia = tipologia;
+  const stationR = await apiGet(STAZIONI_URL, stationParams);
+  if (!stationR.ok) return toToolResult(stationR);
+
+  const stations = ((stationR.data as any[]) ?? []).map(parseStation);
+  if (!stations.length) {
+    return toToolResult({
+      ok: false,
+      url: stationR.url,
+      status: 200,
+      data: null,
+      error: provincia ? `Nessuna stazione trovata in provincia ${provincia}` : "Nessuna stazione trovata",
+      elapsedMs: Date.now() - 0,
+    });
+  }
+
+  // Step 2: get recent readings for these sensor IDs
+  // Socrata SODA doesn't support JOIN — we batch by $where on date+ID
+  // Efficient: use $where with date filter and IN clause
+  const maxMinuti = minuti ?? 120; // default last 2h
+  const fromDate = new Date(Date.now() - maxMinuti * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, "");
+
+  // Socrata SoQL supports $where with IN
+  const obsParams: Record<string, string> = {
+    $where: `data >= '${fromDate}'`,
+    $order: "data DESC",
+    $limit: String(limit ?? 100),
+  };
+
+  const obsR = await apiGet(OSSERVAZIONI_URL, obsParams);
+  if (!obsR.ok) return toToolResult(obsR);
+
+  const obs = ((obsR.data as any[]) ?? []) as ArpaLombardiaObs[];
+
+  // Join with station info
+  const stationMap = new Map(stations.map((s) => [s.idsensore, s]));
+  const enriched = obs
+    .filter((o) => stationMap.has(o.idsensore) && o.valore !== "-999")
+    .map((o) => {
+      const st = stationMap.get(o.idsensore)!;
+      return {
+        idsensore: o.idsensore,
+        stazione: st.nomeStazione,
+        provincia: st.provincia,
+        tipologia: st.tipologia,
+        unita: st.unitaMisura,
+        data: o.data,
+        valore: parseFloat(o.valore) || o.valore,
+        stato: o.stato,
+      };
+    });
+
+  return toToolResult({
+    ...obsR,
+    data: {
+      fonte: "ARPA Lombardia (CC BY 4.0) — dati.lombardia.it",
+      intervallo: `ultimi ${maxMinuti} minuti`,
+      totale: enriched.length,
+      osservazioni: enriched.slice(0, limit ?? 100),
+      stazioniRiferimento: stations.map((s) => ({
+        id: s.idsensore,
+        nome: s.nomeStazione,
+        provincia: s.provincia,
+        tipologia: s.tipologia,
+        quota: s.quota,
+      })),
+    },
+  });
+}
+
 export function registerArpaLombardia(server: McpServer) {
   // --- ARPA Lombardia stazioni --------------------------------------------
   server.registerTool(
@@ -115,28 +230,7 @@ export function registerArpaLombardia(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ provincia, tipologia, limit }) => {
-      const params: Record<string, string> = {};
-      if (provincia) params.provincia = provincia.toUpperCase();
-      if (tipologia) params.tipologia = tipologia;
-      if (limit) params.$limit = String(limit);
-      else params.$limit = "200";
-
-      const r = await apiGet(STAZIONI_URL, params);
-      if (!r.ok) return toToolResult(r);
-
-      const rows = (r.data as any[]) ?? [];
-      const stations = rows.map(parseStation);
-
-      return toToolResult({
-        ...r,
-        data: {
-          fonte: "ARPA Lombardia — CC BY 4.0",
-          totale: stations.length,
-          stazioni: stations,
-        },
-      });
-    },
+    handleArpaLombardiaStazioni,
   );
 
   // --- ARPA Lombardia osservazioni ----------------------------------------
@@ -166,78 +260,6 @@ export function registerArpaLombardia(server: McpServer) {
       outputSchema: { ok: z.boolean(), url: z.string(), status: z.number(), data: z.unknown(), elapsedMs: z.number() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async ({ provincia, tipologia, minuti, limit }) => {
-      // Step 1: find sensor IDs matching provincia/tipologia
-      const stationParams: Record<string, string> = { $limit: "200" };
-      if (provincia) stationParams.provincia = provincia.toUpperCase();
-      if (tipologia) stationParams.tipologia = tipologia;
-      const stationR = await apiGet(STAZIONI_URL, stationParams);
-      if (!stationR.ok) return toToolResult(stationR);
-
-      const stations = ((stationR.data as any[]) ?? []).map(parseStation);
-      if (!stations.length) {
-        return toToolResult({
-          ok: false,
-          url: stationR.url,
-          status: 200,
-          data: null,
-          error: provincia ? `Nessuna stazione trovata in provincia ${provincia}` : "Nessuna stazione trovata",
-          elapsedMs: Date.now() - 0,
-        });
-      }
-
-      // Step 2: get recent readings for these sensor IDs
-      // Socrata SODA doesn't support JOIN — we batch by $where on date+ID
-      // Efficient: use $where with date filter and IN clause
-      const maxMinuti = minuti ?? 120; // default last 2h
-      const fromDate = new Date(Date.now() - maxMinuti * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, "");
-
-      // Socrata SoQL supports $where with IN
-      const obsParams: Record<string, string> = {
-        $where: `data >= '${fromDate}'`,
-        $order: "data DESC",
-        $limit: String(limit ?? 100),
-      };
-
-      const obsR = await apiGet(OSSERVAZIONI_URL, obsParams);
-      if (!obsR.ok) return toToolResult(obsR);
-
-      const obs = ((obsR.data as any[]) ?? []) as ArpaLombardiaObs[];
-
-      // Join with station info
-      const stationMap = new Map(stations.map((s) => [s.idsensore, s]));
-      const enriched = obs
-        .filter((o) => stationMap.has(o.idsensore) && o.valore !== "-999")
-        .map((o) => {
-          const st = stationMap.get(o.idsensore)!;
-          return {
-            idsensore: o.idsensore,
-            stazione: st.nomeStazione,
-            provincia: st.provincia,
-            tipologia: st.tipologia,
-            unita: st.unitaMisura,
-            data: o.data,
-            valore: parseFloat(o.valore) || o.valore,
-            stato: o.stato,
-          };
-        });
-
-      return toToolResult({
-        ...obsR,
-        data: {
-          fonte: "ARPA Lombardia (CC BY 4.0) — dati.lombardia.it",
-          intervallo: `ultimi ${maxMinuti} minuti`,
-          totale: enriched.length,
-          osservazioni: enriched.slice(0, limit ?? 100),
-          stazioniRiferimento: stations.map((s) => ({
-            id: s.idsensore,
-            nome: s.nomeStazione,
-            provincia: s.provincia,
-            tipologia: s.tipologia,
-            quota: s.quota,
-          })),
-        },
-      });
-    },
+    handleArpaLombardiaOsservazioni,
   );
 }
