@@ -370,6 +370,69 @@ async function resolveLocation(
   return { ok: true, lat, lon, comune, regioneEff, elevation };
 }
 
+function fetchNwpData(lat: number, lon: number, chosenModels: string[], days: number) {
+  return apiGet("https://api.open-meteo.com/v1/forecast", {
+    latitude: lat,
+    longitude: lon,
+    models: chosenModels,
+    hourly: [
+      "temperature_2m",
+      "precipitation",
+      "weather_code",
+      "cape",
+      "wind_gusts_10m",
+      "wind_speed_10m",
+      "wind_direction_10m",
+      "freezing_level_height",
+      "snowfall",
+      "boundary_layer_height",
+      "visibility",
+      "convective_inhibition",
+    ],
+    daily: [
+      "temperature_2m_max",
+      "temperature_2m_min",
+      "precipitation_sum",
+      "precipitation_probability_max",
+      "wind_gusts_10m_max",
+      "uv_index_max",
+      "weather_code",
+    ],
+    current: ["temperature_2m", "weather_code", "wind_speed_10m", "relative_humidity_2m"],
+    timezone: "Europe/Rome",
+    forecast_days: days,
+  });
+}
+
+function fetchMetarData(icaoList: { icao: string }[]) {
+  return apiGet("https://aviationweather.gov/api/data/metar", {
+    ids: icaoList.map((s) => s.icao).join(","),
+    format: "json",
+  });
+}
+
+function fetchEnsembleData(lat: number, lon: number, days: number) {
+  return apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
+    latitude: lat,
+    longitude: lon,
+    models: ["ecmwf_ifs025_ensemble_mean"],
+    hourly: ["temperature_2m_spread", "precipitation", "precipitation_spread"],
+    timezone: "Europe/Rome",
+    forecast_days: days,
+  });
+}
+
+async function fetchArpaData(lat: number, lon: number, regioneEff?: string): Promise<any> {
+  const regioneNorm = (regioneEff ?? "").toLowerCase();
+  const adapter = ARPA_ADAPTERS.find((a) => a.keywords.some((k) => regioneNorm.includes(k)));
+  if (adapter) return adapter.execute(lat, lon);
+  return {
+    ok: false,
+    agenzia: null,
+    nonCoperto: `Nessun adapter ARPA real-time per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino), Marche (AMAP), Lombardia (ARPA Lombardia), Friuli Venezia Giulia (ARPA FVG/OSMER), Emilia-Romagna (ARPAE), Piemonte (ARPA Piemonte). Usa METAR + radar come osservazioni.`,
+  };
+}
+
 function runBriefCore({
   nome,
   latitude,
@@ -401,61 +464,13 @@ function runBriefCore({
       .map((x) => x.trim())
       .filter(Boolean);
     const icaoList = nearestIcao(lat!, lon!, 3);
-    const nwpTask = apiGet("https://api.open-meteo.com/v1/forecast", {
-      latitude: lat,
-      longitude: lon,
-      models: chosenModels,
-      hourly: [
-        "temperature_2m",
-        "precipitation",
-        "weather_code",
-        "cape",
-        "wind_gusts_10m",
-        "wind_speed_10m",
-        "wind_direction_10m",
-        "freezing_level_height",
-        "snowfall",
-        "boundary_layer_height",
-        "visibility",
-        "convective_inhibition",
-      ],
-      daily: [
-        "temperature_2m_max",
-        "temperature_2m_min",
-        "precipitation_sum",
-        "precipitation_probability_max",
-        "wind_gusts_10m_max",
-        "uv_index_max",
-        "weather_code",
-      ],
-      current: ["temperature_2m", "weather_code", "wind_speed_10m", "relative_humidity_2m"],
-      timezone: "Europe/Rome",
-      forecast_days: days,
-    });
+
+    const nwpTask = fetchNwpData(lat!, lon!, chosenModels, days);
     const allerteTask = fetchLatestBulletin();
     const radarTask = fetchRadarLatest("VMI");
-    const metarTask = apiGet("https://aviationweather.gov/api/data/metar", {
-      ids: icaoList.map((s) => s.icao).join(","),
-      format: "json",
-    });
-    const ensembleTask = apiGet("https://ensemble-api.open-meteo.com/v1/ensemble", {
-      latitude: lat,
-      longitude: lon,
-      models: ["ecmwf_ifs025_ensemble_mean"],
-      hourly: ["temperature_2m_spread", "precipitation", "precipitation_spread"],
-      timezone: "Europe/Rome",
-      forecast_days: days,
-    });
-    const regioneNorm = (regioneEff ?? "").toLowerCase();
-    const arpaTask = (async (): Promise<any> => {
-      const adapter = ARPA_ADAPTERS.find((a) => a.keywords.some((k) => regioneNorm.includes(k)));
-      if (adapter) return adapter.execute(lat!, lon!);
-      return {
-        ok: false,
-        agenzia: null,
-        nonCoperto: `Nessun adapter ARPA real-time per '${regioneEff ?? "regione sconosciuta"}'. Coperti: Veneto (ARPAV), Trentino (Meteotrentino), Marche (AMAP), Lombardia (ARPA Lombardia), Friuli Venezia Giulia (ARPA FVG/OSMER), Emilia-Romagna (ARPAE), Piemonte (ARPA Piemonte). Usa METAR + radar come osservazioni.`,
-      };
-    })();
+    const metarTask = fetchMetarData(icaoList);
+    const ensembleTask = fetchEnsembleData(lat!, lon!, days);
+    const arpaTask = fetchArpaData(lat!, lon!, regioneEff);
 
     const [nwpR, allerteR, radarR, metarR, ensembleR, arpaR] = await Promise.allSettled([
       nwpTask,
