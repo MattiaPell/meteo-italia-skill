@@ -310,14 +310,8 @@ export function startDebugServer(port: number) {
   return server;
 }
 
-function htmlPage(): string {
-  return `<!doctype html>
-<html lang="it">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Meteo Italia MCP — Debug</title>
-<style>
+function debugStyles(): string {
+  return `
   :root { color-scheme: dark; --bg:#0f1419; --card:#1a2029; --acc:#4ea1ff; --ok:#3ecf8e; --err:#ff6b6b; --txt:#e6edf3; --mut:#8b98a5; }
   * { box-sizing: border-box; }
   body { margin:0; font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
@@ -334,27 +328,11 @@ function htmlPage(): string {
   .status-ok { color:var(--ok); } .status-err { color:var(--err); }
   pre { background:#0a0e12; border:1px solid #222c38; border-radius:6px; padding:12px; overflow:auto; max-height:420px; white-space:pre-wrap; word-break:break-word; }
   .url { color:var(--acc); font-size:12px; word-break:break-all; margin:8px 0; }
-</style>
-</head>
-<body>
-<header>
-  <h1>⛅ Meteo Italia MCP — Debug</h1>
-  <p>Chiama ogni servizio API e ispeziona richiesta/risposta. Le chiamate passano dal proxy locale (no CORS).</p>
-</header>
-<div class="wrap">
-  <div class="panel">
-    <label>Servizio</label>
-    <select id="service"></select>
-    <div id="fields"></div>
-    <button id="run">Esegui chiamata</button>
-  </div>
-  <div class="panel">
-    <div class="meta" id="meta">Pronto.</div>
-    <div class="url" id="url"></div>
-    <pre id="out">—</pre>
-  </div>
-</div>
-<script>
+`;
+}
+
+function debugScript(): string {
+  return `
 const FIELDS = {
   geocoding: { name:"Roma", count:"10", language:"it" },
   forecast: { latitude:"41.9", longitude:"12.5", models:"ecmwf_ifs025,icon_seamless,gfs_seamless", hourly:"temperature_2m,precipitation,weather_code", daily:"temperature_2m_max,temperature_2m_min,precipitation_sum", timezone:"Europe/Rome", forecast_days:"3", past_days:"0" },
@@ -432,7 +410,37 @@ document.getElementById('run').onclick = async ()=>{
     out.textContent=String(e);
   }
 };
-</script>
+`;
+}
+
+function htmlPage(): string {
+  return `<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meteo Italia MCP — Debug</title>
+<style>${debugStyles()}</style>
+</head>
+<body>
+<header>
+  <h1>⛅ Meteo Italia MCP — Debug</h1>
+  <p>Chiama ogni servizio API e ispeziona richiesta/risposta. Le chiamate passano dal proxy locale (no CORS).</p>
+</header>
+<div class="wrap">
+  <div class="panel">
+    <label>Servizio</label>
+    <select id="service"></select>
+    <div id="fields"></div>
+    <button id="run">Esegui chiamata</button>
+  </div>
+  <div class="panel">
+    <div class="meta" id="meta">Pronto.</div>
+    <div class="url" id="url"></div>
+    <pre id="out">—</pre>
+  </div>
+</div>
+<script>${debugScript()}</script>
 </body>
 </html>`;
 }
