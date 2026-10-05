@@ -391,7 +391,7 @@ fetch('/api/services').then(r=>r.json()).then(list=>{
 serviceEl.onchange = renderFields;
 function renderFields(){
   const s = serviceEl.value;
-  fieldsEl.innerHTML='';
+  fieldsEl.textContent='';
   for (const [k,v] of Object.entries(FIELDS[s]||{})){
     const l=document.createElement('label'); l.textContent=k;
     const i=document.createElement('input'); i.id='f_'+k; i.value=v;
